@@ -44,6 +44,7 @@ export default function Chat() {
             role: m.role,
             content: m.content,
           })),
+          allowedTools: ['Read', 'Write', 'Skill'],
         }),
       });
 

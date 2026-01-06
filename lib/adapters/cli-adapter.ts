@@ -1,11 +1,11 @@
 /**
  * CLI Adapter for Claude Code
  *
- * Uses execSync wrapped in a setTimeout to not block immediately.
- * This is a workaround for Windows where async exec has issues.
+ * Uses stdin to pass the prompt to handle multi-line content properly.
+ * Wrapped in setImmediate as a workaround for Windows where async spawn has issues.
  */
 
-import { execSync } from 'child_process';
+import { spawnSync } from 'child_process';
 import {
   ClaudeAdapter,
   ClaudeMessage,
@@ -37,45 +37,56 @@ export class CLIAdapter implements ClaudeAdapter {
 
     const prompt = this.formatPrompt(messages);
 
-    // Build command with proper escaping for Windows
-    const escapedPrompt = prompt.replace(/"/g, '\\"');
-    let cmd = `claude -p "${escapedPrompt}" --output-format stream-json --verbose`;
+    // Build arguments array - use -p with stdin via input option
+    const args = ['-p', '-', '--output-format', 'stream-json', '--verbose'];
 
     if (options.claudeSessionId) {
-      cmd += ` --resume "${options.claudeSessionId}"`;
+      args.push('--resume', options.claudeSessionId);
     }
     if (options.allowedTools && options.allowedTools.length > 0) {
-      cmd += ` --allowedTools "${options.allowedTools.join(',')}"`;
+      args.push('--allowedTools', options.allowedTools.join(','));
     }
 
     const cwd = options.workingDirectory || process.cwd();
 
     try {
-      // Run execSync in next tick to allow event loop to process
-      const stdout = await new Promise<string>((resolve, reject) => {
+      // Run spawnSync in next tick to allow event loop to process
+      const result = await new Promise<{ stdout: string; stderr: string; status: number | null }>((resolve, reject) => {
         setImmediate(() => {
           try {
-            const result = execSync(cmd, {
+            const spawnResult = spawnSync('claude', args, {
               cwd,
               encoding: 'utf8',
               timeout: options.timeout || 300000,
               maxBuffer: 50 * 1024 * 1024,
+              shell: true,
+              input: prompt, // Pass prompt via stdin
             });
-            resolve(result);
+            resolve({
+              stdout: spawnResult.stdout || '',
+              stderr: spawnResult.stderr || '',
+              status: spawnResult.status,
+            });
           } catch (err) {
             reject(err);
           }
         });
       });
 
-      if (!stdout) {
+      if (result.status !== 0 && !result.stdout) {
+        yield { type: 'error', error: result.stderr || `CLI exited with code ${result.status}` };
+        yield { type: 'done' };
+        return;
+      }
+
+      if (!result.stdout) {
         yield { type: 'error', error: 'No output from Claude CLI' };
         yield { type: 'done' };
         return;
       }
 
       // Parse all lines and yield events
-      const lines = stdout.split('\n');
+      const lines = result.stdout.split('\n');
       for (const line of lines) {
         if (this.aborted) {
           yield { type: 'done' };
@@ -112,6 +123,7 @@ export class CLIAdapter implements ClaudeAdapter {
       return messages[0].content;
     }
 
+    // Format multi-turn as conversation for Claude to continue
     const formatted = messages.map((m) => {
       return m.role === 'user' ? `User: ${m.content}` : `Assistant: ${m.content}`;
     });
