@@ -1,5 +1,36 @@
 {
   "version": "1.0",
-  "lastModified": "2026-01-06T00:00:00.000Z",
-  "items": []
+  "lastModified": "2026-01-06T12:00:00.000Z",
+  "items": [
+    {
+      "id": "f3a8c12b",
+      "title": "Review quarterly report",
+      "completed": false,
+      "priority": "high",
+      "dueDate": "2026-01-10",
+      "createdAt": "2026-01-06T12:00:00.000Z",
+      "completedAt": null,
+      "tags": []
+    },
+    {
+      "id": "d7e4b9a2",
+      "title": "Buy groceries",
+      "completed": false,
+      "priority": "medium",
+      "dueDate": null,
+      "createdAt": "2026-01-06T12:00:00.000Z",
+      "completedAt": null,
+      "tags": []
+    },
+    {
+      "id": "c1f6e8d3",
+      "title": "Call mom",
+      "completed": false,
+      "priority": "low",
+      "dueDate": "2026-01-08",
+      "createdAt": "2026-01-06T12:00:00.000Z",
+      "completedAt": null,
+      "tags": []
+    }
+  ]
 }
