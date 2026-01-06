@@ -2,10 +2,40 @@
 
 import { useState, useRef, useEffect } from 'react';
 
+// Session marker format from API
+const SESSION_MARKER = '\n<!--CLAUDE_SESSION:';
+const SESSION_MARKER_END = '-->';
+
 interface Message {
   id: string;
   role: 'user' | 'assistant';
   content: string;
+}
+
+/**
+ * Extract Claude session ID from response text and return clean text
+ */
+function extractSessionId(text: string): { cleanText: string; sessionId: string | null } {
+  const markerStart = text.lastIndexOf(SESSION_MARKER);
+  if (markerStart === -1) {
+    return { cleanText: text, sessionId: null };
+  }
+
+  const markerEnd = text.indexOf(SESSION_MARKER_END, markerStart);
+  if (markerEnd === -1) {
+    return { cleanText: text, sessionId: null };
+  }
+
+  const jsonStart = markerStart + SESSION_MARKER.length;
+  const jsonStr = text.substring(jsonStart, markerEnd);
+
+  try {
+    const data = JSON.parse(jsonStr);
+    const cleanText = text.substring(0, markerStart);
+    return { cleanText, sessionId: data.claudeSessionId || null };
+  } catch {
+    return { cleanText: text, sessionId: null };
+  }
 }
 
 export default function Chat() {
@@ -13,6 +43,7 @@ export default function Chat() {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const [claudeSessionId, setClaudeSessionId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom when messages change
@@ -45,6 +76,8 @@ export default function Chat() {
             content: m.content,
           })),
           allowedTools: ['Read', 'Write', 'Skill'],
+          // Send Claude session ID for warm CLI (session resumption)
+          claudeSessionId: claudeSessionId,
         }),
       });
 
@@ -64,18 +97,40 @@ export default function Chat() {
       setMessages(prev => [...prev, assistantMessage]);
 
       const decoder = new TextDecoder();
+      let fullText = '';
+
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
 
-        const text = decoder.decode(value, { stream: true });
+        const chunk = decoder.decode(value, { stream: true });
+        fullText += chunk;
+
+        // Update display (may include session marker temporarily)
         setMessages(prev =>
           prev.map(m =>
             m.id === assistantMessage.id
-              ? { ...m, content: m.content + text }
+              ? { ...m, content: fullText }
               : m
           )
         );
+      }
+
+      // Extract session ID and clean the text
+      const { cleanText, sessionId } = extractSessionId(fullText);
+
+      // Update with clean text (without session marker)
+      setMessages(prev =>
+        prev.map(m =>
+          m.id === assistantMessage.id
+            ? { ...m, content: cleanText }
+            : m
+        )
+      );
+
+      // Store session ID for future requests (warm CLI)
+      if (sessionId) {
+        setClaudeSessionId(sessionId);
       }
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Unknown error'));
@@ -88,12 +143,33 @@ export default function Chat() {
     setInput(e.target.value);
   };
 
+  const handleNewChat = () => {
+    setMessages([]);
+    setClaudeSessionId(null);
+    setError(null);
+  };
+
   return (
     <div className="flex flex-col h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 px-4 py-3">
-        <h1 className="text-xl font-semibold text-gray-800">Claude Chat</h1>
-        <p className="text-sm text-gray-500">Chat interface for Claude Code</p>
+      <header className="bg-white border-b border-gray-200 px-4 py-3 flex justify-between items-center">
+        <div>
+          <h1 className="text-xl font-semibold text-gray-800">Claude Chat</h1>
+          <p className="text-sm text-gray-500">
+            Chat interface for Claude Code
+            {claudeSessionId && (
+              <span className="ml-2 text-green-600" title="Session active - faster responses">
+                (warm session)
+              </span>
+            )}
+          </p>
+        </div>
+        <button
+          onClick={handleNewChat}
+          className="text-sm px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 transition-colors"
+        >
+          New Chat
+        </button>
       </header>
 
       {/* Messages Container */}
@@ -125,7 +201,7 @@ export default function Chat() {
           </div>
         ))}
 
-        {isLoading && (
+        {isLoading && messages[messages.length - 1]?.role !== 'assistant' && (
           <div className="flex justify-start">
             <div className="bg-white border border-gray-200 rounded-lg px-4 py-2">
               <div className="text-xs font-medium mb-1 text-gray-500">Claude</div>

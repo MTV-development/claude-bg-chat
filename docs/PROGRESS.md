@@ -2,7 +2,7 @@
 
 **Project:** Claude Code Web Chat Interface with Todo Manager
 **Last Updated:** 2026-01-06
-**Current Phase:** Phase 4 Complete - Ready for Phase 5 (Polish)
+**Current Phase:** Phase 4.5 Complete - Ready for Phase 5 (Polish)
 
 ---
 
@@ -14,6 +14,7 @@
 | Phase 2: Chat Infrastructure | ✅ Complete | 100% |
 | Phase 3: CLI Adapter | ✅ Complete | 100% |
 | Phase 4: Integration Testing | ✅ Complete | 100% |
+| Phase 4.5: Warm CLI | ✅ Complete | 100% |
 | Phase 5: Polish & Edge Cases | ⬜ Not Started | 0% |
 
 ---
@@ -178,9 +179,50 @@ lib/
 1. **CLI startup**: ~2-3s per invocation
 2. **Tool use**: +5-10s per Read/Write call
 3. **No streaming**: execSync waits for full output
-4. **No session persistence**: Each request starts fresh
+4. ~~**No session persistence**: Each request starts fresh~~ (Fixed in Phase 4.5)
 
 See `docs/2026-01-06-todo-implementation.md` for detailed test cases.
+
+---
+
+## Phase 4.5: Warm CLI ✅
+
+**Completed:** 2026-01-06
+
+### Goal
+Improve performance by reusing Claude sessions via `--resume` flag instead of cold-starting each request.
+
+### Implementation
+1. **API Route** (`app/api/chat/route.ts`):
+   - Captures `session_id` from Claude CLI's `system.init` event
+   - Sends session ID to frontend via stream marker: `<!--CLAUDE_SESSION:{"claudeSessionId":"xxx"}-->`
+   - Accepts `claudeSessionId` in request body for subsequent calls
+   - Passes `--resume SESSION_ID` to CLI when available
+
+2. **Frontend** (`app/page.tsx`):
+   - Parses session marker from response stream
+   - Stores `claudeSessionId` in React state
+   - Sends session ID with subsequent requests
+   - Shows "(warm session)" indicator in header
+   - "New Chat" button clears session state
+
+3. **CLI Adapter** (`lib/adapters/cli-adapter.ts`):
+   - Already supported `--resume` via `options.claudeSessionId`
+   - No changes needed
+
+### Benefits
+- **Context caching**: Claude maintains conversation context server-side
+- **Reduced latency**: Skip re-loading skills and context on each turn
+- **Better UX**: Visual indicator shows when session is warm
+- **Cache hits**: Claude's cache_read_input_tokens increases on subsequent requests
+
+### Test Results
+| Request Type | Latency |
+|-------------|---------|
+| Cold (first message) | ~9.5s |
+| Warm (with --resume) | ~8.8s |
+
+Note: Improvement is modest (~7%) because main cost is Claude inference. Real benefit is context/cache efficiency.
 
 ---
 

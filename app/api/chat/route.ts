@@ -3,11 +3,17 @@
  *
  * Handles chat requests by forwarding them to Claude Code CLI
  * and streaming the response back to the client.
+ *
+ * Supports warm CLI via --resume to reuse Claude sessions for better performance.
  */
 
 import { CLIAdapter } from '@/lib/adapters/cli-adapter';
 import { ClaudeMessage } from '@/lib/adapters/types';
 import { SessionLogger, generateSessionId } from '@/lib/services/logger';
+
+// Session ID marker for frontend to parse
+const SESSION_MARKER = '\n<!--CLAUDE_SESSION:';
+const SESSION_MARKER_END = '-->';
 
 // Allow streaming responses up to 5 minutes for complex operations
 export const maxDuration = 300;
@@ -42,9 +48,10 @@ export async function POST(req: Request) {
   const stream = new ReadableStream({
     async start(controller) {
       try {
-        // Log session start
+        // Log session start with resume info
         await logger.logSessionStart({
           messageCount: claudeMessages.length,
+          resumingSession: !!claudeSessionId,
         });
 
         // Log the user message
@@ -99,9 +106,17 @@ export async function POST(req: Request) {
           }
         }
 
+        // Send Claude session ID at end of stream for frontend to capture
+        // This enables warm CLI - subsequent requests can resume this session
+        if (currentClaudeSessionId) {
+          const sessionData = JSON.stringify({ claudeSessionId: currentClaudeSessionId });
+          controller.enqueue(encoder.encode(`${SESSION_MARKER}${sessionData}${SESSION_MARKER_END}`));
+        }
+
         // Log session end
         await logger.logSessionEnd({
           responseLength: fullResponse.length,
+          claudeSessionId: currentClaudeSessionId,
         });
 
         controller.close();
@@ -120,15 +135,10 @@ export async function POST(req: Request) {
     },
   });
 
-  // Build headers - include claude session ID if available
-  const headers: Record<string, string> = {
-    'Content-Type': 'text/plain; charset=utf-8',
-    'X-Session-Id': sessionId,
-  };
-
-  // Note: currentClaudeSessionId will be set during streaming, so we can't
-  // include it in headers here. The frontend will need to track it differently
-  // or we'll need to use a different approach (SSE events or trailing headers)
-
-  return new Response(stream, { headers });
+  return new Response(stream, {
+    headers: {
+      'Content-Type': 'text/plain; charset=utf-8',
+      'X-Session-Id': sessionId,
+    },
+  });
 }
