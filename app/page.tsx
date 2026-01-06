@@ -45,6 +45,7 @@ export default function Chat() {
   const [error, setError] = useState<Error | null>(null);
   const [claudeSessionId, setClaudeSessionId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
@@ -136,6 +137,8 @@ export default function Chat() {
       setError(err instanceof Error ? err : new Error('Unknown error'));
     } finally {
       setIsLoading(false);
+      // Focus input after response completes (small delay for DOM update)
+      setTimeout(() => inputRef.current?.focus(), 100);
     }
   };
 
@@ -227,12 +230,14 @@ export default function Chat() {
       <div className="border-t border-gray-200 bg-white p-4">
         <form onSubmit={handleSubmit} className="flex space-x-2">
           <input
+            ref={inputRef}
             type="text"
             value={input}
             onChange={handleInputChange}
             placeholder="Type your message..."
             className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             disabled={isLoading}
+            autoFocus
           />
           <button
             type="submit"
