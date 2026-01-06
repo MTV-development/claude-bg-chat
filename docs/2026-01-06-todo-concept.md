@@ -150,13 +150,54 @@ The skill teaches Claude how to:
 - No authentication (single user)
 - English language only
 
+## Session & Conversation Context
+
+### Key Requirement: Dialogue Continuity
+
+Within a chat session, Claude maintains full conversation context. This enables natural follow-up interactions:
+
+```
+User: "add buy milk"
+Claude: Added "buy milk" to your list.
+
+User: "actually make that oat milk"       ← understands "that" = buy milk
+Claude: Updated to "buy oat milk".
+
+User: "and make it high priority"         ← continues same context
+Claude: Set "buy oat milk" to high priority.
+
+User: "now add eggs"                      ← new task, but session continues
+Claude: Added "eggs" to your list.
+
+User: "what's on my list?"                ← remembers entire conversation
+Claude: You have 2 items:
+  1. [ ] Buy oat milk (high priority)
+  2. [ ] Eggs
+```
+
+### How It Works
+
+- Each chat session = one Claude Code session (via `--resume` flag)
+- All messages in a chat share the same session context
+- Claude remembers: previous tasks mentioned, recent operations, user preferences
+- Pronouns resolve naturally: "that one", "the first task", "it"
+
+### Session vs Data Persistence
+
+| Aspect | Behavior |
+|--------|----------|
+| **Conversation context** | Lives in Claude session, lost when chat ends |
+| **Todo data** | Persists in JSON file, survives across sessions |
+| **New chat session** | Fresh context, but todos still there from file |
+
 ## Success Criteria
 
 1. **Natural interaction**: User can manage todos without learning commands
-2. **Data persistence**: Todos survive between sessions
-3. **Reliability**: No data loss on concurrent operations
-4. **Skill activation**: Claude correctly identifies todo-related requests
-5. **Graceful handling**: Clear feedback on errors or empty states
+2. **Conversation continuity**: Follow-ups work naturally within a session
+3. **Data persistence**: Todos survive between sessions
+4. **Reliability**: No data loss on concurrent operations
+5. **Skill activation**: Claude correctly identifies todo-related requests
+6. **Graceful handling**: Clear feedback on errors or empty states
 
 ## Related Documents
 

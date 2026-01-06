@@ -275,6 +275,22 @@ Test 4.5: Multi-turn conversation
 ├─ Verify: Session context preserved
 └─ Status: ⬜
 
+Test 4.5b: Contextual follow-ups (KEY TEST)
+├─ Input sequence:
+│   1. "add buy milk"
+│   2. "actually make that oat milk"  ← contextual edit
+│   3. "and make it high priority"    ← continued context
+│   4. "show my list"
+├─ Expected: Single task "buy oat milk" with high priority
+├─ Verify: Claude resolved "that" and "it" from context
+└─ Status: ⬜
+
+Test 4.5c: Pronoun resolution
+├─ Input: "add call dentist" → "when is that due?"
+├─ Expected: Claude asks about/reports due date for "call dentist"
+├─ Verify: "that" resolves to most recent task
+└─ Status: ⬜
+
 Test 4.6: Logging verification
 ├─ Action: Perform several operations
 ├─ Verify: logs/session-*.jsonl contains:
