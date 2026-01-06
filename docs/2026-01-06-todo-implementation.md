@@ -153,11 +153,13 @@ npm run dev
 
 | Test | Expected Result | Status |
 |------|-----------------|--------|
-| Dev server runs | No errors on startup | ⬜ |
-| Page renders | Chat UI visible | ⬜ |
-| Input works | Can type messages | ⬜ |
-| API called | POST to /api/chat | ⬜ |
-| Response displays | Mock text appears | ⬜ |
+| Dev server runs | No errors on startup | ✅ |
+| Page renders | Chat UI visible | ✅ |
+| Input works | Can type messages | ✅ |
+| API called | POST to /api/chat | ✅ |
+| Response displays | Mock text streams | ✅ |
+
+**Phase 2 Complete: 2026-01-06**
 
 ---
 
@@ -462,10 +464,39 @@ Note: Skill must be invoked via Skill tool explicitly, or will auto-activate
 
 ### Phase 2 Results
 ```
-Date: [TBD]
+Date: 2026-01-06
 Tester: Claude Code
 
-[To be filled during implementation]
+Test 2.1 - Project initialization:
+  Result: PASS
+  Notes: Manually created package.json, tsconfig.json, tailwind config
+         (create-next-app conflicts with existing directories)
+
+Test 2.2 - Dependencies installed:
+  Result: PASS
+  Packages: next@15.1.3, react@19, ai@6.0.11, @ai-sdk/react@3.0.11
+  Notes: Using AI SDK v6 (different API from v4)
+
+Test 2.3 - Dev server starts:
+  Result: PASS
+  Output: ✓ Ready in 8.2s
+  Port: 3002 (3000/3001 were in use)
+
+Test 2.4 - Page renders:
+  Result: PASS
+  Output: Chat UI with header, message area, input form
+  Verified: curl http://localhost:3002 returns valid HTML
+
+Test 2.5 - API responds:
+  Result: PASS
+  Command: curl -X POST http://localhost:3002/api/chat -d '{"messages":[...]}'
+  Output: "This is a placeholder response..."
+  Notes: Streaming works character by character
+
+Key learnings:
+- AI SDK v6 removed StreamingTextResponse, use plain Response with ReadableStream
+- Custom streaming implementation needed for non-provider backends
+- useChat hook replaced with custom fetch + stream handling for flexibility
 ```
 
 ### Phase 3 Results

@@ -2,7 +2,7 @@
 
 **Project:** Claude Code Web Chat Interface with Todo Manager
 **Last Updated:** 2026-01-06
-**Current Phase:** Phase 1 Complete, Ready for Phase 2
+**Current Phase:** Phase 2 Complete, Ready for Phase 3
 
 ---
 
@@ -11,7 +11,7 @@
 | Phase | Status | Completion |
 |-------|--------|------------|
 | Phase 1: Skill & CLI Testing | ✅ Complete | 100% |
-| Phase 2: Chat Infrastructure | ⬜ Not Started | 0% |
+| Phase 2: Chat Infrastructure | ✅ Complete | 100% |
 | Phase 3: CLI Adapter | ⬜ Not Started | 0% |
 | Phase 4: Integration Testing | ⬜ Not Started | 0% |
 | Phase 5: Polish & Edge Cases | ⬜ Not Started | 0% |
@@ -60,26 +60,39 @@
 
 ---
 
-## Phase 2: Chat Infrastructure Foundation ⬜
+## Phase 2: Chat Infrastructure Foundation ✅
 
-**Status:** Not Started
+**Completed:** 2026-01-06
 
-### Tasks
-- [ ] Initialize Next.js project with TypeScript
-- [ ] Install dependencies (`ai`, `@ai-sdk/react`)
-- [ ] Create basic page layout
-- [ ] Implement `useChat` hook with basic UI
-- [ ] Create placeholder `/api/chat` route
+### Files Created
+- [x] `package.json` - Project configuration
+- [x] `tsconfig.json` - TypeScript config
+- [x] `tailwind.config.ts` - Tailwind CSS config
+- [x] `postcss.config.mjs` - PostCSS config
+- [x] `next.config.ts` - Next.js config
+- [x] `app/layout.tsx` - Root layout
+- [x] `app/globals.css` - Global styles
+- [x] `app/page.tsx` - Chat UI with streaming support
+- [x] `app/api/chat/route.ts` - API endpoint (mock streaming)
 
-### Commands to Run
+### Tests Passed
+- [x] Dev server starts without errors
+- [x] Page renders with chat UI
+- [x] Input accepts text
+- [x] API returns streaming response
+- [x] Response displays in chat
+
+### Key Learnings
+1. AI SDK v6 removed `StreamingTextResponse` - use plain `Response` with `ReadableStream`
+2. Custom streaming implementation needed for non-provider backends
+3. Replaced `useChat` hook with custom fetch + stream handling for flexibility
+
+### To Run Dev Server
 ```bash
-npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir=false
-npm install ai @ai-sdk/react
+cd /path/to/claude-bg-chat
+npm run dev
+# Opens at http://localhost:3000 (or next available port)
 ```
-
-### Files to Create
-- `app/page.tsx` - Chat UI component
-- `app/api/chat/route.ts` - API endpoint (placeholder)
 
 ---
 
