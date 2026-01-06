@@ -188,7 +188,34 @@ Claude: You have 2 items:
 |--------|----------|
 | **Conversation context** | Lives in Claude session, lost when chat ends |
 | **Todo data** | Persists in JSON file, survives across sessions |
+| **Session log** | JSON log of entire session, kept for review |
 | **New chat session** | Fresh context, but todos still there from file |
+
+### Session Logging (Required)
+
+Every chat session generates a detailed JSON log file capturing:
+- All user messages
+- All Claude responses
+- Every tool use (Read, Write, Bash, etc.)
+- Tool inputs and outputs
+- Timestamps for each event
+
+**Purpose:**
+- Debug issues by reviewing what happened
+- Understand what Claude did behind the scenes
+- Can be converted to readable markdown (e.g., via ChatGPT) if needed
+
+**Location:** `logs/session-{sessionId}-{timestamp}.jsonl`
+
+**Example log entries:**
+```json
+{"ts":"2026-01-06T10:30:00Z","type":"user","content":"add buy milk"}
+{"ts":"2026-01-06T10:30:01Z","type":"tool_use","tool":"Read","input":{"path":"/data/todos.json"}}
+{"ts":"2026-01-06T10:30:01Z","type":"tool_result","tool":"Read","output":"{\"items\":[]}"}
+{"ts":"2026-01-06T10:30:02Z","type":"tool_use","tool":"Write","input":{"path":"/data/todos.json","content":"..."}}
+{"ts":"2026-01-06T10:30:02Z","type":"tool_result","tool":"Write","output":"success"}
+{"ts":"2026-01-06T10:30:03Z","type":"assistant","content":"Added \"buy milk\" to your list."}
+```
 
 ## Success Criteria
 

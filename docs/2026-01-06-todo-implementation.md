@@ -292,12 +292,24 @@ Test 4.5c: Pronoun resolution
 └─ Status: ⬜
 
 Test 4.6: Logging verification
-├─ Action: Perform several operations
-├─ Verify: logs/session-*.jsonl contains:
-│   - User messages
-│   - Assistant responses
-│   - Tool use (Read, Write)
-│   - Tool results
+├─ Action: Perform several operations via chat
+├─ Verify: logs/session-{id}-{timestamp}.jsonl exists
+├─ Log must contain (in order):
+│   - {"type":"session_start",...}
+│   - {"type":"user","content":"add buy milk"}
+│   - {"type":"tool_use","tool":"Read",...}
+│   - {"type":"tool_result","tool":"Read",...}
+│   - {"type":"tool_use","tool":"Write",...}
+│   - {"type":"tool_result","tool":"Write",...}
+│   - {"type":"assistant","content":"Added..."}
+│   - {"type":"session_end",...}
+├─ Each entry must have: ts, sessionId, type
+└─ Status: ⬜
+
+Test 4.7: Log readability check
+├─ Action: Feed session JSONL to ChatGPT
+├─ Prompt: "Convert this session log to readable markdown"
+├─ Verify: Output is human-readable summary
 └─ Status: ⬜
 ```
 
@@ -310,7 +322,9 @@ Test 4.6: Logging verification
 | Complete via chat | Status updated | ⬜ |
 | Delete via chat | Task removed | ⬜ |
 | Session context | Multi-turn works | ⬜ |
-| Full logging | All events captured | ⬜ |
+| Contextual edits | "make that..." resolves | ⬜ |
+| JSONL logging | All events in log file | ⬜ |
+| Log completeness | tool_use + tool_result pairs | ⬜ |
 
 ---
 

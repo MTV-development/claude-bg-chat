@@ -269,6 +269,101 @@ Response streamed back to chat
 - **Local only:** Data stays on user's machine
 - **No external calls:** Skill doesn't use web tools
 
+## Session Logging
+
+### Log File Structure
+
+Each chat session produces a JSONL (JSON Lines) log file:
+
+**Location:** `logs/session-{sessionId}-{timestamp}.jsonl`
+**Format:** One JSON object per line, chronologically ordered
+
+### Log Entry Schema
+
+```typescript
+interface LogEntry {
+  ts: string;                    // ISO timestamp
+  type: LogEntryType;
+  sessionId: string;
+
+  // Type-specific fields
+  content?: string;              // For user/assistant messages
+  tool?: string;                 // For tool_use/tool_result
+  input?: Record<string, any>;   // Tool input parameters
+  output?: string;               // Tool output
+  error?: string;                // For error entries
+  metadata?: Record<string, any>;// Additional context
+}
+
+type LogEntryType =
+  | 'session_start'    // Session initialized
+  | 'user'             // User message
+  | 'assistant'        // Claude response text
+  | 'tool_use'         // Tool invocation
+  | 'tool_result'      // Tool output
+  | 'error'            // Error occurred
+  | 'session_end';     // Session completed
+```
+
+### Example Complete Session Log
+
+```jsonl
+{"ts":"2026-01-06T10:30:00.000Z","type":"session_start","sessionId":"abc123","metadata":{"cwd":"/project"}}
+{"ts":"2026-01-06T10:30:00.100Z","type":"user","sessionId":"abc123","content":"add buy milk to my list"}
+{"ts":"2026-01-06T10:30:01.200Z","type":"tool_use","sessionId":"abc123","tool":"Read","input":{"file_path":"/data/todos.json"}}
+{"ts":"2026-01-06T10:30:01.250Z","type":"tool_result","sessionId":"abc123","tool":"Read","output":"{\"version\":\"1.0\",\"items\":[]}"}
+{"ts":"2026-01-06T10:30:02.100Z","type":"tool_use","sessionId":"abc123","tool":"Write","input":{"file_path":"/data/todos.json","content":"{...}"}}
+{"ts":"2026-01-06T10:30:02.150Z","type":"tool_result","sessionId":"abc123","tool":"Write","output":"File written successfully"}
+{"ts":"2026-01-06T10:30:03.000Z","type":"assistant","sessionId":"abc123","content":"Added \"buy milk\" to your list."}
+{"ts":"2026-01-06T10:30:15.000Z","type":"user","sessionId":"abc123","content":"show my todos"}
+{"ts":"2026-01-06T10:30:15.500Z","type":"tool_use","sessionId":"abc123","tool":"Read","input":{"file_path":"/data/todos.json"}}
+{"ts":"2026-01-06T10:30:15.550Z","type":"tool_result","sessionId":"abc123","tool":"Read","output":"{...}"}
+{"ts":"2026-01-06T10:30:16.200Z","type":"assistant","sessionId":"abc123","content":"You have 1 item:\n  1. [ ] Buy milk"}
+{"ts":"2026-01-06T10:30:45.000Z","type":"session_end","sessionId":"abc123","metadata":{"duration_ms":45000,"messages":4}}
+```
+
+### Log Usage
+
+**Primary use:** Debug and understand what Claude did
+- Review tool calls and their inputs/outputs
+- See the full conversation flow
+- Identify issues or unexpected behavior
+
+**Secondary use:** Convert to readable format
+- Feed JSONL to ChatGPT/Claude: "Convert this session log to readable markdown"
+- Generate session summaries or reports
+
+### Logging Implementation
+
+```typescript
+// lib/services/logger.ts
+class SessionLogger {
+  private sessionId: string;
+  private logPath: string;
+
+  constructor(sessionId: string) {
+    this.sessionId = sessionId;
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    this.logPath = `logs/session-${sessionId}-${timestamp}.jsonl`;
+  }
+
+  async log(entry: Omit<LogEntry, 'ts' | 'sessionId'>): Promise<void> {
+    const fullEntry: LogEntry = {
+      ts: new Date().toISOString(),
+      sessionId: this.sessionId,
+      ...entry
+    };
+    await fs.appendFile(this.logPath, JSON.stringify(fullEntry) + '\n');
+  }
+
+  // Convenience methods
+  async logUser(content: string) { await this.log({ type: 'user', content }); }
+  async logAssistant(content: string) { await this.log({ type: 'assistant', content }); }
+  async logToolUse(tool: string, input: any) { await this.log({ type: 'tool_use', tool, input }); }
+  async logToolResult(tool: string, output: string) { await this.log({ type: 'tool_result', tool, output }); }
+}
+```
+
 ## Testing Points
 
 1. **Skill activation:** Does Claude recognize todo-related prompts?
@@ -277,3 +372,4 @@ Response streamed back to chat
 4. **Data integrity:** Is JSON valid after operations?
 5. **Edge cases:** Empty list, duplicate titles, fuzzy matching?
 6. **Chat integration:** Does streaming work for todo responses?
+7. **Session logging:** Are all events captured in JSONL format?
