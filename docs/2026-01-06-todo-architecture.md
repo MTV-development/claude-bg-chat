@@ -56,31 +56,60 @@
 
 **Purpose:** Teaches Claude how to manage the todo list through natural language.
 
-**Skill Structure:**
-```markdown
-# Todo Manager Skill
+### Claude Skill File Format (Required)
 
-## Description
-Manages a personal todo list stored in /data/todos.json.
-Handles adding, listing, completing, and removing tasks.
+All Claude Code skills must have **YAML frontmatter** at the start of SKILL.md:
 
-## Activation
-This skill activates when the user wants to:
-- Add, create, or remember tasks
-- View, list, or check their todos
-- Mark tasks as done or complete
-- Remove or delete tasks
-- Update or modify existing tasks
+```yaml
+---
+name: skill-name
+description: Brief description of what the skill does and when to use it. Include trigger keywords.
+allowed-tools: Tool1, Tool2
+---
 
-## Instructions
-[Detailed instructions for Claude on how to handle each operation]
+# Skill Title
 
-## Data Location
-/data/todos.json
-
-## Response Format
-[Guidelines for formatting responses]
+[Markdown content with instructions...]
 ```
+
+**Required Fields:**
+| Field | Description |
+|-------|-------------|
+| `name` | Lowercase with hyphens only, max 64 chars, should match directory name |
+| `description` | Max 1024 chars. Claude uses this to decide when to activate the skill. Include trigger keywords users would say. |
+
+**Optional Fields:**
+| Field | Description |
+|-------|-------------|
+| `allowed-tools` | Comma-separated list of tools the skill can use (restricts to safe operations) |
+| `model` | Specify a different model for this skill |
+
+### Our Skill Structure
+
+```yaml
+---
+name: todo-manager
+description: Manages your personal todo list stored in data/todos.json. Add tasks, view your list, mark items complete, remove tasks, set priorities, and due dates. Use when you want to add todos, show your list, mark items done, clear completed tasks, or organize reminders.
+allowed-tools: Read, Write
+---
+
+# Todo Manager
+
+## Overview
+I manage your personal todo list...
+
+## IMPORTANT: Tool Usage
+DO NOT use the built-in `TodoWrite` tool...
+
+## Operations
+[Detailed instructions for each operation]
+```
+
+### Skill Discovery Process
+
+1. **Startup**: Claude loads only skill `name` and `description` (lightweight)
+2. **Activation**: When user request matches description via semantic similarity, Claude asks to use the skill
+3. **Execution**: Full SKILL.md loads into context, Claude follows instructions
 
 ### 2. Data File
 

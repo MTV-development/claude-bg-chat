@@ -1,0 +1,16 @@
+{
+  "version": "1.0",
+  "lastModified": "2026-01-06T10:55:00.000Z",
+  "items": [
+    {
+      "id": "c7d9e2f4",
+      "title": "Call dentist",
+      "completed": false,
+      "priority": "high",
+      "dueDate": "2026-01-07",
+      "createdAt": "2026-01-06T10:40:00.000Z",
+      "completedAt": null,
+      "tags": []
+    }
+  ]
+}
