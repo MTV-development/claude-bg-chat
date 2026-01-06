@@ -42,6 +42,7 @@ export default function Chat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const [claudeSessionId, setClaudeSessionId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -65,6 +66,7 @@ export default function Chat() {
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);
+    setIsStreaming(false);
     setError(null);
 
     try {
@@ -77,7 +79,6 @@ export default function Chat() {
             content: m.content,
           })),
           allowedTools: ['Read', 'Write', 'Skill'],
-          // Send Claude session ID for warm CLI (session resumption)
           claudeSessionId: claudeSessionId,
         }),
       });
@@ -106,6 +107,9 @@ export default function Chat() {
 
         const chunk = decoder.decode(value, { stream: true });
         fullText += chunk;
+
+        // Mark as streaming once we receive first chunk
+        if (!isStreaming) setIsStreaming(true);
 
         // Update display (may include session marker temporarily)
         setMessages(prev =>
@@ -137,8 +141,27 @@ export default function Chat() {
       setError(err instanceof Error ? err : new Error('Unknown error'));
     } finally {
       setIsLoading(false);
+      setIsStreaming(false);
       // Focus input after response completes (small delay for DOM update)
       setTimeout(() => inputRef.current?.focus(), 100);
+    }
+  };
+
+  const handleRetry = () => {
+    if (messages.length > 0) {
+      const lastUserMessage = [...messages].reverse().find(m => m.role === 'user');
+      if (lastUserMessage) {
+        // Remove the last assistant message if it exists and was empty/error
+        setMessages(prev => {
+          const newMessages = [...prev];
+          if (newMessages[newMessages.length - 1]?.role === 'assistant') {
+            newMessages.pop();
+          }
+          return newMessages;
+        });
+        setInput(lastUserMessage.content);
+        setError(null);
+      }
     }
   };
 
@@ -150,6 +173,12 @@ export default function Chat() {
     setMessages([]);
     setClaudeSessionId(null);
     setError(null);
+    setTimeout(() => inputRef.current?.focus(), 100);
+  };
+
+  const handleExampleClick = (text: string) => {
+    setInput(text);
+    inputRef.current?.focus();
   };
 
   return (
@@ -179,8 +208,19 @@ export default function Chat() {
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.length === 0 && (
           <div className="text-center text-gray-400 mt-8">
-            <p className="text-lg">No messages yet</p>
-            <p className="text-sm">Start a conversation by typing below</p>
+            <p className="text-lg mb-2">No messages yet</p>
+            <p className="text-sm mb-6">Start a conversation or try an example:</p>
+            <div className="flex flex-wrap justify-center gap-2">
+              {['Show my todos', 'Add task: buy groceries', 'What can you help me with?'].map((example) => (
+                <button
+                  key={example}
+                  onClick={() => handleExampleClick(example)}
+                  className="text-sm px-3 py-1.5 bg-white border border-gray-300 rounded-full hover:bg-gray-100 hover:border-gray-400 transition-colors text-gray-600"
+                >
+                  {example}
+                </button>
+              ))}
+            </div>
           </div>
         )}
 
@@ -199,27 +239,48 @@ export default function Chat() {
               <div className="text-xs font-medium mb-1 opacity-70">
                 {message.role === 'user' ? 'You' : 'Claude'}
               </div>
-              <div className="whitespace-pre-wrap">{message.content}</div>
+              <div className="whitespace-pre-wrap">
+                {message.content}
+                {/* Show blinking cursor while streaming this message */}
+                {isStreaming && message.role === 'assistant' && messages[messages.length - 1]?.id === message.id && (
+                  <span className="inline-block w-2 h-4 bg-gray-400 ml-0.5 animate-pulse" />
+                )}
+              </div>
             </div>
           </div>
         ))}
 
-        {isLoading && messages[messages.length - 1]?.role !== 'assistant' && (
+        {/* Loading indicator - only show when waiting for first chunk */}
+        {isLoading && !isStreaming && (
           <div className="flex justify-start">
             <div className="bg-white border border-gray-200 rounded-lg px-4 py-2">
               <div className="text-xs font-medium mb-1 text-gray-500">Claude</div>
-              <div className="flex items-center space-x-1">
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+              <div className="flex items-center space-x-2 text-gray-500">
+                <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span className="text-sm">Thinking...</span>
               </div>
             </div>
           </div>
         )}
 
+        {/* Error display with retry */}
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-2 text-red-700">
-            Error: {error.message}
+          <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-red-700 font-medium">Something went wrong</p>
+                <p className="text-red-600 text-sm mt-1">{error.message}</p>
+              </div>
+              <button
+                onClick={handleRetry}
+                className="text-sm px-3 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors"
+              >
+                Retry
+              </button>
+            </div>
           </div>
         )}
 
@@ -234,8 +295,8 @@ export default function Chat() {
             type="text"
             value={input}
             onChange={handleInputChange}
-            placeholder="Type your message..."
-            className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder={isLoading ? 'Waiting for response...' : 'Type your message...'}
+            className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50"
             disabled={isLoading}
             autoFocus
           />
@@ -244,7 +305,7 @@ export default function Chat() {
             disabled={isLoading || !input.trim()}
             className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            Send
+            {isLoading ? 'Sending...' : 'Send'}
           </button>
         </form>
       </div>

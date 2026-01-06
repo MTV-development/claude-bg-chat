@@ -1,56 +1,5 @@
 {
   "version": "1.0",
-  "lastModified": "2026-01-06T12:35:00.000Z",
-  "items": [
-    {
-      "id": "f3a8b1c7",
-      "title": "call mom",
-      "completed": true,
-      "priority": "medium",
-      "dueDate": null,
-      "createdAt": "2026-01-06T12:15:00.000Z",
-      "completedAt": "2026-01-06T12:25:00.000Z",
-      "tags": []
-    },
-    {
-      "id": "b2c4d6e8",
-      "title": "buy gifts",
-      "completed": false,
-      "priority": "medium",
-      "dueDate": null,
-      "createdAt": "2026-01-06T12:20:00.000Z",
-      "completedAt": null,
-      "tags": []
-    },
-    {
-      "id": "c5d7e9f1",
-      "title": "call brother Jacob",
-      "completed": false,
-      "priority": "medium",
-      "dueDate": null,
-      "createdAt": "2026-01-06T12:20:00.000Z",
-      "completedAt": null,
-      "tags": []
-    },
-    {
-      "id": "d8e0f2a3",
-      "title": "shovel snow",
-      "completed": false,
-      "priority": "medium",
-      "dueDate": null,
-      "createdAt": "2026-01-06T12:20:00.000Z",
-      "completedAt": null,
-      "tags": []
-    },
-    {
-      "id": "e9f1a4b6",
-      "title": "call Alice",
-      "completed": true,
-      "priority": "medium",
-      "dueDate": null,
-      "createdAt": "2026-01-06T12:30:00.000Z",
-      "completedAt": "2026-01-06T12:35:00.000Z",
-      "tags": []
-    }
-  ]
+  "lastModified": "2026-01-06T00:00:00.000Z",
+  "items": []
 }
