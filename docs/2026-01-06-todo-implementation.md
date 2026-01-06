@@ -307,7 +307,7 @@ Test 4.6: Logging verification
 └─ Status: ⬜
 
 Test 4.7: Log readability check
-├─ Action: Feed session JSONL to ChatGPT
+├─ Action: Feed session JSONL to Claude
 ├─ Prompt: "Convert this session log to readable markdown"
 ├─ Verify: Output is human-readable summary
 └─ Status: ⬜

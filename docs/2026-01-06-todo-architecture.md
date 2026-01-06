@@ -330,7 +330,7 @@ type LogEntryType =
 - Identify issues or unexpected behavior
 
 **Secondary use:** Convert to readable format
-- Feed JSONL to ChatGPT/Claude: "Convert this session log to readable markdown"
+- Feed JSONL to Claude: "Convert this session log to readable markdown"
 - Generate session summaries or reports
 
 ### Logging Implementation

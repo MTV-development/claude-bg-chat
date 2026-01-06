@@ -203,7 +203,7 @@ Every chat session generates a detailed JSON log file capturing:
 **Purpose:**
 - Debug issues by reviewing what happened
 - Understand what Claude did behind the scenes
-- Can be converted to readable markdown (e.g., via ChatGPT) if needed
+- Can be converted to readable markdown via Claude if needed
 
 **Location:** `logs/session-{sessionId}-{timestamp}.jsonl`
 
