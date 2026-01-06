@@ -1,25 +1,25 @@
 {
   "version": "1.0",
-  "lastModified": "2026-01-06T12:00:00.000Z",
+  "lastModified": "2026-01-06T16:12:00.000Z",
   "items": [
     {
       "id": "f3a8c12b",
       "title": "Review quarterly report",
-      "completed": false,
+      "completed": true,
       "priority": "high",
       "dueDate": "2026-01-10",
       "createdAt": "2026-01-06T12:00:00.000Z",
-      "completedAt": null,
+      "completedAt": "2026-01-06T16:09:09.888Z",
       "tags": []
     },
     {
       "id": "d7e4b9a2",
       "title": "Buy groceries",
-      "completed": false,
+      "completed": true,
       "priority": "medium",
       "dueDate": null,
       "createdAt": "2026-01-06T12:00:00.000Z",
-      "completedAt": null,
+      "completedAt": "2026-01-06T16:09:15.144Z",
       "tags": []
     },
     {
@@ -29,6 +29,56 @@
       "priority": "low",
       "dueDate": "2026-01-08",
       "createdAt": "2026-01-06T12:00:00.000Z",
+      "completedAt": null,
+      "tags": []
+    },
+    {
+      "id": "a4b7c9e1",
+      "title": "Schedule dentist appointment",
+      "completed": true,
+      "priority": "medium",
+      "dueDate": "2026-01-15",
+      "createdAt": "2026-01-06T16:10:00.000Z",
+      "completedAt": "2026-01-06T16:10:20.513Z",
+      "tags": []
+    },
+    {
+      "id": "e2f8d3a5",
+      "title": "Clean out garage",
+      "completed": false,
+      "priority": "low",
+      "dueDate": null,
+      "createdAt": "2026-01-06T16:10:00.000Z",
+      "completedAt": null,
+      "tags": []
+    },
+    {
+      "id": "b6c1e9f4",
+      "title": "Renew gym membership",
+      "completed": true,
+      "priority": "medium",
+      "dueDate": "2026-01-20",
+      "createdAt": "2026-01-06T16:10:00.000Z",
+      "completedAt": "2026-01-06T16:11:00.000Z",
+      "tags": []
+    },
+    {
+      "id": "d9a2b5c8",
+      "title": "Read new book",
+      "completed": true,
+      "priority": "low",
+      "dueDate": null,
+      "createdAt": "2026-01-06T16:10:00.000Z",
+      "completedAt": "2026-01-06T16:11:00.000Z",
+      "tags": []
+    },
+    {
+      "id": "f1e7c4b2",
+      "title": "Pay electric bill",
+      "completed": false,
+      "priority": "high",
+      "dueDate": "2026-01-12",
+      "createdAt": "2026-01-06T16:10:00.000Z",
       "completedAt": null,
       "tags": []
     }
