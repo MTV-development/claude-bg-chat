@@ -49,6 +49,9 @@ export class CLIAdapter implements ClaudeAdapter {
 
     const cwd = options.workingDirectory || process.cwd();
 
+    const startTime = Date.now();
+    console.log(`[CLI] Starting claude command at ${new Date().toISOString()}`);
+
     try {
       // Run spawnSync in next tick to allow event loop to process
       const result = await new Promise<{ stdout: string; stderr: string; status: number | null }>((resolve, reject) => {
@@ -72,6 +75,9 @@ export class CLIAdapter implements ClaudeAdapter {
           }
         });
       });
+
+      const elapsed = Date.now() - startTime;
+      console.log(`[CLI] Claude command completed in ${elapsed}ms`);
 
       if (result.status !== 0 && !result.stdout) {
         yield { type: 'error', error: result.stderr || `CLI exited with code ${result.status}` };

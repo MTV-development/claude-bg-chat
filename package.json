@@ -6,7 +6,14 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "postinstall": "npm run gtd:build",
+    "gtd:build": "tsc --project scripts/gtd/tsconfig.json",
+    "gtd": "node scripts/gtd/dist/cli.js",
+    "gtd:dev": "tsx scripts/gtd/cli.ts"
   },
   "dependencies": {
     "@ai-sdk/react": "^3.0.11",
@@ -16,13 +23,17 @@
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
+    "@types/jest": "^30.0.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^8",
     "eslint-config-next": "15.1.3",
+    "jest": "^30.2.0",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
+    "ts-jest": "^29.4.6",
+    "tsx": "^4.21.0",
     "typescript": "^5"
   }
 }

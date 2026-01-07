@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "lastModified": "2026-01-06T16:12:00.000Z",
+  "lastModified": "2026-01-07T11:48:57.858Z",
   "items": [
     {
       "id": "f3a8c12b",
@@ -25,11 +25,11 @@
     {
       "id": "c1f6e8d3",
       "title": "Call mom",
-      "completed": false,
+      "completed": true,
       "priority": "low",
       "dueDate": "2026-01-08",
       "createdAt": "2026-01-06T12:00:00.000Z",
-      "completedAt": null,
+      "completedAt": "2026-01-07T11:35:56.899Z",
       "tags": []
     },
     {
@@ -45,11 +45,11 @@
     {
       "id": "e2f8d3a5",
       "title": "Clean out garage",
-      "completed": false,
+      "completed": true,
       "priority": "low",
       "dueDate": null,
       "createdAt": "2026-01-06T16:10:00.000Z",
-      "completedAt": null,
+      "completedAt": "2026-01-07T11:35:58.205Z",
       "tags": []
     },
     {
@@ -80,6 +80,46 @@
       "dueDate": "2026-01-12",
       "createdAt": "2026-01-06T16:10:00.000Z",
       "completedAt": null,
+      "tags": []
+    },
+    {
+      "id": "f1de73c6",
+      "title": "get groceries",
+      "completed": false,
+      "priority": "medium",
+      "dueDate": null,
+      "createdAt": "2026-01-07T11:36:53.650Z",
+      "completedAt": null,
+      "tags": []
+    },
+    {
+      "id": "64617469",
+      "title": "paint office",
+      "completed": false,
+      "priority": "medium",
+      "dueDate": null,
+      "createdAt": "2026-01-07T11:37:37.490Z",
+      "completedAt": null,
+      "tags": []
+    },
+    {
+      "id": "87db4f83",
+      "title": "cook dinner",
+      "completed": false,
+      "priority": "medium",
+      "dueDate": null,
+      "createdAt": "2026-01-07T11:45:31.878Z",
+      "completedAt": null,
+      "tags": []
+    },
+    {
+      "id": "57604535",
+      "title": "clean dishes",
+      "completed": true,
+      "priority": "medium",
+      "dueDate": null,
+      "createdAt": "2026-01-07T11:48:19.395Z",
+      "completedAt": "2026-01-07T11:48:44.280Z",
       "tags": []
     }
   ]
