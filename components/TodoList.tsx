@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import PostponeDropdown from './PostponeDropdown';
+import ConfirmationModal from './ConfirmationModal';
 
 type TabType = 'focus' | 'optional' | 'inbox' | 'done';
 
@@ -86,6 +88,8 @@ export default function TodoList() {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [confirmationItem, setConfirmationItem] = useState<TodoItem | null>(null);
+  const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
 
   const fetchTodos = useCallback(async () => {
     try {
@@ -159,6 +163,58 @@ export default function TodoList() {
     } catch (err) {
       console.error('Failed to toggle todo:', err);
     }
+  };
+
+  const handlePostpone = async (itemId: string, days: number): Promise<{ needsConfirmation?: boolean }> => {
+    try {
+      const response = await fetch('/api/todos/postpone', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: itemId, days }),
+      });
+      if (response.ok) {
+        const result = await response.json();
+        fetchTodos();
+        fetchCounts();
+        return { needsConfirmation: result.needsConfirmation };
+      }
+    } catch (err) {
+      console.error('Failed to postpone todo:', err);
+    }
+    return {};
+  };
+
+  const handleRequestConfirmation = (itemId: string) => {
+    const item = todos.find(t => t.id === itemId);
+    if (item) {
+      setConfirmationItem(item);
+      setIsConfirmationOpen(true);
+    }
+  };
+
+  const handleRemoveTask = async () => {
+    if (!confirmationItem) return;
+    try {
+      const response = await fetch('/api/todos', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: confirmationItem.id }),
+      });
+      if (response.ok) {
+        fetchTodos();
+        fetchCounts();
+      }
+    } catch (err) {
+      console.error('Failed to remove todo:', err);
+    } finally {
+      setIsConfirmationOpen(false);
+      setConfirmationItem(null);
+    }
+  };
+
+  const handleKeepTask = () => {
+    setIsConfirmationOpen(false);
+    setConfirmationItem(null);
   };
 
   if (isLoading) {
@@ -316,6 +372,17 @@ export default function TodoList() {
                       )}
                     </div>
                   </div>
+                  {/* Postpone button for non-done items */}
+                  {todo.status !== 'done' && (
+                    <div className="ml-2 flex-shrink-0">
+                      <PostponeDropdown
+                        itemId={todo.id}
+                        postponeCount={todo.postponeCount}
+                        onPostpone={handlePostpone}
+                        onRequestConfirmation={handleRequestConfirmation}
+                      />
+                    </div>
+                  )}
                 </div>
               </li>
             ))}
@@ -329,6 +396,21 @@ export default function TodoList() {
           Auto-refreshing every {POLL_INTERVAL / 1000}s
         </p>
       </div>
+
+      {/* Confirmation Modal for frequently postponed tasks */}
+      <ConfirmationModal
+        isOpen={isConfirmationOpen}
+        title="Task Postponed Multiple Times"
+        message={confirmationItem
+          ? `"${confirmationItem.nextAction || confirmationItem.title}" has been postponed ${confirmationItem.postponeCount} times. Would you like to remove it from your list?`
+          : ''
+        }
+        confirmLabel="Remove Task"
+        cancelLabel="Keep It"
+        confirmVariant="danger"
+        onConfirm={handleRemoveTask}
+        onCancel={handleKeepTask}
+      />
     </div>
   );
 }

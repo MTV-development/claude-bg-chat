@@ -1,8 +1,42 @@
 # GTD Implementation Progress
 
-## Current Phase: 2 - GTD Data Model + Tabs ✅ COMPLETE
+## Current Phase: 3 - Postpone Flow (UI) ✅ COMPLETE
 
-**Goal:** Extend the CLI tools with GTD-specific features. Add tabs to UI.
+**Goal:** Add UI components for postponing tasks with confirmation modal.
+
+---
+
+## Phase 3 Progress
+
+### 3.1 PostponeDropdown Component
+- [x] Create `components/PostponeDropdown.tsx`
+- [x] Dropdown with preset options (+1 day, +2 days, etc.)
+- [x] Show postpone count badge
+- [x] Loading state during API call
+- [x] Trigger confirmation when 3+ postpones
+
+### 3.2 ConfirmationModal Component
+- [x] Create `components/ConfirmationModal.tsx`
+- [x] Accessible modal with focus trap
+- [x] Escape key to close
+- [x] Configurable title, message, buttons
+- [x] Danger variant for delete actions
+
+### 3.3 Postpone API Endpoint
+- [x] Create `app/api/todos/postpone/route.ts`
+- [x] POST /api/todos/postpone { id, days }
+- [x] Returns needsConfirmation flag at 3+ postpones
+- [x] Activity logging
+
+### 3.4 Delete API Endpoint
+- [x] Add DELETE handler to `app/api/todos/route.ts`
+- [x] Activity logging for deleted items
+
+### 3.5 TodoList Integration
+- [x] Import and render PostponeDropdown
+- [x] Import and render ConfirmationModal
+- [x] Handle postpone with API call
+- [x] Handle remove with confirmation flow
 
 ---
 
@@ -78,6 +112,17 @@
   - `components/TodoList.tsx`
   - `.claude/skills/todo-manager/SKILL.md`
 
+### Phase 3 - Postpone Flow (UI)
+- **Completed:** 2026-01-07
+- **Test Results:** 59/59 passing
+- **New Files:**
+  - `components/PostponeDropdown.tsx`
+  - `components/ConfirmationModal.tsx`
+  - `app/api/todos/postpone/route.ts`
+- **Updated Files:**
+  - `app/api/todos/route.ts` (added DELETE handler)
+  - `components/TodoList.tsx` (integrated postpone UI)
+
 ---
 
 ## Test Results
@@ -110,12 +155,14 @@ Phase 2:
 | 2026-01-07 | Phase 1 completed |
 | 2026-01-07 | Phase 2 started |
 | 2026-01-07 | Phase 2 completed |
+| 2026-01-07 | Phase 3 started |
+| 2026-01-07 | Phase 3 completed |
 
 ---
 
-## Next Phase: 3 - Postpone Flow (UI)
+## Next Phase: 4 - TBD
 
-Ready to begin Phase 3 when instructed. Will add:
-- PostponeDropdown component
-- ConfirmationModal for 3+ postponements
-- UI integration
+All core GTD functionality is now implemented:
+- CLI tools with full GTD support
+- Tab-based UI with Focus/Optional/Inbox/Done
+- Postpone flow with confirmation modal

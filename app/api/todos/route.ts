@@ -9,6 +9,7 @@
  * GET /api/todos - List all items
  * GET /api/todos?tab=focus|optional|inbox|done - Filter by tab
  * PATCH /api/todos - Update item (complete/uncomplete)
+ * DELETE /api/todos - Remove item
  */
 
 import { loadTodos, saveTodos, filterByTab, logActivity } from '../../../scripts/gtd/lib/store';
@@ -106,5 +107,34 @@ export async function PATCH(req: Request) {
     return Response.json({ success: true, item });
   } catch (error) {
     return Response.json({ error: 'Failed to update todo' }, { status: 500 });
+  }
+}
+
+export async function DELETE(req: Request) {
+  try {
+    const body = await req.json();
+    const { id } = body;
+
+    if (!id) {
+      return Response.json({ error: 'Item ID is required' }, { status: 400 });
+    }
+
+    const data = await loadTodos();
+
+    const todoIndex = data.items.findIndex((t) => t.id === id);
+    if (todoIndex === -1) {
+      return Response.json({ error: 'Todo not found' }, { status: 404 });
+    }
+
+    const item = data.items[todoIndex];
+    data.items.splice(todoIndex, 1);
+
+    logActivity(data, item.id, 'deleted');
+
+    await saveTodos(data);
+
+    return Response.json({ success: true });
+  } catch (error) {
+    return Response.json({ error: 'Failed to delete todo' }, { status: 500 });
   }
 }
