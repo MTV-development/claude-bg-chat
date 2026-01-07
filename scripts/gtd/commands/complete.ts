@@ -7,7 +7,7 @@
  *   complete <id|title>
  */
 
-import { loadTodos, saveTodos, findItem, parseArgs } from '../lib/store';
+import { loadTodos, saveTodos, findItem, parseArgs, logActivity, getItemTab } from '../lib/store';
 import { CommandResult } from '../lib/types';
 
 export async function complete(args: string[]): Promise<CommandResult> {
@@ -31,14 +31,17 @@ export async function complete(args: string[]): Promise<CommandResult> {
     };
   }
 
-  // Mark as complete
+  // Update status and completed fields
   item.completed = true;
+  item.status = 'done';
   item.completedAt = new Date().toISOString();
 
+  logActivity(data, item.id, 'completed');
   await saveTodos(data);
 
   return {
     success: true,
     item,
+    tab: getItemTab(item),
   };
 }

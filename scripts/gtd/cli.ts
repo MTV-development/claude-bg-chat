@@ -8,11 +8,13 @@
 const cliStartTime = Date.now();
 
 import { add } from './commands/add';
-import { list } from './commands/list';
+import { list, listProjects } from './commands/list';
 import { complete } from './commands/complete';
 import { uncomplete } from './commands/uncomplete';
 import { remove } from './commands/remove';
 import { update } from './commands/update';
+import { clarify } from './commands/clarify';
+import { postpone } from './commands/postpone';
 import { CommandResult } from './lib/types';
 
 const importTime = Date.now() - cliStartTime;
@@ -32,6 +34,9 @@ async function main(): Promise<void> {
       case 'list':
         result = await list(args);
         break;
+      case 'projects':
+        result = await listProjects();
+        break;
       case 'complete':
         result = await complete(args);
         break;
@@ -44,26 +49,63 @@ async function main(): Promise<void> {
       case 'update':
         result = await update(args);
         break;
+      case 'clarify':
+        result = await clarify(args);
+        break;
+      case 'postpone':
+        result = await postpone(args);
+        break;
       case 'help':
       case '--help':
       case '-h':
         result = {
           success: true,
-          error: `GTD CLI - Task Management
+          error: `GTD CLI - Task Management (v2.0)
 
 Commands:
-  add <title> [--priority high|medium|low] [--due YYYY-MM-DD|today|tomorrow] [--tags tag1,tag2]
-  list [--completed] [--pending] [--priority high|medium|low]
-  complete <id|title>
-  uncomplete <id|title>
-  remove <id|title>
-  update <id> [--title "..."] [--priority ...] [--due ...]
+  add <title> [options]           Add a new task
+    --priority high|medium|low    Set priority (default: medium)
+    --due DATE                    Set due date (YYYY-MM-DD, today, tomorrow, +N days)
+    --tags tag1,tag2              Add tags
+    --project "Name"              Assign to project
+    --status inbox|active|someday Set status (default: active)
+
+  list [options]                  List tasks
+    --tab focus|optional|inbox|done|projects  Filter by GTD tab
+    --completed                   Show completed only
+    --pending                     Show pending only
+    --priority high|medium|low    Filter by priority
+    --project "Name"              Filter by project
+
+  projects                        List all projects with counts
+
+  complete <id|title>             Mark task as done
+  uncomplete <id|title>           Mark task as not done
+
+  clarify <id|title> [options]    Set next action for inbox item
+    --next-action "..."           The concrete next step (required)
+    --project "Name"              Assign to project
+
+  postpone <id|title> [options]   Postpone task
+    --days N                      Days to postpone (required)
+
+  update <id|title> [options]     Update task properties
+    --title "..."                 New title
+    --next-action "..."           New next action
+    --priority high|medium|low    New priority
+    --due DATE                    New due date (or 'none' to clear)
+    --project "Name"              New project (or 'none' to clear)
+    --status inbox|active|someday|done  New status
+
+  remove <id|title>               Delete a task
 
 Examples:
-  node scripts/gtd/cli.ts add "Buy groceries"
-  node scripts/gtd/cli.ts add "Call dentist" --priority high --due tomorrow
-  node scripts/gtd/cli.ts list --pending
-  node scripts/gtd/cli.ts complete "Buy groceries"
+  gtd add "Buy groceries" --due tomorrow
+  gtd add "Plan vacation" --status inbox
+  gtd list --tab focus
+  gtd clarify "Plan vacation" --next-action "Research destinations" --project "Vacation"
+  gtd postpone "Buy groceries" --days 3
+  gtd complete "Buy groceries"
 `,
         };
         break;

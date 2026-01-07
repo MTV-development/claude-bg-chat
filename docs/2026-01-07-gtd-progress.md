@@ -1,63 +1,61 @@
 # GTD Implementation Progress
 
-## Current Phase: 1 - CLI Tools Foundation ✅ COMPLETE
+## Current Phase: 2 - GTD Data Model + Tabs ✅ COMPLETE
 
-**Goal:** Replace direct Read/Write with testable CLI tools. Same functionality, new architecture.
+**Goal:** Extend the CLI tools with GTD-specific features. Add tabs to UI.
 
 ---
 
-## Phase 1 Progress
+## Phase 2 Progress
 
-### 1.1 Setup Test Infrastructure
-- [x] Install Jest + ts-jest
-- [x] Create jest.config.js
-- [x] Add npm scripts (test, test:watch, test:coverage, gtd)
-- [x] Verify tests run
+### 2.1 Update Data Schema
+- [x] Create `lib/types.ts` with GTD interfaces
+- [x] Add `nextAction`, `status`, `project`, `postponeCount` fields
+- [x] Add `ActivityLogEntry` interface
+- [x] Add `activityLog` and `lastAutoReview` to TodoData
 
-### 1.2 Create Store Module
-- [x] `scripts/gtd/lib/types.ts`
-- [x] `scripts/gtd/lib/store.ts`
-- [x] `scripts/gtd/__tests__/store.test.ts`
-- [x] All store tests passing (19 tests)
+### 2.2 Create Migration Script
+- [x] `scripts/gtd/lib/migrate.ts`
+- [x] Auto-migrate v1 data to v2 on load
+- [x] `ensureV2()` handles both formats
 
-### 1.3 Create CLI Entry Point
-- [x] `scripts/gtd/cli.ts`
-- [x] Command routing works
-- [x] JSON output format
+### 2.3 Update Store Module
+- [x] Import migration utilities
+- [x] Add `filterByTab()` function
+- [x] Add `getItemTab()` function
+- [x] Add `logActivity()` function
+- [x] Add `getProjects()` function
 
-### 1.4 Implement Commands
-| Command | Implementation | Tests |
-|---------|---------------|-------|
-| add | [x] | [x] (8 tests) |
-| list | [x] | [x] (5 tests) |
-| complete | [x] | [x] (5 tests) |
-| uncomplete | [x] | [x] (2 tests) |
-| remove | [x] | [x] (3 tests) |
-| update | [x] | [x] (6 tests) |
+### 2.4 Update Existing Commands
+- [x] `add.ts` - Added project, status flags, activity logging
+- [x] `list.ts` - Added --tab flag, sorting
+- [x] `complete.ts` - Set status='done', activity logging
+- [x] `uncomplete.ts` - Set status='active', activity logging
+- [x] `update.ts` - Added --next-action, --project, --status flags
+- [x] `remove.ts` - Activity logging
 
-### 1.5 Update API Routes
-- [x] Import store module
-- [x] Replace fs.readFile with loadTodos
-- [x] Replace fs.writeFile with saveTodos
-- [x] Verify panel still works
+### 2.5 Add New Commands
+- [x] `clarify.ts` - Set nextAction, move inbox→active
+- [x] `postpone.ts` - Postpone with --days flag, warning at 3+
 
-### 1.6 Update Skill Definition
-- [x] Change allowed-tools to Bash
-- [x] Document all CLI commands
-- [x] Remove Read/Write instructions
+### 2.6 Update API Routes
+- [x] GET /api/todos?tab=focus|optional|inbox|done
+- [x] PATCH /api/todos - Handle status changes
+- [x] Activity logging on mutations
 
-### 1.7 Integration Testing
-- [x] Manual CLI tests pass
-- [x] All 49 automated tests pass
-- [x] TypeScript check passes
+### 2.7 Update TodoList Component
+- [x] Tab state and TabBar component
+- [x] Fetch with tab parameter
+- [x] Tab counts with badges
+- [x] Show nextAction for active items
+- [x] Show title for inbox items
+- [x] Postpone count styling
 
-### 1.8 Performance Optimization
-- [x] Identified bottleneck: npm + tsx startup overhead (~1.4s per command)
-- [x] Pre-compiled TypeScript to JavaScript
-- [x] Added `gtd:build` script and `postinstall` hook
-- [x] Updated skill to use `node scripts/gtd/dist/cli.js` directly
-- [x] Added Bash to chat API allowed tools
-- [x] Result: ~100ms per command (12x faster)
+### 2.8 Update Skill Definition
+- [x] Document all new commands
+- [x] Add smart routing guidelines
+- [x] Document tab logic
+- [x] Update JSON schema to v2.0
 
 ---
 
@@ -66,30 +64,29 @@
 ### Phase 1 - CLI Tools Foundation
 - **Completed:** 2026-01-07
 - **Test Results:** 49/49 passing
-- **Files Created:**
-  - `scripts/gtd/lib/types.ts`
-  - `scripts/gtd/lib/store.ts`
-  - `scripts/gtd/cli.ts`
-  - `scripts/gtd/commands/add.ts`
-  - `scripts/gtd/commands/list.ts`
-  - `scripts/gtd/commands/complete.ts`
-  - `scripts/gtd/commands/uncomplete.ts`
-  - `scripts/gtd/commands/remove.ts`
-  - `scripts/gtd/commands/update.ts`
-  - `scripts/gtd/__tests__/store.test.ts`
-  - `scripts/gtd/__tests__/commands.test.ts`
-  - `jest.config.js`
+
+### Phase 2 - GTD Data Model + Tabs
+- **Completed:** 2026-01-07
+- **Test Results:** 59/59 passing
+- **New Files:**
+  - `scripts/gtd/lib/migrate.ts`
+  - `scripts/gtd/commands/clarify.ts`
+  - `scripts/gtd/commands/postpone.ts`
+- **Updated Files:**
+  - All existing command files
+  - `app/api/todos/route.ts`
+  - `components/TodoList.tsx`
+  - `.claude/skills/todo-manager/SKILL.md`
 
 ---
 
 ## Test Results
 
 ```
-Phase 1:
-  Store:       [x] 19/19 passing
+Phase 2:
+  Store:       [x] 29/29 passing (added tab filtering, migration tests)
   Commands:    [x] 30/30 passing
-  Integration: [x] All CLI commands verified
-  Total:       49 passing tests
+  Total:       59 passing tests
 ```
 
 ---
@@ -101,6 +98,7 @@ Phase 1:
 2. **Date parsing timezone** - Fixed by using local date components instead of toISOString()
 3. **ts-node ESM issues** - Switched to tsx
 4. **CLI performance** - Pre-compiled to JS, reduced from 1.4s to ~100ms per command
+5. **TypeScript migration casting** - Use `as unknown as Type` pattern
 
 ---
 
@@ -110,10 +108,14 @@ Phase 1:
 |------|-----------|
 | 2026-01-07 | Phase 1 started |
 | 2026-01-07 | Phase 1 completed |
-| | |
+| 2026-01-07 | Phase 2 started |
+| 2026-01-07 | Phase 2 completed |
 
 ---
 
-## Next Phase: 2 - Core GTD Data Model
+## Next Phase: 3 - Postpone Flow (UI)
 
-Ready to begin Phase 2 when instructed.
+Ready to begin Phase 3 when instructed. Will add:
+- PostponeDropdown component
+- ConfirmationModal for 3+ postponements
+- UI integration
