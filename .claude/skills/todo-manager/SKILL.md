@@ -10,7 +10,7 @@ allowed-tools: Bash
 
 I manage your personal todo list using GTD (Getting Things Done) methodology. Tasks flow through:
 1. **Inbox** - Captured items needing clarification
-2. **Focus** - Tasks due today or overdue
+2. **Today** - Tasks due today or overdue
 3. **Optional** - Tasks with future or no deadlines
 4. **Done** - Completed tasks
 
@@ -75,7 +75,7 @@ node scripts/gtd/dist/cli.js list [options]
 
 **Examples:**
 ```bash
-node scripts/gtd/dist/cli.js list --tab focus      # Due today
+node scripts/gtd/dist/cli.js list --tab focus      # Today (due today/overdue)
 node scripts/gtd/dist/cli.js list --tab inbox      # Needs clarification
 node scripts/gtd/dist/cli.js list --tab optional   # No deadline pressure
 ```
@@ -167,8 +167,8 @@ When adding tasks, route based on clarity:
 
 ## Tab Logic
 
-- **Focus**: `status=active` AND `nextAction` AND `dueDate <= today`
-- **Optional**: `status=active|someday` AND `nextAction` AND (`dueDate > today` OR no dueDate)
+- **Today**: `status=active` AND `nextAction` AND `dueDate <= today` (has Postpone button)
+- **Optional**: `status=active|someday` AND `nextAction` AND (`dueDate > today` OR no dueDate) (has "Do Today" button)
 - **Inbox**: `status=inbox` OR no `nextAction`
 - **Done**: `status=done`
 

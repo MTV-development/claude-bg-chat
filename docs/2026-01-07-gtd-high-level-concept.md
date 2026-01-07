@@ -1,22 +1,39 @@
-# GTD Chat: High-Level Concept
+# GTD Chat: System Overview
 
 ## Vision
 
-**"The AI does the GTD work, the user just talks and acts."**
+**"Talk to add tasks, click to complete them."**
 
-A conversational GTD system where users capture thoughts naturally via chat,
-and AI handles all the methodology—clarification, organization, review.
-The system stays clean without user effort.
+A conversational GTD system where you capture thoughts naturally via chat,
+and the AI handles organization. The panel shows what needs doing.
 
 ---
 
-## Core Principles
+## How It Works
 
-1. **Capture = just say it** — "buy milk", "think about career", "call mom Tuesday"
-2. **AI routes intelligently** — Clear items → Focus, Vague items → Inbox
-3. **Tickler model** — Items surface in Focus only when their date arrives
-4. **Invisible review** — AI reviews daily, surfaces only what matters
-5. **Panel for doing, Chat for thinking** — Quick actions vs. discussions
+### Adding Tasks
+Just type naturally in the chat:
+- "buy groceries" → Goes to Today (clear action)
+- "think about career" → Goes to Inbox (needs clarification)
+- "call dentist tomorrow" → Goes to Optional until tomorrow
+
+### The Four Tabs
+
+| Tab | What's Here | Actions Available |
+|-----|-------------|-------------------|
+| **Today** | Due today or overdue | Postpone (+1 day, +1 week, etc.) |
+| **Optional** | Future deadlines or no deadline | "Do Today" button |
+| **Inbox** | Needs clarification | Clarify via chat |
+| **Done** | Completed tasks | Reference only |
+
+### Completing Tasks
+- Click the circle to complete
+- Click the green check to uncomplete
+
+### Moving Tasks Between Tabs
+- **Optional → Today**: Click "Do Today"
+- **Today → Optional**: Postpone to a future date
+- **Inbox → Today/Optional**: Clarify with a next action via chat
 
 ---
 
@@ -25,92 +42,69 @@ The system stays clean without user effort.
 ```
 Item {
   id: string
-  title: string                    // Raw capture (what user said)
-  nextAction: string | null        // Clarified physical next step
+  title: string              // What user said
+  nextAction: string | null  // Concrete next step
   status: 'inbox' | 'active' | 'done' | 'someday'
   priority: 'high' | 'medium' | 'low'
-  project: string | null           // AI-inferred grouping
-  dueDate: Date | null             // Tickler date (when it surfaces)
-  createdAt: Date
-  completedAt: Date | null
-}
-
-ActivityLog {
-  id: string
-  itemId: string
-  action: 'created' | 'postponed' | 'completed' | 'clarified' | 'deleted'
-  timestamp: Date
-  details: { fromDate?, toDate?, reason? }
-}
-
-SystemMeta {
-  lastAutoReview: Date
+  project: string | null
+  dueDate: string | null     // YYYY-MM-DD
+  postponeCount: number      // Tracks repeated postponements
+  tags: string[]
 }
 ```
 
-**Key insight:** `title` vs `nextAction`
+**Key concept:** `title` vs `nextAction`
 - "Plan vacation" (title) → "Search flights to Barcelona" (nextAction)
-- No nextAction = stays in Inbox
+- Items without a nextAction stay in Inbox
 
 ---
 
-## Panel Design
+## Tab Logic
 
-### Tabs
-
-| Tab | Shows | Purpose |
-|-----|-------|---------|
-| **Focus** | Due today or overdue | Must do today |
-| **Optional** | Has nextAction, future/no deadline | Could do |
-| **Inbox** | No nextAction yet | Needs clarification |
-| **Projects** | Project list → drill to tasks | Grouped view |
-| **Done** | Completed items | Reference |
-
-### Interactions
-
-| Action | UI |
-|--------|-----|
-| Complete | Click checkbox |
-| Uncomplete | Click green check |
-| Postpone | Dropdown: +1, +2, +3, +7, +14, +30 days |
+- **Today**: Has nextAction + dueDate <= today
+- **Optional**: Has nextAction + (no dueDate OR dueDate > today)
+- **Inbox**: No nextAction OR status = 'inbox'
+- **Done**: status = 'done'
 
 ---
 
-## AI Behaviors
+## Postpone Behavior
 
-### Smart Capture
+When a task is postponed 3+ times:
+- Badge turns orange
+- Modal asks: "Remove this task or keep it?"
+
+This prevents tasks from being endlessly postponed.
+
+---
+
+## CLI Commands
+
+All operations use the CLI via chat:
+
+```bash
+# Add
+node scripts/gtd/dist/cli.js add "Task" --due tomorrow
+
+# List
+node scripts/gtd/dist/cli.js list --tab focus
+
+# Complete
+node scripts/gtd/dist/cli.js complete "Task"
+
+# Postpone
+node scripts/gtd/dist/cli.js postpone "Task" --days 7
+
+# Clarify (inbox → active)
+node scripts/gtd/dist/cli.js clarify "Task" --next-action "First step"
 ```
-"buy groceries"           → Focus (clear action)
-"think about switching jobs"  → Inbox (vague, needs clarification)
-"call dentist by Friday"  → Focus with due date
-```
-
-### Postponement Intelligence
-- Shows badge: "(2x postponed)"
-- After 3+ postponements: "Still want this, or should we remove it?"
-
-### Background Review Agent
-- Triggers on session start if >1 day since last review
-- Runs silently, creates clarification list
-- Chat offers: "Review now, or after your task?"
 
 ---
 
-## What We're NOT Building (Yet)
+## Not Yet Implemented
 
+- Projects tab (grouping view)
+- Background review agent
 - Contexts (@home, @work)
 - Recurring tasks
 - Time estimates
-- Subtasks
-- Waiting-for tracking
-- Areas of focus / horizons
-
----
-
-## Success Metrics
-
-1. **Capture friction** — Time from thought to captured item
-2. **Focus accuracy** — % of Focus items actually done that day
-3. **Inbox decay** — Items clarified within 3 days
-4. **Postpone patterns** — Items removed after repeated postponement
-5. **Review engagement** — % of offered reviews accepted

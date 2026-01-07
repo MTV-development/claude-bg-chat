@@ -68,7 +68,7 @@ export async function GET(req: Request) {
 export async function PATCH(req: Request) {
   try {
     const body = await req.json();
-    const { id, completed, status } = body;
+    const { id, completed, status, dueDate } = body;
 
     if (!id) {
       return Response.json({ error: 'Item ID is required' }, { status: 400 });
@@ -100,6 +100,11 @@ export async function PATCH(req: Request) {
       } else if (status !== 'done') {
         item.completedAt = null;
       }
+    }
+
+    // Handle due date change
+    if (dueDate !== undefined) {
+      item.dueDate = dueDate;
     }
 
     await saveTodos(data);

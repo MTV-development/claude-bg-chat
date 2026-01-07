@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import PostponeDropdown from './PostponeDropdown';
 import ConfirmationModal from './ConfirmationModal';
 
-type TabType = 'focus' | 'optional' | 'inbox' | 'done';
+type TabType = 'focus' | 'optional' | 'inbox' | 'done' | 'howto';
 
 interface TodoItem {
   id: string;
@@ -42,10 +42,11 @@ const priorityIcons = {
 };
 
 const tabs: { id: TabType; label: string; description: string }[] = [
-  { id: 'focus', label: 'Focus', description: 'Due today or overdue' },
+  { id: 'focus', label: 'Today', description: 'Due today or overdue' },
   { id: 'optional', label: 'Optional', description: 'Future or no deadline' },
   { id: 'inbox', label: 'Inbox', description: 'Needs clarification' },
   { id: 'done', label: 'Done', description: 'Completed tasks' },
+  { id: 'howto', label: 'How To', description: 'Beginner guide' },
 ];
 
 function formatDate(dateStr: string | null): string {
@@ -85,6 +86,7 @@ export default function TodoList() {
     optional: 0,
     inbox: 0,
     done: 0,
+    howto: 0,
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -92,6 +94,12 @@ export default function TodoList() {
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
 
   const fetchTodos = useCallback(async () => {
+    // Skip fetching for howto tab
+    if (activeTab === 'howto') {
+      setTodos([]);
+      setIsLoading(false);
+      return;
+    }
     try {
       const response = await fetch(`/api/todos?tab=${activeTab}`);
       if (!response.ok) {
@@ -115,11 +123,12 @@ export default function TodoList() {
         optional: 0,
         inbox: 0,
         done: 0,
+        howto: 0,
       };
 
-      // Fetch all tabs in parallel
+      // Fetch all tabs in parallel (skip howto)
       await Promise.all(
-        tabs.map(async (tab) => {
+        tabs.filter(tab => tab.id !== 'howto').map(async (tab) => {
           const response = await fetch(`/api/todos?tab=${tab.id}`);
           if (response.ok) {
             const data: TodoData = await response.json();
@@ -217,6 +226,23 @@ export default function TodoList() {
     setConfirmationItem(null);
   };
 
+  const handleDoToday = async (itemId: string) => {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const response = await fetch('/api/todos', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: itemId, dueDate: today }),
+      });
+      if (response.ok) {
+        fetchTodos();
+        fetchCounts();
+      }
+    } catch (err) {
+      console.error('Failed to set task to today:', err);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full text-gray-500">
@@ -274,10 +300,62 @@ export default function TodoList() {
 
       {/* Todo List */}
       <div className="flex-1 overflow-y-auto p-4">
-        {todos.length === 0 ? (
+        {activeTab === 'howto' ? (
+          <div className="prose prose-sm max-w-none">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">Getting Started</h3>
+
+            <div className="space-y-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <h4 className="font-medium text-blue-800 mb-2">Adding Tasks</h4>
+                <p className="text-blue-700 text-sm">
+                  Just type in the chat! Say things like:
+                </p>
+                <ul className="text-blue-700 text-sm mt-2 space-y-1">
+                  <li>&quot;buy groceries&quot; - Goes to Today</li>
+                  <li>&quot;think about vacation&quot; - Goes to Inbox (needs clarifying)</li>
+                  <li>&quot;call dentist tomorrow&quot; - Goes to Optional until tomorrow</li>
+                </ul>
+              </div>
+
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <h4 className="font-medium text-green-800 mb-2">The Four Tabs</h4>
+                <ul className="text-green-700 text-sm space-y-2">
+                  <li><strong>Today</strong> - Tasks due today or overdue. Use Postpone to push them out.</li>
+                  <li><strong>Optional</strong> - Future or no deadline. Click &quot;Do Today&quot; to move here.</li>
+                  <li><strong>Inbox</strong> - Needs clarification. Chat to clarify what the next action is.</li>
+                  <li><strong>Done</strong> - Completed tasks for reference.</li>
+                </ul>
+              </div>
+
+              <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                <h4 className="font-medium text-purple-800 mb-2">Completing Tasks</h4>
+                <p className="text-purple-700 text-sm">
+                  Click the circle next to any task to mark it complete. Click the green checkmark to undo.
+                </p>
+              </div>
+
+              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                <h4 className="font-medium text-orange-800 mb-2">Postponing</h4>
+                <p className="text-orange-700 text-sm">
+                  On the Today tab, click &quot;Postpone&quot; to push a task to a future date.
+                  If you postpone something 3+ times, we&apos;ll ask if you want to remove it.
+                </p>
+              </div>
+
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                <h4 className="font-medium text-gray-800 mb-2">Tips</h4>
+                <ul className="text-gray-700 text-sm space-y-1">
+                  <li>Keep Today tab small - only what you&apos;ll actually do today</li>
+                  <li>Clear your Inbox regularly by clarifying vague tasks</li>
+                  <li>Use &quot;Do Today&quot; to pull Optional tasks when ready</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        ) : todos.length === 0 ? (
           <div className="text-center text-gray-400 mt-8">
             <p className="text-lg mb-2">
-              {activeTab === 'focus' && 'All caught up!'}
+              {activeTab === 'focus' && 'All caught up for today!'}
               {activeTab === 'optional' && 'No optional tasks'}
               {activeTab === 'inbox' && 'Inbox is clear'}
               {activeTab === 'done' && 'No completed tasks'}
@@ -372,15 +450,28 @@ export default function TodoList() {
                       )}
                     </div>
                   </div>
-                  {/* Postpone button for non-done items */}
+                  {/* Action buttons based on tab */}
                   {todo.status !== 'done' && (
-                    <div className="ml-2 flex-shrink-0">
-                      <PostponeDropdown
-                        itemId={todo.id}
-                        postponeCount={todo.postponeCount}
-                        onPostpone={handlePostpone}
-                        onRequestConfirmation={handleRequestConfirmation}
-                      />
+                    <div className="ml-2 flex-shrink-0 flex gap-1">
+                      {/* Do Today button - only on Optional tab */}
+                      {activeTab === 'optional' && (
+                        <button
+                          onClick={() => handleDoToday(todo.id)}
+                          className="text-xs px-2 py-1 rounded bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors"
+                          title="Move to Today"
+                        >
+                          Do Today
+                        </button>
+                      )}
+                      {/* Postpone button - only on Today tab */}
+                      {activeTab === 'focus' && (
+                        <PostponeDropdown
+                          itemId={todo.id}
+                          postponeCount={todo.postponeCount}
+                          onPostpone={handlePostpone}
+                          onRequestConfirmation={handleRequestConfirmation}
+                        />
+                      )}
                     </div>
                   )}
                 </div>
