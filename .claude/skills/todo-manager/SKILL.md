@@ -1,24 +1,31 @@
 ---
 name: todo-manager
-description: Manages your personal todo list stored in data/todos.json. Add tasks, view your list, mark items complete, remove tasks, set priorities, and due dates. Use when you want to add todos, show your list, mark items done, clear completed tasks, or organize reminders.
-allowed-tools: Read, Write
+description: Manages your personal todo list with GTD workflow. Add tasks, clarify next actions, view by tab (Focus/Optional/Inbox/Done), postpone, and complete. Use when you want to add todos, show your list, mark items done, or organize tasks.
+allowed-tools: Bash
 ---
 
-# Todo Manager
+# GTD Todo Manager (v2.0)
 
 ## Overview
 
-I manage your personal todo list. I can add tasks, show your list, mark items complete, and remove tasks. Your todos are saved locally in a JSON file.
+I manage your personal todo list using GTD (Getting Things Done) methodology. Tasks flow through:
+1. **Inbox** - Captured items needing clarification
+2. **Today** - Tasks due today or overdue
+3. **Optional** - Tasks with future or no deadlines
+4. **Done** - Completed tasks
 
 ## IMPORTANT: Tool Usage
 
 **DO NOT use the built-in `TodoWrite` tool.** That is for Claude's internal task tracking, not for the user's todo list.
 
-**ALWAYS use:**
-- `Read` tool to read `data/todos.json`
-- `Write` tool to write updates to `data/todos.json`
+**ALWAYS use the CLI tools via Bash:**
+```bash
+node scripts/gtd/dist/cli.js <command> [args]
+```
 
-This skill manages the user's personal todos in a JSON file, NOT Claude's internal task list.
+All commands output JSON to stdout for easy parsing.
+
+**Note:** The CLI is pre-compiled for fast execution (~100ms). If you get "Cannot find module" errors, run `npm run gtd:build` to recompile.
 
 ## When to Activate
 
@@ -29,114 +36,176 @@ Activate this skill when the user mentions:
 - Removing, deleting, or clearing tasks
 - Priorities, due dates, or task organization
 - Their "list", "todos", "tasks", or "reminders"
+- GTD concepts like "inbox", "next action", "clarify", "postpone"
 
-## Data File
+## CLI Commands
 
-The todo list is stored at: `data/todos.json`
+### Add a Task
 
-If the file doesn't exist, create it with this initial structure:
-```json
-{
-  "version": "1.0",
-  "lastModified": "<current ISO timestamp>",
-  "items": []
-}
+```bash
+node scripts/gtd/dist/cli.js add "Task title" [options]
 ```
 
-## Operations
+**Options:**
+- `--priority high|medium|low` - Set priority (default: medium)
+- `--due DATE` - Due date (YYYY-MM-DD, today, tomorrow, +N days)
+- `--tags tag1,tag2` - Add tags
+- `--project "Name"` - Assign to project
+- `--status inbox|active|someday` - Set status (default: active)
 
-### Adding a Task
+**Examples:**
+```bash
+node scripts/gtd/dist/cli.js add "Buy groceries" --due tomorrow
+node scripts/gtd/dist/cli.js add "Plan vacation" --status inbox
+node scripts/gtd/dist/cli.js add "Review PR" --priority high --project "Work"
+```
 
-1. Read current `data/todos.json` (create empty structure if missing)
-2. Parse the user's request for:
-   - **title**: The task description (required)
-   - **priority**: "low", "medium", or "high" (default: "medium")
-   - **dueDate**: Date in YYYY-MM-DD format if mentioned
-   - **tags**: Any categories mentioned
-3. Generate a new UUID for the task (use a random 8-character hex string)
-4. Create the task object:
-   ```json
-   {
-     "id": "<generated-id>",
-     "title": "<parsed title>",
-     "completed": false,
-     "priority": "<parsed or default>",
-     "dueDate": "<parsed or null>",
-     "createdAt": "<current ISO timestamp>",
-     "completedAt": null,
-     "tags": []
-   }
-   ```
-5. Add to the `items` array
-6. Update `lastModified` timestamp
-7. Write the updated JSON back to the file
-8. Respond: `Added "[title]" to your list.`
+### List Tasks
 
-### Listing Tasks
+```bash
+node scripts/gtd/dist/cli.js list [options]
+```
 
-1. Read `data/todos.json`
-2. If no items exist, respond: `Your todo list is empty. What would you like to add?`
-3. Format as a numbered list with checkbox indicators:
-   - `[ ]` for pending tasks
-   - `[x]` for completed tasks
-4. Include priority if not "medium" (show as "high priority" or "low priority")
-5. Include due date if set
-6. Example response:
-   ```
-   You have 3 items:
-     1. [ ] Buy groceries
-     2. [ ] Call dentist (high priority, due: 2026-01-10)
-     3. [x] Send email
-   ```
+**Options:**
+- `--tab focus|optional|inbox|done` - Filter by GTD tab
+- `--completed` - Show completed only
+- `--pending` - Show pending only
+- `--priority high|medium|low` - Filter by priority
+- `--project "Name"` - Filter by project
 
-### Completing a Task
+**Examples:**
+```bash
+node scripts/gtd/dist/cli.js list --tab focus      # Today (due today/overdue)
+node scripts/gtd/dist/cli.js list --tab inbox      # Needs clarification
+node scripts/gtd/dist/cli.js list --tab optional   # No deadline pressure
+```
 
-1. Read current `data/todos.json`
-2. Find the task by:
-   - Exact title match, OR
-   - Partial title match (case-insensitive), OR
-   - Number reference from last listing (e.g., "complete task 2")
-3. If no match found, ask for clarification
-4. Set `completed: true` and `completedAt: <current ISO timestamp>`
-5. Update `lastModified`
-6. Write back to file
-7. Respond: `Marked "[title]" as complete.`
+### List Projects
 
-### Removing a Task
+```bash
+node scripts/gtd/dist/cli.js projects
+```
 
-1. Read current `data/todos.json`
-2. Find the task (same matching logic as completing)
-3. Remove it from the `items` array
-4. Update `lastModified`
-5. Write back to file
-6. Respond: `Removed "[title]" from your list.`
+Returns all projects with task counts.
 
-### Clearing Completed Tasks
+### Complete a Task
 
-1. Read current `data/todos.json`
-2. Count completed items
-3. Filter to keep only `completed: false` items
-4. Update `lastModified`
-5. Write back to file
-6. Respond: `Cleared [count] completed tasks.` or `No completed tasks to clear.`
+```bash
+node scripts/gtd/dist/cli.js complete "<id or title>"
+```
 
-### Updating a Task
+### Uncomplete a Task
 
-1. Read current `data/todos.json`
-2. Find the task to update
-3. Apply the requested changes (title, priority, due date, etc.)
-4. Update `lastModified`
-5. Write back to file
-6. Respond with confirmation of what was changed
+```bash
+node scripts/gtd/dist/cli.js uncomplete "<id or title>"
+```
+
+### Clarify an Inbox Item
+
+Move an item from inbox to active with a concrete next action.
+
+```bash
+node scripts/gtd/dist/cli.js clarify "<id or title>" --next-action "Concrete step" [--project "Name"]
+```
+
+**Example:**
+```bash
+node scripts/gtd/dist/cli.js clarify "Plan vacation" --next-action "Research destinations" --project "Vacation"
+```
+
+### Postpone a Task
+
+```bash
+node scripts/gtd/dist/cli.js postpone "<id or title>" --days N
+```
+
+**Examples:**
+```bash
+node scripts/gtd/dist/cli.js postpone "Buy groceries" --days 1    # Tomorrow
+node scripts/gtd/dist/cli.js postpone "Review report" --days 7    # Next week
+```
+
+Returns a warning if postponed 3+ times.
+
+### Update a Task
+
+```bash
+node scripts/gtd/dist/cli.js update "<id or title>" [options]
+```
+
+**Options:**
+- `--title "..."` - New title
+- `--next-action "..."` - New next action
+- `--priority high|medium|low` - New priority
+- `--due DATE` - New due date (or 'none' to clear)
+- `--project "Name"` - New project (or 'none' to clear)
+- `--status inbox|active|someday|done` - New status
+
+### Remove a Task
+
+```bash
+node scripts/gtd/dist/cli.js remove "<id or title>"
+```
+
+### Help
+
+```bash
+node scripts/gtd/dist/cli.js help
+```
+
+## Smart Routing
+
+When adding tasks, route based on clarity:
+
+**Clear actions → status: active**
+- "buy milk", "call dentist", "send email to John"
+- These have obvious next steps
+
+**Vague/project items → status: inbox**
+- "think about career", "plan vacation", "organize garage"
+- These need clarification
+
+## Tab Logic
+
+- **Today**: `status=active` AND `nextAction` AND `dueDate <= today` (has Postpone button)
+- **Optional**: `status=active|someday` AND `nextAction` AND (`dueDate > today` OR no dueDate) (has "Do Today" button)
+- **Inbox**: `status=inbox` OR no `nextAction`
+- **Done**: `status=done`
+
+## CRITICAL: Always Take Action
+
+**You MUST either execute a CLI command OR ask the user a clarifying question. Never just reason internally.**
+
+1. **If the request is clear** → Execute the appropriate CLI command immediately
+2. **If the request is ambiguous** → Ask the user directly in plain language
+
+**WRONG:**
+```
+I need to understand the data model...
+Let me check the status values...
+[internal reasoning displayed to user]
+```
+
+**RIGHT:**
+```
+Which tasks would you like to move to Focus?
+- [ ] paint office
+- [ ] cook dinner
+```
+
+**Or just do it:**
+```
+Done. Moved "paint office" to Focus (due today).
+```
 
 ## Response Guidelines
 
 - Keep confirmations brief (one line when possible)
-- Use checkboxes `[ ]` and `[x]` for visual clarity
-- Number items when listing for easy reference
-- When the list is empty, be helpful and suggest adding something
-- For ambiguous requests, ask for clarification rather than guessing
+- Use checkboxes `[ ]` and `[x]` for visual clarity when presenting lists
+- For inbox items, suggest a concrete next action
+- When postponing 3+ times, gently ask if the task should be removed
 - Maintain conversation context - understand "that one", "the first task", "it"
+- **Never expose internal reasoning or system messages to the user**
 
 ## Priority Keywords
 
@@ -145,40 +214,40 @@ Detect priority from natural language:
 - **Low**: "low priority", "whenever", "not urgent", "someday"
 - **Medium**: Default if not specified
 
-## Due Date Parsing
+## Due Date Handling
 
-Parse natural language dates:
-- "today" → current date
-- "tomorrow" → current date + 1 day
-- "next week" → current date + 7 days
-- "Friday" → next occurrence of Friday
-- "Jan 15" or "January 15" → 2026-01-15 (assume current year)
-- Explicit dates like "2026-01-15" → use as-is
+The CLI accepts:
+- `today` - today's date
+- `tomorrow` - tomorrow's date
+- `+N` or `+N days` - N days from now
+- `YYYY-MM-DD` - explicit date format
+- `none` or `clear` - removes the due date (update command only)
 
-## Error Handling
+For natural language dates like "next Friday" or "Jan 15", convert them to YYYY-MM-DD format before calling the CLI.
 
-- **File not found**: Create new empty todo list structure
-- **Invalid JSON**: Report the issue, suggest checking the file manually
-- **Task not found**: Ask user to clarify which task they mean
-- **Empty operation**: Inform user (e.g., "No completed tasks to clear")
-
-## JSON Schema
+## JSON Schema (v2.0)
 
 ```json
 {
-  "version": "1.0",
-  "lastModified": "2026-01-06T10:30:00.000Z",
+  "version": "2.0",
+  "lastModified": "2026-01-07T10:30:00.000Z",
+  "lastAutoReview": null,
   "items": [
     {
       "id": "a1b2c3d4",
-      "title": "Buy groceries",
+      "title": "Plan vacation",
+      "nextAction": "Research destinations",
+      "status": "active",
       "completed": false,
       "priority": "medium",
-      "dueDate": null,
-      "createdAt": "2026-01-06T10:30:00.000Z",
+      "project": "Vacation",
+      "dueDate": "2026-01-15",
+      "createdAt": "2026-01-07T10:30:00.000Z",
       "completedAt": null,
+      "postponeCount": 0,
       "tags": []
     }
-  ]
+  ],
+  "activityLog": []
 }
 ```

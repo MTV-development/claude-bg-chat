@@ -65,7 +65,7 @@ export async function POST(req: Request) {
         for await (const event of adapter.chat(claudeMessages, {
           sessionId,
           workingDirectory: process.cwd(),
-          allowedTools: ['Read', 'Write', 'Skill', 'Glob', 'Grep'],
+          allowedTools: ['Read', 'Write', 'Bash', 'Skill', 'Glob', 'Grep'],
           claudeSessionId: currentClaudeSessionId,
         })) {
           switch (event.type) {
