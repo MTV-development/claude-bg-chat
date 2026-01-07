@@ -179,6 +179,28 @@ When adding tasks, route based on clarity:
 1. **If the request is clear** → Execute the appropriate CLI command immediately
 2. **If the request is ambiguous** → Ask the user directly in plain language
 
+## CRITICAL: Always Check Actual Data
+
+**NEVER assume what tasks exist based on conversation history.** The task list may have changed outside this conversation.
+
+- Before completing, updating, or removing tasks → Run `list` first to verify they exist
+- Before showing the user their tasks → Always fetch fresh data
+- Use conversation context only to understand *intent*, not as a source of truth for *data*
+
+**WRONG:**
+```
+User: "complete the grocery task"
+[Assumes "Buy groceries" exists because it was added earlier in chat]
+[Runs complete command, fails because task was already done/removed]
+```
+
+**RIGHT:**
+```
+User: "complete the grocery task"
+[Runs list command to find matching tasks]
+[Completes the actual task found in data]
+```
+
 **WRONG:**
 ```
 I need to understand the data model...

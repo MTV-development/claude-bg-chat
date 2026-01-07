@@ -1,6 +1,6 @@
 {
   "version": "2.0",
-  "lastModified": "2026-01-07T15:49:16.555Z",
+  "lastModified": "2026-01-07T15:51:34.339Z",
   "lastAutoReview": null,
   "items": [
     {
@@ -483,13 +483,13 @@
       "id": "6f286abd",
       "title": "Fix bug in login form",
       "nextAction": "Fix bug in login form",
-      "status": "active",
-      "completed": false,
+      "status": "done",
+      "completed": true,
       "priority": "high",
       "project": null,
       "dueDate": "2026-01-07",
       "createdAt": "2026-01-07T15:47:55.561Z",
-      "completedAt": null,
+      "completedAt": "2026-01-07T15:51:34.307Z",
       "postponeCount": 0,
       "tags": []
     },
@@ -511,13 +511,13 @@
       "id": "b62f9379",
       "title": "Reply to client feedback",
       "nextAction": "Reply to client feedback",
-      "status": "active",
-      "completed": false,
+      "status": "done",
+      "completed": true,
       "priority": "medium",
       "project": null,
       "dueDate": "2026-01-07",
       "createdAt": "2026-01-07T15:47:55.635Z",
-      "completedAt": null,
+      "completedAt": "2026-01-07T15:51:34.339Z",
       "postponeCount": 0,
       "tags": []
     },
@@ -1363,6 +1363,20 @@
       "itemId": "d7e4b9a2",
       "action": "completed",
       "timestamp": "2026-01-07T15:49:16.555Z",
+      "details": {}
+    },
+    {
+      "id": "a6190f66",
+      "itemId": "6f286abd",
+      "action": "completed",
+      "timestamp": "2026-01-07T15:51:34.307Z",
+      "details": {}
+    },
+    {
+      "id": "05d67f67",
+      "itemId": "b62f9379",
+      "action": "completed",
+      "timestamp": "2026-01-07T15:51:34.339Z",
       "details": {}
     }
   ]
