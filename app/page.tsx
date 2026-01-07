@@ -14,6 +14,22 @@ interface Message {
 }
 
 /**
+ * Strip system reminders and other internal tags from message content
+ */
+function stripInternalContent(text: string): string {
+  // Remove <system-reminder>...</system-reminder> blocks
+  let cleaned = text.replace(/<system-reminder>[\s\S]*?<\/system-reminder>/g, '');
+
+  // Remove any other internal tags that shouldn't be displayed
+  cleaned = cleaned.replace(/<internal>[\s\S]*?<\/internal>/g, '');
+
+  // Trim extra whitespace that may result from removals
+  cleaned = cleaned.replace(/\n{3,}/g, '\n\n').trim();
+
+  return cleaned;
+}
+
+/**
  * Extract Claude session ID from response text and return clean text
  */
 function extractSessionId(text: string): { cleanText: string; sessionId: string | null } {
@@ -243,7 +259,7 @@ export default function Chat() {
                 {message.role === 'user' ? 'You' : 'Claude'}
               </div>
               <div className="whitespace-pre-wrap">
-                {message.content}
+                {stripInternalContent(message.content)}
                 {/* Show blinking cursor while streaming this message */}
                 {isStreaming && message.role === 'assistant' && messages[messages.length - 1]?.id === message.id && (
                   <span className="inline-block w-2 h-4 bg-gray-400 ml-0.5 animate-pulse" />
