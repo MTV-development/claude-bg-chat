@@ -92,6 +92,7 @@ export default function TodoList() {
   const [error, setError] = useState<string | null>(null);
   const [confirmationItem, setConfirmationItem] = useState<TodoItem | null>(null);
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const fetchTodos = useCallback(async () => {
     // Skip fetching for howto tab
@@ -173,6 +174,52 @@ export default function TodoList() {
       console.error('Failed to toggle todo:', err);
     }
   };
+
+  const toggleSelection = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const handleBulkAction = async () => {
+    if (selectedIds.size === 0) return;
+    const newCompletedState = activeTab !== 'done';
+    try {
+      // Send requests sequentially to avoid race conditions
+      for (const id of Array.from(selectedIds)) {
+        await fetch('/api/todos', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id, completed: newCompletedState }),
+        });
+      }
+      setSelectedIds(new Set());
+      fetchTodos();
+      fetchCounts();
+    } catch (err) {
+      console.error('Failed to update todos:', err);
+    }
+  };
+
+  // Clear selections when tab changes
+  useEffect(() => {
+    setSelectedIds(new Set());
+  }, [activeTab]);
+
+  // Clean up stale selections when todos change
+  useEffect(() => {
+    const currentIds = new Set(todos.map(t => t.id));
+    setSelectedIds(prev => {
+      const filtered = new Set(Array.from(prev).filter(id => currentIds.has(id)));
+      return filtered.size !== prev.size ? filtered : prev;
+    });
+  }, [todos]);
 
   const handlePostpone = async (itemId: string, days: number): Promise<{ needsConfirmation?: boolean }> => {
     try {
@@ -299,7 +346,22 @@ export default function TodoList() {
       </div>
 
       {/* Todo List */}
-      <div className="flex-1 overflow-y-auto p-4">
+      <div className="flex-1 overflow-y-auto p-4 relative">
+        {/* Floating action button for selected items */}
+        {selectedIds.size > 0 && activeTab !== 'howto' && (
+          <div className="sticky top-0 z-10 mb-3">
+            <button
+              onClick={handleBulkAction}
+              className={`w-full py-2 px-4 rounded-lg font-medium shadow-md transition-colors ${
+                activeTab === 'done'
+                  ? 'bg-orange-500 hover:bg-orange-600 text-white'
+                  : 'bg-green-500 hover:bg-green-600 text-white'
+              }`}
+            >
+              {activeTab === 'done' ? 'Undo' : 'Complete'} ({selectedIds.size} selected)
+            </button>
+          </div>
+        )}
         {activeTab === 'howto' ? (
           <div className="prose prose-sm max-w-none">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">Getting Started</h3>
@@ -330,7 +392,8 @@ export default function TodoList() {
               <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
                 <h4 className="font-medium text-purple-800 mb-2">Completing Tasks</h4>
                 <p className="text-purple-700 text-sm">
-                  Click the circle next to any task to mark it complete. Click the green checkmark to undo.
+                  Select tasks using the checkboxes, then click the &quot;Complete&quot; button that appears.
+                  On the Done tab, use &quot;Undo&quot; to restore completed tasks.
                 </p>
               </div>
 
@@ -380,15 +443,15 @@ export default function TodoList() {
               >
                 <div className="flex items-start gap-3">
                   <button
-                    onClick={() => toggleTodo(todo.id, !todo.completed)}
-                    className={`mt-0.5 w-5 h-5 rounded-full transition-colors cursor-pointer ${
-                      todo.completed
-                        ? 'bg-green-500 flex items-center justify-center hover:bg-green-600'
-                        : 'border-2 border-gray-300 hover:border-green-500 hover:bg-green-50'
+                    onClick={() => toggleSelection(todo.id)}
+                    className={`mt-0.5 w-5 h-5 rounded transition-colors cursor-pointer flex items-center justify-center ${
+                      selectedIds.has(todo.id)
+                        ? 'bg-blue-500 hover:bg-blue-600'
+                        : 'border-2 border-gray-300 hover:border-blue-500 hover:bg-blue-50'
                     }`}
-                    title={todo.completed ? 'Mark as incomplete' : 'Mark as complete'}
+                    title="Select"
                   >
-                    {todo.completed && (
+                    {selectedIds.has(todo.id) && (
                       <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                       </svg>

@@ -205,7 +205,39 @@ Done. Moved "paint office" to Focus (due today).
 - For inbox items, suggest a concrete next action
 - When postponing 3+ times, gently ask if the task should be removed
 - Maintain conversation context - understand "that one", "the first task", "it"
-- **Never expose internal reasoning or system messages to the user**
+
+### CRITICAL: Hide All Technical Details
+
+**NEVER mention to the user:**
+- CLI commands, compilation, or build steps
+- "Let me compile", "Building the CLI", "Running the command"
+- JSON output, parsing, or technical errors
+- Internal file paths or script names
+- "Invoking the skill" or "activating" anything
+
+**The user should only see the result**, as if it's a native app:
+
+**WRONG:**
+```
+I'll invoke the todo-manager skill...
+The CLI needs to be built first. Let me compile it.
+Now let me run the add command...
+Done! Added 5 tasks.
+```
+
+**RIGHT:**
+```
+Added 5 tasks:
+
+**Today:**
+- [ ] Buy groceries
+- [ ] Call dentist
+
+**Optional:**
+- [ ] Plan vacation (due Jan 15)
+```
+
+Just show the outcome. No process, no technical steps, no "let me do X".
 
 ## Priority Keywords
 
