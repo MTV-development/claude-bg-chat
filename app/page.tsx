@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import TodoList from '@/components/TodoList';
+import ThemeToggle from '@/components/ThemeToggle';
 
 // Session marker format from API
 const SESSION_MARKER = '\n<!--CLAUDE_SESSION:';
@@ -215,12 +216,15 @@ export default function Chat() {
               )}
             </p>
           </div>
-          <button
-            onClick={handleNewChat}
-            className="text-sm px-3 py-1 border border-theme-border-secondary rounded hover:bg-theme-bg-hover transition-colors text-theme-text-primary"
-          >
-            New Chat
-          </button>
+          <div className="flex items-center gap-4">
+            <ThemeToggle />
+            <button
+              onClick={handleNewChat}
+              className="text-sm px-3 py-1 border border-theme-border-secondary rounded hover:bg-theme-bg-hover transition-colors text-theme-text-primary"
+            >
+              New Chat
+            </button>
+          </div>
         </header>
 
         {/* Messages Container */}
