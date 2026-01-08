@@ -1,28 +1,28 @@
 {
   "version": "4.0",
-  "lastModified": "2026-01-08T17:36:48.719Z",
+  "lastModified": "2026-01-08T17:43:44.844Z",
   "lastAutoReview": null,
   "items": [
     {
-      "id": "e11f2690",
-      "title": "Urgent task",
-      "nextAction": "Urgent task",
+      "id": "38127d4a",
+      "title": "Task",
+      "nextAction": "Task",
       "status": "active",
       "completed": false,
       "project": null,
       "dueDate": null,
       "canDoAnytime": false,
-      "createdAt": "2026-01-08T17:36:48.710Z",
+      "createdAt": "2026-01-08T17:43:44.833Z",
       "completedAt": null,
       "postponeCount": 0
     }
   ],
   "activityLog": [
     {
-      "id": "c8f898d7",
-      "itemId": "e11f2690",
+      "id": "268e57e0",
+      "itemId": "38127d4a",
       "action": "created",
-      "timestamp": "2026-01-08T17:36:48.719Z",
+      "timestamp": "2026-01-08T17:43:44.844Z",
       "details": {}
     }
   ]
