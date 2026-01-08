@@ -48,7 +48,7 @@ export interface TodoData {
   activityLog: ActivityLogEntry[];
 }
 
-export type TabType = 'focus' | 'mightdo' | 'inbox' | 'projects' | 'done';
+export type TabType = 'focus' | 'later' | 'cando' | 'inbox' | 'projects' | 'done';
 
 export interface CommandResult {
   success: boolean;

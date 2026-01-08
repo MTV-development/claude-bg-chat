@@ -187,7 +187,8 @@ export function logActivity(
  * - Done: status === 'done'
  * - Inbox: !hasDeadline && !canDoAnytime (or no nextAction)
  * - Focus: hasDeadline && dueDate <= today
- * - Might Do: canDoAnytime (unless deadline reached, then Focus)
+ * - Later: hasDeadline && dueDate > today (future deadline)
+ * - Can Do: canDoAnytime (can be done anytime, no deadline)
  */
 export function getItemTab(item: TodoItem): TabType {
   const today = getLocalDateString();
@@ -207,19 +208,18 @@ export function getItemTab(item: TodoItem): TabType {
     return 'focus';
   }
 
-  // Items that can be done anytime go to Might Do
+  // Items with deadline but not yet due go to Later
+  if (item.hasDeadline && item.dueDate && item.dueDate > today) {
+    return 'later';
+  }
+
+  // Items that can be done anytime go to Can Do
   if (item.canDoAnytime) {
-    return 'mightdo';
+    return 'cando';
   }
 
   // Items without hasDeadline and without canDoAnytime go to Inbox
-  if (!item.hasDeadline && !item.canDoAnytime) {
-    return 'inbox';
-  }
-
-  // Items with deadline but not yet due go to Might Do
-  // (they have hasDeadline but dueDate > today)
-  return 'mightdo';
+  return 'inbox';
 }
 
 /**
@@ -227,7 +227,8 @@ export function getItemTab(item: TodoItem): TabType {
  *
  * New logic based on hasDeadline/canDoAnytime:
  * - Focus: hasDeadline && dueDate <= today
- * - Might Do: canDoAnytime (unless deadline reached)
+ * - Later: hasDeadline && dueDate > today (future deadline)
+ * - Can Do: canDoAnytime (can be done anytime, no deadline)
  * - Inbox: !hasDeadline && !canDoAnytime (or no nextAction)
  * - Done: status === 'done'
  */
@@ -245,15 +246,24 @@ export function filterByTab(items: TodoItem[], tab: TabType): TodoItem[] {
         i.dueDate <= today
       );
 
-    case 'mightdo':
-      // Can do anytime, or has deadline but not yet due
-      return items.filter(i => {
-        if (i.status === 'done' || !i.nextAction) return false;
-        // If deadline reached, it goes to Focus instead
-        if (i.hasDeadline && i.dueDate && i.dueDate <= today) return false;
-        // Show if canDoAnytime or has future deadline
-        return i.canDoAnytime || (i.hasDeadline && i.dueDate && i.dueDate > today);
-      });
+    case 'later':
+      // Has deadline but not yet due (future deadline)
+      return items.filter(i =>
+        i.status !== 'done' &&
+        i.nextAction &&
+        i.hasDeadline &&
+        i.dueDate &&
+        i.dueDate > today
+      );
+
+    case 'cando':
+      // Can do anytime (no deadline)
+      return items.filter(i =>
+        i.status !== 'done' &&
+        i.nextAction &&
+        i.canDoAnytime &&
+        !i.hasDeadline
+      );
 
     case 'inbox':
       // No nextAction OR (!hasDeadline && !canDoAnytime)

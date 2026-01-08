@@ -7,7 +7,7 @@
  * Uses shared store module for data access.
  *
  * GET /api/todos - List all items
- * GET /api/todos?tab=focus|mightdo|inbox|done - Filter by tab
+ * GET /api/todos?tab=focus|later|cando|inbox|done - Filter by tab
  * PATCH /api/todos - Update item (complete/uncomplete)
  * DELETE /api/todos - Remove item
  */
@@ -25,12 +25,12 @@ export async function GET(req: Request) {
 
     // Filter by tab if specified
     if (tab) {
-      // Support legacy 'optional' tab name as alias for 'mightdo'
+      // Support legacy tab names as aliases
       let tabName = tab as string;
-      if (tabName === 'optional') {
-        tabName = 'mightdo';
+      if (tabName === 'optional' || tabName === 'mightdo') {
+        tabName = 'cando';
       }
-      const validTabs: TabType[] = ['focus', 'mightdo', 'inbox', 'projects', 'done'];
+      const validTabs: TabType[] = ['focus', 'later', 'cando', 'inbox', 'projects', 'done'];
       if (validTabs.includes(tabName as TabType)) {
         items = filterByTab(items, tabName as TabType);
       }

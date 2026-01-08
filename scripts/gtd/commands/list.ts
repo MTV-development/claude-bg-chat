@@ -5,7 +5,7 @@
  *
  * Usage:
  *   list [--completed] [--pending] [--priority high|medium|low]
- *   list [--tab focus|mightdo|inbox|done|projects]
+ *   list [--tab focus|later|cando|inbox|done|projects]
  *   list [--project "Project Name"]
  */
 
@@ -20,12 +20,12 @@ export async function list(args: string[]): Promise<CommandResult> {
 
   // Filter by tab (GTD tabs)
   if (flags.tab) {
-    // Support legacy 'optional' tab name as alias for 'mightdo'
+    // Support legacy tab names as aliases
     let tabName = flags.tab as string;
-    if (tabName === 'optional') {
-      tabName = 'mightdo';
+    if (tabName === 'optional' || tabName === 'mightdo') {
+      tabName = 'cando';
     }
-    const validTabs: TabType[] = ['focus', 'mightdo', 'inbox', 'done', 'projects'];
+    const validTabs: TabType[] = ['focus', 'later', 'cando', 'inbox', 'done', 'projects'];
     if (!validTabs.includes(tabName as TabType)) {
       return {
         success: false,
