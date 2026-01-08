@@ -7,10 +7,21 @@
 
 import { loadTodos, getProjects } from '../../../../scripts/gtd/lib/store';
 
+function log(message: string, data?: unknown) {
+  const timestamp = new Date().toISOString().slice(11, 23);
+  if (data !== undefined) {
+    console.log(`[${timestamp}] [projects] ${message}`, data);
+  } else {
+    console.log(`[${timestamp}] [projects] ${message}`);
+  }
+}
+
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const projectName = searchParams.get('name');
+
+    log(`GET request - project: ${projectName || 'all'}`);
 
     const data = await loadTodos();
 
@@ -19,6 +30,8 @@ export async function GET(req: Request) {
       const items = data.items.filter(
         (item) => item.project === projectName && item.status !== 'done'
       );
+
+      log(`Found ${items.length} active items in project "${projectName}"`);
 
       // Sort by due date, then priority
       items.sort((a, b) => {
@@ -41,12 +54,17 @@ export async function GET(req: Request) {
 
     // Return all projects
     const projects = getProjects(data.items);
+    log(`Found ${projects.length} projects`);
+    projects.forEach(p => {
+      log(`  - "${p.name}": ${p.taskCount} tasks (${p.completedCount} done)`);
+    });
 
     return Response.json({
       projects,
       count: projects.length,
     });
   } catch (error) {
+    log(`ERROR:`, error);
     return Response.json({
       projects: [],
       count: 0,

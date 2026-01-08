@@ -1,1763 +1,331 @@
 {
-  "version": "2.0",
-  "lastModified": "2026-01-07T17:08:15.901Z",
+  "version": "3.0",
+  "lastModified": "2026-01-08T14:27:11.518Z",
   "lastAutoReview": null,
   "items": [
     {
-      "id": "f3a8c12b",
-      "title": "Review quarterly report",
-      "nextAction": "Review quarterly report",
-      "status": "done",
-      "completed": true,
+      "id": "focus001",
+      "title": "Submit quarterly report",
+      "nextAction": "Submit quarterly report to finance by end of day",
+      "status": "active",
+      "completed": false,
       "priority": "high",
-      "project": null,
+      "project": "Finance",
       "dueDate": "2026-01-08",
-      "createdAt": "2026-01-06T12:00:00.000Z",
-      "completedAt": "2026-01-07T15:49:16.406Z",
-      "postponeCount": 1,
-      "tags": []
-    },
-    {
-      "id": "d7e4b9a2",
-      "title": "Buy groceries",
-      "nextAction": "Buy groceries",
-      "status": "done",
-      "completed": true,
-      "priority": "medium",
-      "project": null,
-      "dueDate": null,
-      "createdAt": "2026-01-06T12:00:00.000Z",
-      "completedAt": "2026-01-07T15:49:16.555Z",
+      "hasDeadline": true,
+      "canDoAnytime": false,
+      "createdAt": "2026-01-07T10:00:00.000Z",
+      "completedAt": null,
       "postponeCount": 0,
-      "tags": []
+      "tags": [
+        "urgent",
+        "report"
+      ]
     },
     {
-      "id": "c1f6e8d3",
-      "title": "Call mom",
-      "nextAction": "Call mom",
-      "status": "done",
-      "completed": true,
-      "priority": "low",
-      "project": null,
+      "id": "focus002",
+      "title": "Fix critical production bug",
+      "nextAction": "Hotfix the null pointer exception in checkout flow",
+      "status": "active",
+      "completed": false,
+      "priority": "high",
+      "project": "Bug Fixes",
       "dueDate": "2026-01-07",
-      "createdAt": "2026-01-06T12:00:00.000Z",
-      "completedAt": "2026-01-07T16:31:38.500Z",
-      "postponeCount": 0,
-      "tags": []
+      "hasDeadline": true,
+      "canDoAnytime": false,
+      "createdAt": "2026-01-06T08:00:00.000Z",
+      "completedAt": null,
+      "postponeCount": 1,
+      "tags": [
+        "bug",
+        "production"
+      ]
     },
     {
-      "id": "a4b7c9e1",
-      "title": "Schedule dentist appointment",
-      "nextAction": "Schedule dentist appointment",
-      "status": "done",
-      "completed": true,
-      "priority": "medium",
-      "project": null,
+      "id": "later001",
+      "title": "Prepare presentation for board meeting",
+      "nextAction": "Create slides for Q4 results presentation",
+      "status": "active",
+      "completed": false,
+      "priority": "high",
+      "project": "Board Meeting",
       "dueDate": "2026-01-15",
-      "createdAt": "2026-01-06T16:10:00.000Z",
-      "completedAt": "2026-01-07T15:49:16.478Z",
+      "hasDeadline": true,
+      "canDoAnytime": false,
+      "createdAt": "2026-01-05T14:00:00.000Z",
+      "completedAt": null,
       "postponeCount": 0,
-      "tags": []
+      "tags": [
+        "presentation",
+        "board"
+      ]
     },
     {
-      "id": "e2f8d3a5",
-      "title": "Clean out garage",
-      "nextAction": "Clean out garage",
-      "status": "done",
-      "completed": true,
+      "id": "later002",
+      "title": "Review team performance evaluations",
+      "nextAction": "Write performance reviews for all 5 team members",
+      "status": "active",
+      "completed": false,
+      "priority": "medium",
+      "project": "HR",
+      "dueDate": "2026-01-20",
+      "hasDeadline": true,
+      "canDoAnytime": false,
+      "createdAt": "2026-01-03T09:00:00.000Z",
+      "completedAt": null,
+      "postponeCount": 0,
+      "tags": [
+        "hr",
+        "reviews"
+      ]
+    },
+    {
+      "id": "later003",
+      "title": "Submit expense reports",
+      "nextAction": "Compile and submit December expense receipts",
+      "status": "active",
+      "completed": false,
+      "priority": "low",
+      "project": "Finance",
+      "dueDate": "2026-01-31",
+      "hasDeadline": true,
+      "canDoAnytime": false,
+      "createdAt": "2026-01-02T11:00:00.000Z",
+      "completedAt": null,
+      "postponeCount": 0,
+      "tags": [
+        "expenses"
+      ]
+    },
+    {
+      "id": "cando001",
+      "title": "Read industry newsletter",
+      "nextAction": "Read and take notes on this week's tech newsletter",
+      "status": "active",
+      "completed": false,
       "priority": "low",
       "project": null,
       "dueDate": null,
-      "createdAt": "2026-01-06T16:10:00.000Z",
-      "completedAt": "2026-01-07T11:35:58.205Z",
+      "hasDeadline": false,
+      "canDoAnytime": true,
+      "createdAt": "2026-01-06T16:00:00.000Z",
+      "completedAt": null,
       "postponeCount": 0,
-      "tags": []
+      "tags": [
+        "reading",
+        "learning"
+      ]
     },
     {
-      "id": "b6c1e9f4",
-      "title": "Renew gym membership",
-      "nextAction": "Renew gym membership",
+      "id": "cando002",
+      "title": "Organize desk drawers",
+      "nextAction": "Clean out and organize the left desk drawer",
       "status": "done",
       "completed": true,
-      "priority": "medium",
-      "project": null,
+      "priority": "low",
+      "project": "Home Office",
       "dueDate": "2026-01-08",
-      "createdAt": "2026-01-06T16:10:00.000Z",
-      "completedAt": "2026-01-07T15:42:03.315Z",
-      "postponeCount": 1,
-      "tags": []
-    },
-    {
-      "id": "d9a2b5c8",
-      "title": "Read new book",
-      "nextAction": "Read new book",
-      "status": "done",
-      "completed": true,
-      "priority": "low",
-      "project": null,
-      "dueDate": null,
-      "createdAt": "2026-01-06T16:10:00.000Z",
-      "completedAt": "2026-01-06T16:11:00.000Z",
+      "hasDeadline": true,
+      "canDoAnytime": true,
+      "createdAt": "2026-01-04T12:00:00.000Z",
+      "completedAt": "2026-01-08T14:27:11.517Z",
       "postponeCount": 0,
-      "tags": []
+      "tags": [
+        "organization"
+      ]
     },
     {
-      "id": "f1e7c4b2",
-      "title": "Pay electric bill",
-      "nextAction": "Pay electric bill",
-      "status": "done",
-      "completed": true,
-      "priority": "high",
-      "project": null,
-      "dueDate": "2026-01-07",
-      "createdAt": "2026-01-06T16:10:00.000Z",
-      "completedAt": "2026-01-07T15:42:26.353Z",
-      "postponeCount": 2,
-      "tags": []
-    },
-    {
-      "id": "f1de73c6",
-      "title": "get groceries",
-      "nextAction": "get groceries",
-      "status": "done",
-      "completed": true,
-      "priority": "medium",
-      "project": null,
-      "dueDate": null,
-      "createdAt": "2026-01-07T11:36:53.650Z",
-      "completedAt": "2026-01-07T12:13:38.610Z",
-      "postponeCount": 0,
-      "tags": []
-    },
-    {
-      "id": "64617469",
-      "title": "paint office",
-      "nextAction": "paint office",
-      "status": "done",
-      "completed": true,
-      "priority": "medium",
-      "project": null,
-      "dueDate": "2026-01-07",
-      "createdAt": "2026-01-07T11:37:37.490Z",
-      "completedAt": "2026-01-07T15:42:26.358Z",
-      "postponeCount": 2,
-      "tags": []
-    },
-    {
-      "id": "87db4f83",
-      "title": "cook dinner",
-      "nextAction": "cook dinner",
-      "status": "done",
-      "completed": true,
-      "priority": "medium",
-      "project": null,
-      "dueDate": "2026-01-08",
-      "createdAt": "2026-01-07T11:45:31.878Z",
-      "completedAt": "2026-01-07T15:41:23.169Z",
-      "postponeCount": 2,
-      "tags": []
-    },
-    {
-      "id": "57604535",
-      "title": "clean dishes",
-      "nextAction": "clean dishes",
-      "status": "done",
-      "completed": true,
-      "priority": "medium",
-      "project": null,
-      "dueDate": null,
-      "createdAt": "2026-01-07T11:48:19.395Z",
-      "completedAt": "2026-01-07T11:48:44.280Z",
-      "postponeCount": 0,
-      "tags": []
-    },
-    {
-      "id": "ca7bdf41",
-      "title": "buy groceries",
-      "nextAction": "buy groceries",
-      "status": "done",
-      "completed": true,
-      "priority": "medium",
-      "project": null,
-      "dueDate": null,
-      "createdAt": "2026-01-07T12:13:24.964Z",
-      "completedAt": "2026-01-07T12:13:39.960Z",
-      "postponeCount": 0,
-      "tags": []
-    },
-    {
-      "id": "328f453e",
-      "title": "Water the plants",
-      "nextAction": "Water the plants",
-      "status": "done",
-      "completed": true,
-      "priority": "medium",
-      "project": null,
-      "dueDate": "2026-01-07",
-      "createdAt": "2026-01-07T12:59:26.052Z",
-      "completedAt": "2026-01-07T15:42:26.364Z",
-      "postponeCount": 0,
-      "tags": []
-    },
-    {
-      "id": "b0aeb5b2",
-      "title": "Reply to email from Sarah",
-      "nextAction": "Reply to email from Sarah",
-      "status": "done",
-      "completed": true,
-      "priority": "medium",
-      "project": null,
-      "dueDate": "2026-01-08",
-      "createdAt": "2026-01-07T12:59:26.178Z",
-      "completedAt": "2026-01-07T15:09:39.960Z",
-      "postponeCount": 1,
-      "tags": []
-    },
-    {
-      "id": "eb8031a3",
-      "title": "Pick up dry cleaning",
-      "nextAction": "Pick up dry cleaning",
-      "status": "done",
-      "completed": true,
-      "priority": "medium",
-      "project": null,
-      "dueDate": "2026-01-07",
-      "createdAt": "2026-01-07T12:59:26.307Z",
-      "completedAt": "2026-01-07T15:42:26.368Z",
-      "postponeCount": 0,
-      "tags": []
-    },
-    {
-      "id": "648136fe",
-      "title": "Book flight for conference",
-      "nextAction": "Book flight for conference",
-      "status": "done",
-      "completed": true,
-      "priority": "medium",
-      "project": null,
-      "dueDate": "2026-01-10",
-      "createdAt": "2026-01-07T12:59:26.442Z",
-      "completedAt": "2026-01-07T15:24:44.371Z",
-      "postponeCount": 0,
-      "tags": []
-    },
-    {
-      "id": "57af0a0e",
-      "title": "Finish presentation slides",
-      "nextAction": "Finish presentation slides",
-      "status": "done",
-      "completed": true,
-      "priority": "medium",
-      "project": null,
-      "dueDate": "2026-01-12",
-      "createdAt": "2026-01-07T12:59:26.588Z",
-      "completedAt": "2026-01-07T15:09:41.537Z",
-      "postponeCount": 0,
-      "tags": []
-    },
-    {
-      "id": "6648b883",
-      "title": "Order birthday gift for Dad",
-      "nextAction": "Order birthday gift for Dad",
-      "status": "done",
-      "completed": true,
-      "priority": "medium",
-      "project": null,
-      "dueDate": "2026-01-14",
-      "createdAt": "2026-01-07T12:59:26.738Z",
-      "completedAt": "2026-01-07T15:24:45.045Z",
-      "postponeCount": 0,
-      "tags": []
-    },
-    {
-      "id": "c90cae52",
-      "title": "Paint garage",
-      "nextAction": "Clear out garage",
-      "status": "done",
-      "completed": true,
-      "priority": "medium",
-      "project": null,
-      "dueDate": null,
-      "createdAt": "2026-01-07T13:00:33.794Z",
-      "completedAt": "2026-01-07T15:09:43.085Z",
-      "postponeCount": 0,
-      "tags": []
-    },
-    {
-      "id": "3d4e8b68",
-      "title": "Review quarterly report",
-      "nextAction": "Review quarterly report",
-      "status": "done",
-      "completed": true,
-      "priority": "high",
-      "project": null,
-      "dueDate": "2026-01-07",
-      "createdAt": "2026-01-07T15:44:04.417Z",
-      "completedAt": "2026-01-07T16:31:04.221Z",
-      "postponeCount": 0,
-      "tags": []
-    },
-    {
-      "id": "65feb212",
-      "title": "Schedule dentist appointment",
-      "nextAction": "Schedule dentist appointment",
-      "status": "done",
-      "completed": true,
-      "priority": "medium",
-      "project": null,
-      "dueDate": "2026-01-07",
-      "createdAt": "2026-01-07T15:44:04.476Z",
-      "completedAt": "2026-01-07T16:31:04.226Z",
-      "postponeCount": 0,
-      "tags": []
-    },
-    {
-      "id": "3435cb4d",
-      "title": "Reply to client email",
-      "nextAction": "Reply to client email",
-      "status": "done",
-      "completed": true,
-      "priority": "high",
-      "project": null,
-      "dueDate": "2026-01-07",
-      "createdAt": "2026-01-07T15:44:04.531Z",
-      "completedAt": "2026-01-07T15:49:16.439Z",
-      "postponeCount": 0,
-      "tags": []
-    },
-    {
-      "id": "f5aec548",
-      "title": "Fix login bug",
-      "nextAction": "Fix login bug",
-      "status": "done",
-      "completed": true,
-      "priority": "medium",
-      "project": "Work",
-      "dueDate": "2026-01-07",
-      "createdAt": "2026-01-07T15:44:04.586Z",
-      "completedAt": "2026-01-07T15:49:16.518Z",
-      "postponeCount": 0,
-      "tags": []
-    },
-    {
-      "id": "12ee2faa",
-      "title": "Buy groceries",
-      "nextAction": "Buy groceries",
-      "status": "done",
-      "completed": true,
-      "priority": "medium",
-      "project": null,
-      "dueDate": "2026-01-07",
-      "createdAt": "2026-01-07T15:44:04.640Z",
-      "completedAt": "2026-01-07T16:31:04.231Z",
-      "postponeCount": 0,
-      "tags": []
-    },
-    {
-      "id": "ef7c4dd6",
-      "title": "Read new book chapter",
-      "nextAction": "Read new book chapter",
-      "status": "done",
-      "completed": true,
-      "priority": "medium",
-      "project": null,
-      "dueDate": "2026-01-10",
-      "createdAt": "2026-01-07T15:44:04.698Z",
-      "completedAt": "2026-01-07T16:31:38.539Z",
-      "postponeCount": 0,
-      "tags": []
-    },
-    {
-      "id": "82b50ea2",
-      "title": "Clean garage",
-      "nextAction": "Clean garage",
-      "status": "done",
-      "completed": true,
-      "priority": "medium",
-      "project": null,
-      "dueDate": "2026-01-14",
-      "createdAt": "2026-01-07T15:44:04.754Z",
-      "completedAt": "2026-01-07T16:31:38.684Z",
-      "postponeCount": 0,
-      "tags": []
-    },
-    {
-      "id": "3fbe7dd6",
-      "title": "Update resume",
-      "nextAction": "Update resume",
-      "status": "done",
-      "completed": true,
-      "priority": "low",
-      "project": null,
-      "dueDate": null,
-      "createdAt": "2026-01-07T15:44:04.807Z",
-      "completedAt": "2026-01-07T16:31:41.923Z",
-      "postponeCount": 0,
-      "tags": []
-    },
-    {
-      "id": "e5d578fd",
-      "title": "Learn TypeScript generics",
-      "nextAction": "Learn TypeScript generics",
-      "status": "done",
-      "completed": true,
-      "priority": "medium",
-      "project": "Learning",
-      "dueDate": null,
-      "createdAt": "2026-01-07T15:44:04.862Z",
-      "completedAt": "2026-01-07T16:31:41.887Z",
-      "postponeCount": 0,
-      "tags": []
-    },
-    {
-      "id": "afcbeffd",
-      "title": "Plan weekend trip",
-      "nextAction": "Plan weekend trip",
-      "status": "done",
-      "completed": true,
-      "priority": "medium",
-      "project": null,
-      "dueDate": "2026-01-12",
-      "createdAt": "2026-01-07T15:44:04.915Z",
-      "completedAt": "2026-01-07T16:31:38.611Z",
-      "postponeCount": 0,
-      "tags": []
-    },
-    {
-      "id": "3cbced62",
-      "title": "Organize photo library",
-      "nextAction": "Organize photo library",
-      "status": "done",
-      "completed": true,
-      "priority": "low",
-      "project": null,
-      "dueDate": null,
-      "createdAt": "2026-01-07T15:44:04.969Z",
-      "completedAt": "2026-01-07T16:31:41.962Z",
-      "postponeCount": 0,
-      "tags": []
-    },
-    {
-      "id": "26211be6",
-      "title": "Call mom",
-      "nextAction": "Call mom",
-      "status": "done",
-      "completed": true,
-      "priority": "medium",
-      "project": null,
-      "dueDate": "2026-01-09",
-      "createdAt": "2026-01-07T15:44:05.024Z",
-      "completedAt": "2026-01-07T17:04:07.247Z",
-      "postponeCount": 0,
-      "tags": []
-    },
-    {
-      "id": "7821f77a",
-      "title": "Review morning emails",
-      "nextAction": "Review morning emails",
-      "status": "done",
-      "completed": true,
-      "priority": "medium",
-      "project": null,
-      "dueDate": "2026-01-07",
-      "createdAt": "2026-01-07T15:47:55.493Z",
-      "completedAt": "2026-01-07T15:48:30.631Z",
-      "postponeCount": 0,
-      "tags": []
-    },
-    {
-      "id": "d8679841",
-      "title": "Complete daily standup notes",
-      "nextAction": "Complete daily standup notes",
-      "status": "done",
-      "completed": true,
-      "priority": "medium",
-      "project": null,
-      "dueDate": "2026-01-07",
-      "createdAt": "2026-01-07T15:47:55.527Z",
-      "completedAt": "2026-01-07T15:48:30.667Z",
-      "postponeCount": 0,
-      "tags": []
-    },
-    {
-      "id": "6f286abd",
-      "title": "Fix bug in login form",
-      "nextAction": "Fix bug in login form",
-      "status": "done",
-      "completed": true,
-      "priority": "high",
-      "project": null,
-      "dueDate": "2026-01-07",
-      "createdAt": "2026-01-07T15:47:55.561Z",
-      "completedAt": "2026-01-07T15:51:34.307Z",
-      "postponeCount": 0,
-      "tags": []
-    },
-    {
-      "id": "3cbfa070",
-      "title": "Update project documentation",
-      "nextAction": "Update project documentation",
-      "status": "done",
-      "completed": true,
-      "priority": "medium",
-      "project": null,
-      "dueDate": "2026-01-07",
-      "createdAt": "2026-01-07T15:47:55.601Z",
-      "completedAt": "2026-01-07T15:48:30.701Z",
-      "postponeCount": 0,
-      "tags": []
-    },
-    {
-      "id": "b62f9379",
-      "title": "Reply to client feedback",
-      "nextAction": "Reply to client feedback",
-      "status": "done",
-      "completed": true,
-      "priority": "medium",
-      "project": null,
-      "dueDate": "2026-01-07",
-      "createdAt": "2026-01-07T15:47:55.635Z",
-      "completedAt": "2026-01-07T15:51:34.339Z",
-      "postponeCount": 0,
-      "tags": []
-    },
-    {
-      "id": "2a4130f9",
-      "title": "Research new testing framework",
-      "nextAction": "Research new testing framework",
-      "status": "done",
-      "completed": true,
-      "priority": "medium",
-      "project": null,
-      "dueDate": "2026-01-10",
-      "createdAt": "2026-01-07T15:47:57.805Z",
-      "completedAt": "2026-01-07T16:31:38.574Z",
-      "postponeCount": 0,
-      "tags": []
-    },
-    {
-      "id": "8efd8914",
-      "title": "Plan team retrospective",
-      "nextAction": "Plan team retrospective",
-      "status": "done",
-      "completed": true,
-      "priority": "medium",
-      "project": null,
-      "dueDate": "2026-01-12",
-      "createdAt": "2026-01-07T15:47:57.842Z",
-      "completedAt": "2026-01-07T16:31:38.646Z",
-      "postponeCount": 0,
-      "tags": []
-    },
-    {
-      "id": "813b00dc",
-      "title": "Refactor database queries",
-      "nextAction": "Refactor database queries",
-      "status": "done",
-      "completed": true,
-      "priority": "medium",
-      "project": null,
-      "dueDate": "2026-01-14",
-      "createdAt": "2026-01-07T15:47:57.877Z",
-      "completedAt": "2026-01-07T16:31:41.776Z",
-      "postponeCount": 0,
-      "tags": []
-    },
-    {
-      "id": "27e9ea4e",
-      "title": "Write blog post draft",
-      "nextAction": "Write blog post draft",
-      "status": "done",
-      "completed": true,
-      "priority": "medium",
-      "project": null,
-      "dueDate": "2026-01-17",
-      "createdAt": "2026-01-07T15:47:57.912Z",
-      "completedAt": "2026-01-07T16:31:41.811Z",
-      "postponeCount": 0,
-      "tags": []
-    },
-    {
-      "id": "fe3aa1b2",
-      "title": "Review quarterly goals",
-      "nextAction": "Review quarterly goals",
-      "status": "done",
-      "completed": true,
-      "priority": "medium",
-      "project": null,
-      "dueDate": "2026-01-21",
-      "createdAt": "2026-01-07T15:47:57.945Z",
-      "completedAt": "2026-01-07T16:31:41.851Z",
-      "postponeCount": 0,
-      "tags": []
-    },
-    {
-      "id": "a2092259",
-      "title": "Developing GTD chat",
-      "nextAction": "Developing GTD chat",
-      "status": "done",
-      "completed": true,
-      "priority": "medium",
-      "project": "Developing GTD chat",
-      "dueDate": null,
-      "createdAt": "2026-01-07T16:41:52.640Z",
-      "completedAt": "2026-01-07T16:52:52.217Z",
-      "postponeCount": 0,
-      "tags": []
-    },
-    {
-      "id": "70c32e8e",
-      "title": "Do initial testing and figure out improvements",
-      "nextAction": "Do initial testing and figure out improvements",
-      "status": "done",
-      "completed": true,
-      "priority": "medium",
-      "project": "Developing GTD chat",
-      "dueDate": "2026-01-07",
-      "createdAt": "2026-01-07T16:52:45.849Z",
-      "completedAt": "2026-01-07T16:57:40.958Z",
-      "postponeCount": 0,
-      "tags": []
-    },
-    {
-      "id": "b74768b9",
-      "title": "test",
-      "nextAction": "test",
-      "status": "done",
-      "completed": true,
-      "priority": "medium",
-      "project": "Developing GTD chat",
-      "dueDate": "2026-01-07",
-      "createdAt": "2026-01-07T16:58:01.778Z",
-      "completedAt": "2026-01-07T16:58:19.815Z",
-      "postponeCount": 0,
-      "tags": []
-    },
-    {
-      "id": "84d216c3",
-      "title": "Test",
-      "nextAction": "Test",
-      "status": "done",
-      "completed": true,
-      "priority": "medium",
-      "project": null,
-      "dueDate": "2026-01-07",
-      "createdAt": "2026-01-07T17:00:48.422Z",
-      "completedAt": "2026-01-07T17:04:04.159Z",
-      "postponeCount": 0,
-      "tags": []
-    },
-    {
-      "id": "e7cfcd07",
-      "title": "Test 2",
-      "nextAction": "Test 2",
-      "status": "done",
-      "completed": true,
-      "priority": "medium",
-      "project": null,
-      "dueDate": "2026-01-07",
-      "createdAt": "2026-01-07T17:01:17.883Z",
-      "completedAt": "2026-01-07T17:04:04.165Z",
-      "postponeCount": 0,
-      "tags": []
-    },
-    {
-      "id": "aa07e8f3",
-      "title": "test 2",
-      "nextAction": "test 2",
-      "status": "done",
-      "completed": true,
-      "priority": "medium",
-      "project": null,
-      "dueDate": "2026-01-07",
-      "createdAt": "2026-01-07T17:01:26.272Z",
-      "completedAt": "2026-01-07T17:04:04.170Z",
-      "postponeCount": 0,
-      "tags": []
-    },
-    {
-      "id": "aecd6f00",
-      "title": "test 1",
-      "nextAction": "test 1",
-      "status": "done",
-      "completed": true,
-      "priority": "medium",
-      "project": null,
-      "dueDate": null,
-      "createdAt": "2026-01-07T17:04:16.511Z",
-      "completedAt": "2026-01-07T17:05:04.603Z",
-      "postponeCount": 0,
-      "tags": []
-    },
-    {
-      "id": "b495c1aa",
-      "title": "Buy groceries",
-      "nextAction": "Buy groceries",
+      "id": "cando003",
+      "title": "Update LinkedIn profile",
+      "nextAction": "Add recent project achievements to LinkedIn",
       "status": "active",
       "completed": false,
       "priority": "medium",
       "project": null,
-      "dueDate": "2026-01-09",
-      "createdAt": "2026-01-07T17:04:44.786Z",
+      "dueDate": null,
+      "hasDeadline": false,
+      "canDoAnytime": true,
+      "createdAt": "2026-01-01T10:00:00.000Z",
       "completedAt": null,
-      "postponeCount": 1,
+      "postponeCount": 2,
+      "tags": [
+        "career",
+        "social"
+      ]
+    },
+    {
+      "id": "inbox001",
+      "title": "Think about vacation plans",
+      "nextAction": "Think about vacation plans",
+      "status": "inbox",
+      "completed": false,
+      "priority": "medium",
+      "project": null,
+      "dueDate": null,
+      "hasDeadline": false,
+      "canDoAnytime": false,
+      "createdAt": "2026-01-07T20:00:00.000Z",
+      "completedAt": null,
+      "postponeCount": 0,
       "tags": []
     },
     {
-      "id": "20afbea4",
-      "title": "tst",
-      "nextAction": "tst",
-      "status": "done",
-      "completed": true,
+      "id": "inbox002",
+      "title": "Follow up on that email",
+      "nextAction": "Follow up on that email",
+      "status": "inbox",
+      "completed": false,
       "priority": "medium",
       "project": null,
-      "dueDate": "2026-01-07",
-      "createdAt": "2026-01-07T17:07:55.267Z",
-      "completedAt": "2026-01-07T17:08:15.901Z",
+      "dueDate": null,
+      "hasDeadline": false,
+      "canDoAnytime": false,
+      "createdAt": "2026-01-06T18:00:00.000Z",
+      "completedAt": null,
       "postponeCount": 0,
-      "tags": []
+      "tags": [
+        "email"
+      ]
+    },
+    {
+      "id": "inbox003",
+      "title": "Research new project management tools",
+      "nextAction": "Compare Asana, Monday.com, and Linear features",
+      "status": "active",
+      "completed": false,
+      "priority": "low",
+      "project": null,
+      "dueDate": null,
+      "hasDeadline": false,
+      "canDoAnytime": false,
+      "createdAt": "2026-01-05T15:00:00.000Z",
+      "completedAt": null,
+      "postponeCount": 0,
+      "tags": [
+        "research",
+        "tools"
+      ]
+    },
+    {
+      "id": "inbox004",
+      "title": "Call mom",
+      "nextAction": "Call mom to check in",
+      "status": "active",
+      "completed": false,
+      "priority": "medium",
+      "project": null,
+      "dueDate": null,
+      "hasDeadline": false,
+      "canDoAnytime": false,
+      "createdAt": "2026-01-04T19:00:00.000Z",
+      "completedAt": null,
+      "postponeCount": 0,
+      "tags": [
+        "personal",
+        "family"
+      ]
     }
   ],
   "activityLog": [
     {
-      "id": "8740fe29",
-      "itemId": "ca7bdf41",
+      "id": "log001",
+      "itemId": "focus001",
       "action": "created",
-      "timestamp": "2026-01-07T12:13:24.972Z",
+      "timestamp": "2026-01-07T10:00:00.000Z",
       "details": {}
     },
     {
-      "id": "bbbdd7d5",
-      "itemId": "f1de73c6",
-      "action": "completed",
-      "timestamp": "2026-01-07T12:13:38.610Z",
+      "id": "log002",
+      "itemId": "focus002",
+      "action": "created",
+      "timestamp": "2026-01-06T08:00:00.000Z",
       "details": {}
     },
     {
-      "id": "27599f9f",
-      "itemId": "ca7bdf41",
-      "action": "completed",
-      "timestamp": "2026-01-07T12:13:39.960Z",
-      "details": {}
-    },
-    {
-      "id": "fb1f362c",
-      "itemId": "f1e7c4b2",
+      "id": "log003",
+      "itemId": "focus002",
       "action": "postponed",
-      "timestamp": "2026-01-07T12:26:31.036Z",
+      "timestamp": "2026-01-07T09:00:00.000Z",
       "details": {
-        "fromDate": "2026-01-12",
-        "toDate": "2026-01-10"
+        "fromDate": "2026-01-06",
+        "toDate": "2026-01-07"
       }
     },
     {
-      "id": "e5289756",
-      "itemId": "f1e7c4b2",
-      "action": "postponed",
-      "timestamp": "2026-01-07T12:26:35.221Z",
-      "details": {
-        "fromDate": "2026-01-10",
-        "toDate": "2026-01-09"
-      }
-    },
-    {
-      "id": "7a68ffde",
-      "itemId": "f1e7c4b2",
-      "action": "completed",
-      "timestamp": "2026-01-07T12:32:36.126Z",
-      "details": {}
-    },
-    {
-      "id": "850c9c48",
-      "itemId": "64617469",
-      "action": "completed",
-      "timestamp": "2026-01-07T12:46:38.847Z",
-      "details": {}
-    },
-    {
-      "id": "7780c9ac",
-      "itemId": "87db4f83",
-      "action": "completed",
-      "timestamp": "2026-01-07T12:46:42.581Z",
-      "details": {}
-    },
-    {
-      "id": "e4de642c",
-      "itemId": "64617469",
-      "action": "uncompleted",
-      "timestamp": "2026-01-07T12:46:47.958Z",
-      "details": {}
-    },
-    {
-      "id": "85e4bc2d",
-      "itemId": "c1f6e8d3",
-      "action": "uncompleted",
-      "timestamp": "2026-01-07T12:46:48.623Z",
-      "details": {}
-    },
-    {
-      "id": "12c540e7",
-      "itemId": "87db4f83",
-      "action": "uncompleted",
-      "timestamp": "2026-01-07T12:46:49.948Z",
-      "details": {}
-    },
-    {
-      "id": "dabbb89b",
-      "itemId": "f3a8c12b",
-      "action": "uncompleted",
-      "timestamp": "2026-01-07T12:46:51.123Z",
-      "details": {}
-    },
-    {
-      "id": "11d0d1b3",
-      "itemId": "f1e7c4b2",
-      "action": "uncompleted",
-      "timestamp": "2026-01-07T12:46:51.656Z",
-      "details": {}
-    },
-    {
-      "id": "50d3905a",
-      "itemId": "64617469",
-      "action": "postponed",
-      "timestamp": "2026-01-07T12:47:21.850Z",
-      "details": {
-        "fromDate": "2026-01-07",
-        "toDate": "2026-01-08"
-      }
-    },
-    {
-      "id": "a8beb43b",
-      "itemId": "87db4f83",
-      "action": "postponed",
-      "timestamp": "2026-01-07T12:47:24.244Z",
-      "details": {
-        "fromDate": "2026-01-07",
-        "toDate": "2026-01-09"
-      }
-    },
-    {
-      "id": "d812b76d",
-      "itemId": "64617469",
-      "action": "postponed",
-      "timestamp": "2026-01-07T12:50:36.379Z",
-      "details": {
-        "fromDate": "2026-01-07",
-        "toDate": "2026-01-14"
-      }
-    },
-    {
-      "id": "1dad342f",
-      "itemId": "a4b7c9e1",
-      "action": "uncompleted",
-      "timestamp": "2026-01-07T12:50:56.636Z",
-      "details": {}
-    },
-    {
-      "id": "ea0c1c5f",
-      "itemId": "f3a8c12b",
-      "action": "completed",
-      "timestamp": "2026-01-07T12:51:04.217Z",
-      "details": {}
-    },
-    {
-      "id": "6179e72d",
-      "itemId": "f1e7c4b2",
-      "action": "completed",
-      "timestamp": "2026-01-07T12:51:05.107Z",
-      "details": {}
-    },
-    {
-      "id": "2245bf52",
-      "itemId": "64617469",
-      "action": "completed",
-      "timestamp": "2026-01-07T12:51:06.018Z",
-      "details": {}
-    },
-    {
-      "id": "f7b64169",
-      "itemId": "f3a8c12b",
-      "action": "uncompleted",
-      "timestamp": "2026-01-07T12:51:08.536Z",
-      "details": {}
-    },
-    {
-      "id": "d7971a04",
-      "itemId": "f1e7c4b2",
-      "action": "uncompleted",
-      "timestamp": "2026-01-07T12:51:09.024Z",
-      "details": {}
-    },
-    {
-      "id": "0a7b8c54",
-      "itemId": "64617469",
-      "action": "uncompleted",
-      "timestamp": "2026-01-07T12:51:09.380Z",
-      "details": {}
-    },
-    {
-      "id": "2af5e9ee",
-      "itemId": "b6c1e9f4",
-      "action": "uncompleted",
-      "timestamp": "2026-01-07T12:51:09.724Z",
-      "details": {}
-    },
-    {
-      "id": "8eaaa35c",
-      "itemId": "d7e4b9a2",
-      "action": "uncompleted",
-      "timestamp": "2026-01-07T12:51:10.042Z",
-      "details": {}
-    },
-    {
-      "id": "f5e8e4a3",
-      "itemId": "f3a8c12b",
-      "action": "completed",
-      "timestamp": "2026-01-07T12:51:23.014Z",
-      "details": {}
-    },
-    {
-      "id": "37d21499",
-      "itemId": "b6c1e9f4",
-      "action": "completed",
-      "timestamp": "2026-01-07T12:51:24.304Z",
-      "details": {}
-    },
-    {
-      "id": "330e0be2",
-      "itemId": "87db4f83",
-      "action": "completed",
-      "timestamp": "2026-01-07T12:51:25.072Z",
-      "details": {}
-    },
-    {
-      "id": "7140102e",
-      "itemId": "a4b7c9e1",
-      "action": "completed",
-      "timestamp": "2026-01-07T12:58:43.854Z",
-      "details": {}
-    },
-    {
-      "id": "1a9f651a",
-      "itemId": "d7e4b9a2",
-      "action": "completed",
-      "timestamp": "2026-01-07T12:58:44.577Z",
-      "details": {}
-    },
-    {
-      "id": "24ec0e9e",
-      "itemId": "f1e7c4b2",
-      "action": "completed",
-      "timestamp": "2026-01-07T12:58:47.181Z",
-      "details": {}
-    },
-    {
-      "id": "b1646d1e",
-      "itemId": "64617469",
-      "action": "completed",
-      "timestamp": "2026-01-07T12:58:48.618Z",
-      "details": {}
-    },
-    {
-      "id": "045e2923",
-      "itemId": "c1f6e8d3",
-      "action": "completed",
-      "timestamp": "2026-01-07T12:58:49.194Z",
-      "details": {}
-    },
-    {
-      "id": "261f6cad",
-      "itemId": "328f453e",
+      "id": "log004",
+      "itemId": "later001",
       "action": "created",
-      "timestamp": "2026-01-07T12:59:26.060Z",
+      "timestamp": "2026-01-05T14:00:00.000Z",
       "details": {}
     },
     {
-      "id": "d4b6e327",
-      "itemId": "b0aeb5b2",
+      "id": "log005",
+      "itemId": "later002",
       "action": "created",
-      "timestamp": "2026-01-07T12:59:26.186Z",
+      "timestamp": "2026-01-03T09:00:00.000Z",
       "details": {}
     },
     {
-      "id": "764f4358",
-      "itemId": "eb8031a3",
+      "id": "log006",
+      "itemId": "later003",
       "action": "created",
-      "timestamp": "2026-01-07T12:59:26.314Z",
+      "timestamp": "2026-01-02T11:00:00.000Z",
       "details": {}
     },
     {
-      "id": "74802bbf",
-      "itemId": "648136fe",
+      "id": "log007",
+      "itemId": "cando001",
       "action": "created",
-      "timestamp": "2026-01-07T12:59:26.450Z",
+      "timestamp": "2026-01-06T16:00:00.000Z",
       "details": {}
     },
     {
-      "id": "63e3f8ea",
-      "itemId": "57af0a0e",
+      "id": "log008",
+      "itemId": "cando002",
       "action": "created",
-      "timestamp": "2026-01-07T12:59:26.596Z",
+      "timestamp": "2026-01-04T12:00:00.000Z",
       "details": {}
     },
     {
-      "id": "36173e57",
-      "itemId": "6648b883",
+      "id": "log009",
+      "itemId": "cando003",
       "action": "created",
-      "timestamp": "2026-01-07T12:59:26.746Z",
+      "timestamp": "2026-01-01T10:00:00.000Z",
       "details": {}
     },
     {
-      "id": "267bbf0f",
-      "itemId": "b0aeb5b2",
-      "action": "postponed",
-      "timestamp": "2026-01-07T12:59:59.156Z",
-      "details": {
-        "fromDate": "2026-01-07",
-        "toDate": "2026-01-08"
-      }
-    },
-    {
-      "id": "71d62bf4",
-      "itemId": "c90cae52",
+      "id": "log010",
+      "itemId": "inbox001",
       "action": "created",
-      "timestamp": "2026-01-07T13:00:33.802Z",
+      "timestamp": "2026-01-07T20:00:00.000Z",
       "details": {}
     },
     {
-      "id": "0e2fd42f",
-      "itemId": "c90cae52",
-      "action": "clarified",
-      "timestamp": "2026-01-07T13:01:28.674Z",
-      "details": {
-        "oldValue": "inbox",
-        "newValue": "active"
-      }
-    },
-    {
-      "id": "31dae767",
-      "itemId": "b0aeb5b2",
-      "action": "completed",
-      "timestamp": "2026-01-07T15:09:39.960Z",
-      "details": {}
-    },
-    {
-      "id": "8ae4b885",
-      "itemId": "57af0a0e",
-      "action": "completed",
-      "timestamp": "2026-01-07T15:09:41.537Z",
-      "details": {}
-    },
-    {
-      "id": "c98122e5",
-      "itemId": "c90cae52",
-      "action": "completed",
-      "timestamp": "2026-01-07T15:09:43.085Z",
-      "details": {}
-    },
-    {
-      "id": "a20b3092",
-      "itemId": "328f453e",
-      "action": "completed",
-      "timestamp": "2026-01-07T15:23:42.992Z",
-      "details": {}
-    },
-    {
-      "id": "925398f4",
-      "itemId": "648136fe",
-      "action": "completed",
-      "timestamp": "2026-01-07T15:24:44.371Z",
-      "details": {}
-    },
-    {
-      "id": "fc1c1398",
-      "itemId": "6648b883",
-      "action": "completed",
-      "timestamp": "2026-01-07T15:24:45.045Z",
-      "details": {}
-    },
-    {
-      "id": "ff24e322",
-      "itemId": "f3a8c12b",
-      "action": "uncompleted",
-      "timestamp": "2026-01-07T15:24:49.827Z",
-      "details": {}
-    },
-    {
-      "id": "d03d97a6",
-      "itemId": "b6c1e9f4",
-      "action": "uncompleted",
-      "timestamp": "2026-01-07T15:24:52.326Z",
-      "details": {}
-    },
-    {
-      "id": "b38f6739",
-      "itemId": "64617469",
-      "action": "uncompleted",
-      "timestamp": "2026-01-07T15:24:53.207Z",
-      "details": {}
-    },
-    {
-      "id": "ac92d59e",
-      "itemId": "87db4f83",
-      "action": "uncompleted",
-      "timestamp": "2026-01-07T15:24:53.669Z",
-      "details": {}
-    },
-    {
-      "id": "eda5b7e5",
-      "itemId": "328f453e",
-      "action": "uncompleted",
-      "timestamp": "2026-01-07T15:24:53.934Z",
-      "details": {}
-    },
-    {
-      "id": "241a1cca",
-      "itemId": "c1f6e8d3",
-      "action": "uncompleted",
-      "timestamp": "2026-01-07T15:24:54.318Z",
-      "details": {}
-    },
-    {
-      "id": "05c37c7f",
-      "itemId": "f3a8c12b",
-      "action": "postponed",
-      "timestamp": "2026-01-07T15:25:11.770Z",
-      "details": {
-        "fromDate": "2026-01-07",
-        "toDate": "2026-01-08"
-      }
-    },
-    {
-      "id": "63884569",
-      "itemId": "b6c1e9f4",
-      "action": "postponed",
-      "timestamp": "2026-01-07T15:25:15.494Z",
-      "details": {
-        "fromDate": "2026-01-07",
-        "toDate": "2026-01-08"
-      }
-    },
-    {
-      "id": "7365402a",
-      "itemId": "87db4f83",
-      "action": "postponed",
-      "timestamp": "2026-01-07T15:25:18.509Z",
-      "details": {
-        "fromDate": "2026-01-07",
-        "toDate": "2026-01-08"
-      }
-    },
-    {
-      "id": "0c467cd6",
-      "itemId": "328f453e",
-      "action": "completed",
-      "timestamp": "2026-01-07T15:39:56.792Z",
-      "details": {}
-    },
-    {
-      "id": "4f39b98c",
-      "itemId": "64617469",
-      "action": "completed",
-      "timestamp": "2026-01-07T15:40:06.579Z",
-      "details": {}
-    },
-    {
-      "id": "a6fd3449",
-      "itemId": "eb8031a3",
-      "action": "completed",
-      "timestamp": "2026-01-07T15:40:06.583Z",
-      "details": {}
-    },
-    {
-      "id": "d55dad7d",
-      "itemId": "c1f6e8d3",
-      "action": "completed",
-      "timestamp": "2026-01-07T15:40:10.369Z",
-      "details": {}
-    },
-    {
-      "id": "48a2abbc",
-      "itemId": "328f453e",
-      "action": "uncompleted",
-      "timestamp": "2026-01-07T15:40:19.488Z",
-      "details": {}
-    },
-    {
-      "id": "5f2e36e1",
-      "itemId": "f1e7c4b2",
-      "action": "uncompleted",
-      "timestamp": "2026-01-07T15:40:34.292Z",
-      "details": {}
-    },
-    {
-      "id": "1bf15818",
-      "itemId": "64617469",
-      "action": "uncompleted",
-      "timestamp": "2026-01-07T15:40:34.294Z",
-      "details": {}
-    },
-    {
-      "id": "dcd77530",
-      "itemId": "f1e7c4b2",
-      "action": "completed",
-      "timestamp": "2026-01-07T15:40:43.859Z",
-      "details": {}
-    },
-    {
-      "id": "d744b420",
-      "itemId": "f3a8c12b",
-      "action": "completed",
-      "timestamp": "2026-01-07T15:41:23.166Z",
-      "details": {}
-    },
-    {
-      "id": "bce2089d",
-      "itemId": "87db4f83",
-      "action": "completed",
-      "timestamp": "2026-01-07T15:41:23.169Z",
-      "details": {}
-    },
-    {
-      "id": "2f70459b",
-      "itemId": "b6c1e9f4",
-      "action": "completed",
-      "timestamp": "2026-01-07T15:42:03.315Z",
-      "details": {}
-    },
-    {
-      "id": "b4df9712",
-      "itemId": "f1e7c4b2",
-      "action": "uncompleted",
-      "timestamp": "2026-01-07T15:42:13.752Z",
-      "details": {}
-    },
-    {
-      "id": "df724889",
-      "itemId": "eb8031a3",
-      "action": "uncompleted",
-      "timestamp": "2026-01-07T15:42:13.766Z",
-      "details": {}
-    },
-    {
-      "id": "5fc7e668",
-      "itemId": "c1f6e8d3",
-      "action": "uncompleted",
-      "timestamp": "2026-01-07T15:42:13.774Z",
-      "details": {}
-    },
-    {
-      "id": "c977a293",
-      "itemId": "f1e7c4b2",
-      "action": "completed",
-      "timestamp": "2026-01-07T15:42:26.353Z",
-      "details": {}
-    },
-    {
-      "id": "40efdfac",
-      "itemId": "64617469",
-      "action": "completed",
-      "timestamp": "2026-01-07T15:42:26.358Z",
-      "details": {}
-    },
-    {
-      "id": "e07666d3",
-      "itemId": "328f453e",
-      "action": "completed",
-      "timestamp": "2026-01-07T15:42:26.364Z",
-      "details": {}
-    },
-    {
-      "id": "bf9ba83e",
-      "itemId": "eb8031a3",
-      "action": "completed",
-      "timestamp": "2026-01-07T15:42:26.368Z",
-      "details": {}
-    },
-    {
-      "id": "dd040705",
-      "itemId": "c1f6e8d3",
-      "action": "completed",
-      "timestamp": "2026-01-07T15:42:26.372Z",
-      "details": {}
-    },
-    {
-      "id": "1f3c0979",
-      "itemId": "3d4e8b68",
+      "id": "log011",
+      "itemId": "inbox002",
       "action": "created",
-      "timestamp": "2026-01-07T15:44:04.419Z",
+      "timestamp": "2026-01-06T18:00:00.000Z",
       "details": {}
     },
     {
-      "id": "97558076",
-      "itemId": "65feb212",
+      "id": "log012",
+      "itemId": "inbox003",
       "action": "created",
-      "timestamp": "2026-01-07T15:44:04.478Z",
+      "timestamp": "2026-01-05T15:00:00.000Z",
       "details": {}
     },
     {
-      "id": "b3066294",
-      "itemId": "3435cb4d",
+      "id": "log013",
+      "itemId": "inbox004",
       "action": "created",
-      "timestamp": "2026-01-07T15:44:04.533Z",
+      "timestamp": "2026-01-04T19:00:00.000Z",
       "details": {}
     },
     {
-      "id": "7fa1cdf9",
-      "itemId": "f5aec548",
-      "action": "created",
-      "timestamp": "2026-01-07T15:44:04.588Z",
-      "details": {}
-    },
-    {
-      "id": "7a521893",
-      "itemId": "12ee2faa",
-      "action": "created",
-      "timestamp": "2026-01-07T15:44:04.642Z",
-      "details": {}
-    },
-    {
-      "id": "d128b2ea",
-      "itemId": "ef7c4dd6",
-      "action": "created",
-      "timestamp": "2026-01-07T15:44:04.700Z",
-      "details": {}
-    },
-    {
-      "id": "0a6f83d4",
-      "itemId": "82b50ea2",
-      "action": "created",
-      "timestamp": "2026-01-07T15:44:04.756Z",
-      "details": {}
-    },
-    {
-      "id": "a0ac2f5b",
-      "itemId": "3fbe7dd6",
-      "action": "created",
-      "timestamp": "2026-01-07T15:44:04.810Z",
-      "details": {}
-    },
-    {
-      "id": "7a4f16e6",
-      "itemId": "e5d578fd",
-      "action": "created",
-      "timestamp": "2026-01-07T15:44:04.864Z",
-      "details": {}
-    },
-    {
-      "id": "540eb5d0",
-      "itemId": "afcbeffd",
-      "action": "created",
-      "timestamp": "2026-01-07T15:44:04.917Z",
-      "details": {}
-    },
-    {
-      "id": "24c4919f",
-      "itemId": "3cbced62",
-      "action": "created",
-      "timestamp": "2026-01-07T15:44:04.972Z",
-      "details": {}
-    },
-    {
-      "id": "ebd5f5d8",
-      "itemId": "26211be6",
-      "action": "created",
-      "timestamp": "2026-01-07T15:44:05.027Z",
-      "details": {}
-    },
-    {
-      "id": "30800623",
-      "itemId": "7821f77a",
-      "action": "created",
-      "timestamp": "2026-01-07T15:47:55.496Z",
-      "details": {}
-    },
-    {
-      "id": "0337728d",
-      "itemId": "d8679841",
-      "action": "created",
-      "timestamp": "2026-01-07T15:47:55.529Z",
-      "details": {}
-    },
-    {
-      "id": "163858c0",
-      "itemId": "6f286abd",
-      "action": "created",
-      "timestamp": "2026-01-07T15:47:55.563Z",
-      "details": {}
-    },
-    {
-      "id": "4c504e22",
-      "itemId": "3cbfa070",
-      "action": "created",
-      "timestamp": "2026-01-07T15:47:55.603Z",
-      "details": {}
-    },
-    {
-      "id": "0502dcf0",
-      "itemId": "b62f9379",
-      "action": "created",
-      "timestamp": "2026-01-07T15:47:55.638Z",
-      "details": {}
-    },
-    {
-      "id": "b5ab610e",
-      "itemId": "2a4130f9",
-      "action": "created",
-      "timestamp": "2026-01-07T15:47:57.807Z",
-      "details": {}
-    },
-    {
-      "id": "867742df",
-      "itemId": "8efd8914",
-      "action": "created",
-      "timestamp": "2026-01-07T15:47:57.845Z",
-      "details": {}
-    },
-    {
-      "id": "9e25ef6b",
-      "itemId": "813b00dc",
-      "action": "created",
-      "timestamp": "2026-01-07T15:47:57.880Z",
-      "details": {}
-    },
-    {
-      "id": "633d2d97",
-      "itemId": "27e9ea4e",
-      "action": "created",
-      "timestamp": "2026-01-07T15:47:57.914Z",
-      "details": {}
-    },
-    {
-      "id": "4b4eac1a",
-      "itemId": "fe3aa1b2",
-      "action": "created",
-      "timestamp": "2026-01-07T15:47:57.947Z",
-      "details": {}
-    },
-    {
-      "id": "117e7f79",
-      "itemId": "7821f77a",
+      "id": "a0ae8ae0",
+      "itemId": "cando002",
       "action": "completed",
-      "timestamp": "2026-01-07T15:48:30.631Z",
-      "details": {}
-    },
-    {
-      "id": "7ed943b8",
-      "itemId": "d8679841",
-      "action": "completed",
-      "timestamp": "2026-01-07T15:48:30.667Z",
-      "details": {}
-    },
-    {
-      "id": "327c483b",
-      "itemId": "3cbfa070",
-      "action": "completed",
-      "timestamp": "2026-01-07T15:48:30.701Z",
-      "details": {}
-    },
-    {
-      "id": "a300ab9a",
-      "itemId": "f3a8c12b",
-      "action": "completed",
-      "timestamp": "2026-01-07T15:49:16.407Z",
-      "details": {}
-    },
-    {
-      "id": "2b7d21d4",
-      "itemId": "3435cb4d",
-      "action": "completed",
-      "timestamp": "2026-01-07T15:49:16.439Z",
-      "details": {}
-    },
-    {
-      "id": "fe9b34fe",
-      "itemId": "a4b7c9e1",
-      "action": "completed",
-      "timestamp": "2026-01-07T15:49:16.479Z",
-      "details": {}
-    },
-    {
-      "id": "efdc374e",
-      "itemId": "f5aec548",
-      "action": "completed",
-      "timestamp": "2026-01-07T15:49:16.519Z",
-      "details": {}
-    },
-    {
-      "id": "4f1d3eef",
-      "itemId": "d7e4b9a2",
-      "action": "completed",
-      "timestamp": "2026-01-07T15:49:16.555Z",
-      "details": {}
-    },
-    {
-      "id": "a6190f66",
-      "itemId": "6f286abd",
-      "action": "completed",
-      "timestamp": "2026-01-07T15:51:34.307Z",
-      "details": {}
-    },
-    {
-      "id": "05d67f67",
-      "itemId": "b62f9379",
-      "action": "completed",
-      "timestamp": "2026-01-07T15:51:34.339Z",
-      "details": {}
-    },
-    {
-      "id": "d49f24f6",
-      "itemId": "3d4e8b68",
-      "action": "completed",
-      "timestamp": "2026-01-07T16:31:04.221Z",
-      "details": {}
-    },
-    {
-      "id": "be43f415",
-      "itemId": "65feb212",
-      "action": "completed",
-      "timestamp": "2026-01-07T16:31:04.226Z",
-      "details": {}
-    },
-    {
-      "id": "b02321b5",
-      "itemId": "12ee2faa",
-      "action": "completed",
-      "timestamp": "2026-01-07T16:31:04.231Z",
-      "details": {}
-    },
-    {
-      "id": "fc5a7c8d",
-      "itemId": "c1f6e8d3",
-      "action": "completed",
-      "timestamp": "2026-01-07T16:31:38.500Z",
-      "details": {}
-    },
-    {
-      "id": "9e9869c3",
-      "itemId": "ef7c4dd6",
-      "action": "completed",
-      "timestamp": "2026-01-07T16:31:38.539Z",
-      "details": {}
-    },
-    {
-      "id": "e1e497d8",
-      "itemId": "2a4130f9",
-      "action": "completed",
-      "timestamp": "2026-01-07T16:31:38.575Z",
-      "details": {}
-    },
-    {
-      "id": "91d7dd9c",
-      "itemId": "afcbeffd",
-      "action": "completed",
-      "timestamp": "2026-01-07T16:31:38.612Z",
-      "details": {}
-    },
-    {
-      "id": "03f88869",
-      "itemId": "8efd8914",
-      "action": "completed",
-      "timestamp": "2026-01-07T16:31:38.646Z",
-      "details": {}
-    },
-    {
-      "id": "13f95016",
-      "itemId": "82b50ea2",
-      "action": "completed",
-      "timestamp": "2026-01-07T16:31:38.684Z",
-      "details": {}
-    },
-    {
-      "id": "4862665a",
-      "itemId": "813b00dc",
-      "action": "completed",
-      "timestamp": "2026-01-07T16:31:41.776Z",
-      "details": {}
-    },
-    {
-      "id": "ac994793",
-      "itemId": "27e9ea4e",
-      "action": "completed",
-      "timestamp": "2026-01-07T16:31:41.812Z",
-      "details": {}
-    },
-    {
-      "id": "aa6dafae",
-      "itemId": "fe3aa1b2",
-      "action": "completed",
-      "timestamp": "2026-01-07T16:31:41.851Z",
-      "details": {}
-    },
-    {
-      "id": "a21c8d9b",
-      "itemId": "e5d578fd",
-      "action": "completed",
-      "timestamp": "2026-01-07T16:31:41.887Z",
-      "details": {}
-    },
-    {
-      "id": "eefab911",
-      "itemId": "3fbe7dd6",
-      "action": "completed",
-      "timestamp": "2026-01-07T16:31:41.923Z",
-      "details": {}
-    },
-    {
-      "id": "0f8be59c",
-      "itemId": "3cbced62",
-      "action": "completed",
-      "timestamp": "2026-01-07T16:31:41.962Z",
-      "details": {}
-    },
-    {
-      "id": "15cfd65b",
-      "itemId": "a2092259",
-      "action": "created",
-      "timestamp": "2026-01-07T16:41:52.642Z",
-      "details": {}
-    },
-    {
-      "id": "bb6136e9",
-      "itemId": "70c32e8e",
-      "action": "created",
-      "timestamp": "2026-01-07T16:52:45.849Z",
-      "details": {}
-    },
-    {
-      "id": "daf64c22",
-      "itemId": "a2092259",
-      "action": "completed",
-      "timestamp": "2026-01-07T16:52:52.217Z",
-      "details": {}
-    },
-    {
-      "id": "f70c9a12",
-      "itemId": "24bf9e8a",
-      "action": "created",
-      "timestamp": "2026-01-07T16:53:09.011Z",
-      "details": {}
-    },
-    {
-      "id": "35e68020",
-      "itemId": "24bf9e8a",
-      "action": "deleted",
-      "timestamp": "2026-01-07T16:56:59.888Z",
-      "details": {}
-    },
-    {
-      "id": "100d7a8a",
-      "itemId": "70c32e8e",
-      "action": "completed",
-      "timestamp": "2026-01-07T16:57:40.958Z",
-      "details": {}
-    },
-    {
-      "id": "df27a2f0",
-      "itemId": "b74768b9",
-      "action": "created",
-      "timestamp": "2026-01-07T16:58:01.778Z",
-      "details": {}
-    },
-    {
-      "id": "3a632ca4",
-      "itemId": "b74768b9",
-      "action": "completed",
-      "timestamp": "2026-01-07T16:58:19.815Z",
-      "details": {}
-    },
-    {
-      "id": "e0b3d8bc",
-      "itemId": "84d216c3",
-      "action": "created",
-      "timestamp": "2026-01-07T17:00:48.422Z",
-      "details": {}
-    },
-    {
-      "id": "34602c66",
-      "itemId": "e7cfcd07",
-      "action": "created",
-      "timestamp": "2026-01-07T17:01:17.883Z",
-      "details": {}
-    },
-    {
-      "id": "5bed4f8b",
-      "itemId": "aa07e8f3",
-      "action": "created",
-      "timestamp": "2026-01-07T17:01:26.272Z",
-      "details": {}
-    },
-    {
-      "id": "3e03de13",
-      "itemId": "84d216c3",
-      "action": "completed",
-      "timestamp": "2026-01-07T17:04:04.160Z",
-      "details": {}
-    },
-    {
-      "id": "80156a54",
-      "itemId": "e7cfcd07",
-      "action": "completed",
-      "timestamp": "2026-01-07T17:04:04.165Z",
-      "details": {}
-    },
-    {
-      "id": "dfa4a8c3",
-      "itemId": "aa07e8f3",
-      "action": "completed",
-      "timestamp": "2026-01-07T17:04:04.170Z",
-      "details": {}
-    },
-    {
-      "id": "bd8a15c4",
-      "itemId": "26211be6",
-      "action": "completed",
-      "timestamp": "2026-01-07T17:04:07.247Z",
-      "details": {}
-    },
-    {
-      "id": "361c31e5",
-      "itemId": "aecd6f00",
-      "action": "created",
-      "timestamp": "2026-01-07T17:04:16.511Z",
-      "details": {}
-    },
-    {
-      "id": "65ebcdac",
-      "itemId": "b495c1aa",
-      "action": "created",
-      "timestamp": "2026-01-07T17:04:44.788Z",
-      "details": {}
-    },
-    {
-      "id": "35ebacfe",
-      "itemId": "aecd6f00",
-      "action": "completed",
-      "timestamp": "2026-01-07T17:05:04.603Z",
-      "details": {}
-    },
-    {
-      "id": "839a1ed7",
-      "itemId": "b495c1aa",
-      "action": "postponed",
-      "timestamp": "2026-01-07T17:05:28.886Z",
-      "details": {
-        "fromDate": "2026-01-07",
-        "toDate": "2026-01-09"
-      }
-    },
-    {
-      "id": "62cc0c69",
-      "itemId": "20afbea4",
-      "action": "created",
-      "timestamp": "2026-01-07T17:07:55.267Z",
-      "details": {}
-    },
-    {
-      "id": "6eb24c59",
-      "itemId": "20afbea4",
-      "action": "completed",
-      "timestamp": "2026-01-07T17:08:15.901Z",
+      "timestamp": "2026-01-08T14:27:11.518Z",
       "details": {}
     }
   ]

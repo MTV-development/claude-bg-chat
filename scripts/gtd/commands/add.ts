@@ -6,6 +6,7 @@
  * Usage:
  *   add <title> [--priority high|medium|low] [--due YYYY-MM-DD|today|tomorrow] [--tags tag1,tag2]
  *               [--project "Project Name"] [--status inbox|active]
+ *               [--has-deadline] [--can-do-anytime]
  */
 
 import { loadTodos, saveTodos, generateId, parseDate, parseArgs, logActivity, getItemTab } from '../lib/store';
@@ -47,6 +48,12 @@ export async function add(args: string[]): Promise<CommandResult> {
   // Parse project
   const project = flags.project || null;
 
+  // Parse hasDeadline flag (defaults to true if dueDate is provided)
+  const hasDeadline = flags['has-deadline'] === 'true' || (dueDate !== null && flags['has-deadline'] !== 'false');
+
+  // Parse canDoAnytime flag
+  const canDoAnytime = flags['can-do-anytime'] === 'true';
+
   // Parse status (default: active if clear action, inbox if vague)
   // For now, default to 'active' since the item has a clear title
   // Inbox should be used explicitly or via smart routing in the skill
@@ -61,7 +68,7 @@ export async function add(args: string[]): Promise<CommandResult> {
     status = flags.status as ItemStatus;
   }
 
-  // Create new item with v2 fields
+  // Create new item with v3 fields
   const item: TodoItem = {
     id: generateId(),
     title,
@@ -71,6 +78,8 @@ export async function add(args: string[]): Promise<CommandResult> {
     priority,
     project,
     dueDate,
+    hasDeadline,
+    canDoAnytime,
     createdAt: new Date().toISOString(),
     completedAt: null,
     postponeCount: 0,

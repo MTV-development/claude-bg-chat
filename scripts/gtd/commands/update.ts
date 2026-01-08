@@ -6,6 +6,7 @@
  * Usage:
  *   update <id> [--title "..."] [--priority high|medium|low] [--due YYYY-MM-DD|today|tomorrow]
  *               [--project "..."] [--status inbox|active|someday] [--next-action "..."]
+ *               [--has-deadline true|false] [--can-do-anytime true|false]
  */
 
 import { loadTodos, saveTodos, findItem, parseDate, parseArgs, getItemTab } from '../lib/store';
@@ -90,6 +91,16 @@ export async function update(args: string[]): Promise<CommandResult> {
     } else if (flags.status !== 'done') {
       item.completedAt = null;
     }
+  }
+
+  // Update hasDeadline if provided
+  if (flags['has-deadline'] !== undefined) {
+    item.hasDeadline = flags['has-deadline'] === 'true';
+  }
+
+  // Update canDoAnytime if provided
+  if (flags['can-do-anytime'] !== undefined) {
+    item.canDoAnytime = flags['can-do-anytime'] === 'true';
   }
 
   await saveTodos(data);
