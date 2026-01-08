@@ -57,10 +57,21 @@ export function ThemeProvider({ children, defaultTheme = 'light' }: ThemeProvide
 
   // Initialize on mount - load saved theme from localStorage or system preference
   useEffect(() => {
+    // Disable transitions during initial theme application to prevent flash
+    document.documentElement.classList.add('no-transitions');
+
     const storedTheme = getStoredTheme();
     const initialTheme = storedTheme ?? getSystemPreference();
     setThemeState(initialTheme);
     applyTheme(initialTheme);
+
+    // Re-enable transitions after a short delay to ensure styles are applied
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        document.documentElement.classList.remove('no-transitions');
+      });
+    });
+
     setMounted(true);
   }, [applyTheme]);
 

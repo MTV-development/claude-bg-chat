@@ -140,6 +140,7 @@ test.describe('Theme Switching', () => {
     await page.goto('/');
 
     const body = page.locator('body');
+    const html = page.locator('html');
 
     // Get background color in light mode
     const lightBgColor = await body.evaluate(el =>
@@ -149,6 +150,12 @@ test.describe('Theme Switching', () => {
     // Toggle to dark mode
     const toggle = page.getByRole('switch');
     await toggle.click();
+
+    // Wait for the theme to be applied (data-theme attribute changes immediately)
+    await expect(html).toHaveAttribute('data-theme', 'dark');
+
+    // Wait for CSS transition to complete (200ms transition duration)
+    await page.waitForTimeout(250);
 
     // Get background color in dark mode
     const darkBgColor = await body.evaluate(el =>
