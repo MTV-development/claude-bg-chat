@@ -3,8 +3,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import PostponeDropdown from './PostponeDropdown';
 import ConfirmationModal from './ConfirmationModal';
+import AddItemModal from './AddItemModal';
 
-type TabType = 'focus' | 'optional' | 'inbox' | 'done' | 'howto';
+type TabType = 'focus' | 'optional' | 'inbox' | 'projects' | 'done' | 'howto';
 
 interface TodoItem {
   id: string;
@@ -27,6 +28,13 @@ interface TodoData {
   count: number;
 }
 
+interface Project {
+  name: string;
+  taskCount: number;
+  completedCount: number;
+  hasNextAction: boolean;
+}
+
 const POLL_INTERVAL = 2000;
 
 const priorityColors = {
@@ -45,6 +53,7 @@ const tabs: { id: TabType; label: string; description: string }[] = [
   { id: 'focus', label: 'Today', description: 'Due today or overdue' },
   { id: 'optional', label: 'Optional', description: 'Future or no deadline' },
   { id: 'inbox', label: 'Inbox', description: 'Needs clarification' },
+  { id: 'projects', label: 'Projects', description: 'Tasks by project' },
   { id: 'done', label: 'Done', description: 'Completed tasks' },
   { id: 'howto', label: 'How To', description: 'Beginner guide' },
 ];
@@ -85,6 +94,7 @@ export default function TodoList() {
     focus: 0,
     optional: 0,
     inbox: 0,
+    projects: 0,
     done: 0,
     howto: 0,
   });
@@ -93,14 +103,46 @@ export default function TodoList() {
   const [confirmationItem, setConfirmationItem] = useState<TodoItem | null>(null);
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [selectedProject, setSelectedProject] = useState<string | null>(null);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [addMode, setAddMode] = useState<'task' | 'project'>('task');
 
   const fetchTodos = useCallback(async () => {
     // Skip fetching for howto tab
     if (activeTab === 'howto') {
       setTodos([]);
+      setProjects([]);
       setIsLoading(false);
       return;
     }
+
+    // Handle projects tab
+    if (activeTab === 'projects') {
+      try {
+        if (selectedProject) {
+          // Fetch tasks for specific project
+          const response = await fetch(`/api/todos/projects?name=${encodeURIComponent(selectedProject)}`);
+          if (!response.ok) throw new Error('Failed to fetch project tasks');
+          const data = await response.json();
+          setTodos(data.items);
+        } else {
+          // Fetch projects list
+          const response = await fetch('/api/todos/projects');
+          if (!response.ok) throw new Error('Failed to fetch projects');
+          const data = await response.json();
+          setProjects(data.projects);
+          setTodos([]);
+        }
+        setError(null);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Unknown error');
+      } finally {
+        setIsLoading(false);
+      }
+      return;
+    }
+
     try {
       const response = await fetch(`/api/todos?tab=${activeTab}`);
       if (!response.ok) {
@@ -114,7 +156,7 @@ export default function TodoList() {
     } finally {
       setIsLoading(false);
     }
-  }, [activeTab]);
+  }, [activeTab, selectedProject]);
 
   // Fetch counts for all tabs
   const fetchCounts = useCallback(async () => {
@@ -123,13 +165,14 @@ export default function TodoList() {
         focus: 0,
         optional: 0,
         inbox: 0,
+        projects: 0,
         done: 0,
         howto: 0,
       };
 
-      // Fetch all tabs in parallel (skip howto)
+      // Fetch all tabs in parallel (skip howto and projects)
       await Promise.all(
-        tabs.filter(tab => tab.id !== 'howto').map(async (tab) => {
+        tabs.filter(tab => tab.id !== 'howto' && tab.id !== 'projects').map(async (tab) => {
           const response = await fetch(`/api/todos?tab=${tab.id}`);
           if (response.ok) {
             const data: TodoData = await response.json();
@@ -137,6 +180,13 @@ export default function TodoList() {
           }
         })
       );
+
+      // Fetch projects count separately
+      const projectsResponse = await fetch('/api/todos/projects');
+      if (projectsResponse.ok) {
+        const data = await projectsResponse.json();
+        counts.projects = data.count;
+      }
 
       setTabCounts(counts);
     } catch (err) {
@@ -207,9 +257,10 @@ export default function TodoList() {
     }
   };
 
-  // Clear selections when tab changes
+  // Clear selections and selected project when tab changes
   useEffect(() => {
     setSelectedIds(new Set());
+    setSelectedProject(null);
   }, [activeTab]);
 
   // Clean up stale selections when todos change
@@ -290,6 +341,21 @@ export default function TodoList() {
     }
   };
 
+  const handleOpenAddModal = (mode: 'task' | 'project') => {
+    setAddMode(mode);
+    setIsAddModalOpen(true);
+  };
+
+  const handleAddComplete = () => {
+    fetchTodos();
+    fetchCounts();
+  };
+
+  // Determine if we should show the floating add button
+  const showAddButton = activeTab === 'focus' || activeTab === 'optional' ||
+    (activeTab === 'projects' && !selectedProject) ||
+    (activeTab === 'projects' && selectedProject);
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full text-gray-500">
@@ -312,7 +378,7 @@ export default function TodoList() {
   }
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col relative">
       {/* Header with Tabs */}
       <div className="border-b border-gray-200 bg-white">
         <div className="px-4 py-2">
@@ -348,7 +414,7 @@ export default function TodoList() {
       {/* Todo List */}
       <div className="flex-1 overflow-y-auto p-4 relative">
         {/* Floating action button for selected items */}
-        {selectedIds.size > 0 && activeTab !== 'howto' && (
+        {selectedIds.size > 0 && activeTab !== 'howto' && !(activeTab === 'projects' && !selectedProject) && (
           <div className="sticky top-0 z-10 mb-3">
             <button
               onClick={handleBulkAction}
@@ -414,6 +480,124 @@ export default function TodoList() {
                 </ul>
               </div>
             </div>
+          </div>
+        ) : activeTab === 'projects' && !selectedProject ? (
+          // Projects list view
+          projects.length === 0 ? (
+            <div className="text-center text-gray-400 mt-8">
+              <p className="text-lg mb-2">No projects yet</p>
+              <p className="text-sm">Assign tasks to projects to see them here</p>
+            </div>
+          ) : (
+            <ul className="space-y-2">
+              {projects.map((project) => (
+                <li
+                  key={project.name}
+                  onClick={() => setSelectedProject(project.name)}
+                  className="border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow bg-white border-gray-200 cursor-pointer hover:bg-gray-50"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium text-gray-800">{project.name}</p>
+                      <p className="text-sm text-gray-500 mt-1">
+                        {project.taskCount - project.completedCount} active
+                        {project.completedCount > 0 && `, ${project.completedCount} done`}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {project.hasNextAction && (
+                        <span className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full">
+                          Has next action
+                        </span>
+                      )}
+                      <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )
+        ) : activeTab === 'projects' && selectedProject ? (
+          // Project tasks view
+          <div>
+            <button
+              onClick={() => setSelectedProject(null)}
+              className="flex items-center gap-1 text-blue-600 hover:text-blue-800 mb-4 text-sm font-medium"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              Back to Projects
+            </button>
+            <h3 className="text-lg font-semibold text-gray-800 mb-3">{selectedProject}</h3>
+            {todos.length === 0 ? (
+              <div className="text-center text-gray-400 mt-8">
+                <p className="text-lg mb-2">No active tasks</p>
+                <p className="text-sm">All tasks in this project are complete</p>
+              </div>
+            ) : (
+              <ul className="space-y-2">
+                {todos.map((todo) => (
+                  <li
+                    key={todo.id}
+                    className="border rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow bg-white border-gray-200"
+                  >
+                    <div className="flex items-start gap-3">
+                      <button
+                        onClick={() => toggleSelection(todo.id)}
+                        className={`mt-0.5 w-5 h-5 rounded transition-colors cursor-pointer flex items-center justify-center ${
+                          selectedIds.has(todo.id)
+                            ? 'bg-blue-500 hover:bg-blue-600'
+                            : 'border-2 border-gray-300 hover:border-blue-500 hover:bg-blue-50'
+                        }`}
+                        title="Select"
+                      >
+                        {selectedIds.has(todo.id) && (
+                          <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                          </svg>
+                        )}
+                      </button>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-gray-800">
+                          {todo.nextAction || todo.title}
+                        </p>
+                        {todo.nextAction && todo.nextAction !== todo.title && (
+                          <p className="text-xs text-gray-400 mt-0.5">{todo.title}</p>
+                        )}
+                        <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                          <span className={`text-xs px-2 py-0.5 rounded-full border ${priorityColors[todo.priority]}`}>
+                            {priorityIcons[todo.priority]} {todo.priority}
+                          </span>
+                          {todo.dueDate && (
+                            <span className={`text-xs px-2 py-0.5 rounded-full ${
+                              isOverdue(todo.dueDate)
+                                ? 'bg-red-50 text-red-600 font-medium'
+                                : 'bg-gray-100 text-gray-600'
+                            }`}>
+                              {isOverdue(todo.dueDate) && 'Overdue: '}
+                              {formatDate(todo.dueDate)}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      {/* Do Today button for project tasks */}
+                      <div className="ml-2 flex-shrink-0">
+                        <button
+                          onClick={() => handleDoToday(todo.id)}
+                          className="text-xs px-2 py-1 rounded bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors"
+                          title="Move to Today"
+                        >
+                          Do Today
+                        </button>
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         ) : todos.length === 0 ? (
           <div className="text-center text-gray-400 mt-8">
@@ -544,6 +728,21 @@ export default function TodoList() {
         )}
       </div>
 
+      {/* Floating Add Button */}
+      {showAddButton && (
+        <button
+          onClick={() => handleOpenAddModal(
+            activeTab === 'projects' && !selectedProject ? 'project' : 'task'
+          )}
+          className="absolute bottom-16 right-4 w-14 h-14 rounded-full bg-blue-500 hover:bg-blue-600 text-white shadow-lg hover:shadow-xl transition-all flex items-center justify-center"
+          title={activeTab === 'projects' && !selectedProject ? 'Add Project' : 'Add Task'}
+        >
+          <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
+        </button>
+      )}
+
       {/* Footer */}
       <div className="px-4 py-2 border-t border-gray-200 bg-gray-50">
         <p className="text-xs text-gray-400 text-center">
@@ -564,6 +763,16 @@ export default function TodoList() {
         confirmVariant="danger"
         onConfirm={handleRemoveTask}
         onCancel={handleKeepTask}
+      />
+
+      {/* Add Item Modal */}
+      <AddItemModal
+        isOpen={isAddModalOpen}
+        mode={addMode}
+        defaultProject={activeTab === 'projects' && selectedProject ? selectedProject : null}
+        defaultToToday={activeTab === 'focus'}
+        onClose={() => setIsAddModalOpen(false)}
+        onAdd={handleAddComplete}
       />
     </div>
   );

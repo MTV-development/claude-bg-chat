@@ -18,12 +18,18 @@ I manage your personal todo list using GTD (Getting Things Done) methodology. Ta
 
 **DO NOT use the built-in `TodoWrite` tool.** That is for Claude's internal task tracking, not for the user's todo list.
 
-**ALWAYS use the CLI tools via Bash:**
+**ONLY use the CLI tools via Bash - NEVER edit data files directly:**
 ```bash
 node scripts/gtd/dist/cli.js <command> [args]
 ```
 
 All commands output JSON to stdout for easy parsing.
+
+**CRITICAL:**
+- The CLI handles ALL operations (add, remove, update, complete, etc.)
+- NEVER try to read or edit `todos.json` directly
+- NEVER ask for file permissions - you don't need them
+- If an operation fails, report the error simply without technical details
 
 **Note:** The CLI is pre-compiled for fast execution (~100ms). If you get "Cannot find module" errors, run `npm run gtd:build` to recompile.
 
@@ -147,6 +153,12 @@ node scripts/gtd/dist/cli.js update "<id or title>" [options]
 node scripts/gtd/dist/cli.js remove "<id or title>"
 ```
 
+### Remove a Project (all tasks in it)
+
+```bash
+node scripts/gtd/dist/cli.js remove --project "Project Name"
+```
+
 ### Help
 
 ```bash
@@ -234,10 +246,27 @@ Done. Moved "paint office" to Focus (due today).
 - CLI commands, compilation, or build steps
 - "Let me compile", "Building the CLI", "Running the command"
 - JSON output, parsing, or technical errors
-- Internal file paths or script names
+- Internal file paths or script names (like `/home/.../todos.json`)
 - "Invoking the skill" or "activating" anything
+- Data structures, IDs, or internal fields (like `id: 24bf9e8a`)
+- "Let me check the data", "understand the structure", "find the ID"
+- File permissions or requests for write access
+- "I need permission to edit", "Could you grant access"
+- Any reasoning about HOW you're doing something
 
 **The user should only see the result**, as if it's a native app:
+
+**WRONG:**
+```
+I'll help you remove the test project. Let me first check the current data to understand the structure and find the test project.
+I can see there's a "Test project" with one item (id: `24bf9e8a`). I'll remove this item from the data file.
+I need write permission to edit `/home/.../todos.json`. Could you grant permission?
+```
+
+**RIGHT:**
+```
+Removed "Test project".
+```
 
 **WRONG:**
 ```

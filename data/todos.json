@@ -1,6 +1,6 @@
 {
   "version": "2.0",
-  "lastModified": "2026-01-07T15:51:34.339Z",
+  "lastModified": "2026-01-07T17:08:15.901Z",
   "lastAutoReview": null,
   "items": [
     {
@@ -41,7 +41,7 @@
       "project": null,
       "dueDate": "2026-01-07",
       "createdAt": "2026-01-06T12:00:00.000Z",
-      "completedAt": "2026-01-07T15:42:26.372Z",
+      "completedAt": "2026-01-07T16:31:38.500Z",
       "postponeCount": 0,
       "tags": []
     },
@@ -287,13 +287,13 @@
       "id": "3d4e8b68",
       "title": "Review quarterly report",
       "nextAction": "Review quarterly report",
-      "status": "active",
-      "completed": false,
+      "status": "done",
+      "completed": true,
       "priority": "high",
       "project": null,
       "dueDate": "2026-01-07",
       "createdAt": "2026-01-07T15:44:04.417Z",
-      "completedAt": null,
+      "completedAt": "2026-01-07T16:31:04.221Z",
       "postponeCount": 0,
       "tags": []
     },
@@ -301,13 +301,13 @@
       "id": "65feb212",
       "title": "Schedule dentist appointment",
       "nextAction": "Schedule dentist appointment",
-      "status": "active",
-      "completed": false,
+      "status": "done",
+      "completed": true,
       "priority": "medium",
       "project": null,
       "dueDate": "2026-01-07",
       "createdAt": "2026-01-07T15:44:04.476Z",
-      "completedAt": null,
+      "completedAt": "2026-01-07T16:31:04.226Z",
       "postponeCount": 0,
       "tags": []
     },
@@ -343,13 +343,13 @@
       "id": "12ee2faa",
       "title": "Buy groceries",
       "nextAction": "Buy groceries",
-      "status": "active",
-      "completed": false,
+      "status": "done",
+      "completed": true,
       "priority": "medium",
       "project": null,
       "dueDate": "2026-01-07",
       "createdAt": "2026-01-07T15:44:04.640Z",
-      "completedAt": null,
+      "completedAt": "2026-01-07T16:31:04.231Z",
       "postponeCount": 0,
       "tags": []
     },
@@ -357,13 +357,13 @@
       "id": "ef7c4dd6",
       "title": "Read new book chapter",
       "nextAction": "Read new book chapter",
-      "status": "active",
-      "completed": false,
+      "status": "done",
+      "completed": true,
       "priority": "medium",
       "project": null,
       "dueDate": "2026-01-10",
       "createdAt": "2026-01-07T15:44:04.698Z",
-      "completedAt": null,
+      "completedAt": "2026-01-07T16:31:38.539Z",
       "postponeCount": 0,
       "tags": []
     },
@@ -371,13 +371,13 @@
       "id": "82b50ea2",
       "title": "Clean garage",
       "nextAction": "Clean garage",
-      "status": "active",
-      "completed": false,
+      "status": "done",
+      "completed": true,
       "priority": "medium",
       "project": null,
       "dueDate": "2026-01-14",
       "createdAt": "2026-01-07T15:44:04.754Z",
-      "completedAt": null,
+      "completedAt": "2026-01-07T16:31:38.684Z",
       "postponeCount": 0,
       "tags": []
     },
@@ -385,13 +385,13 @@
       "id": "3fbe7dd6",
       "title": "Update resume",
       "nextAction": "Update resume",
-      "status": "active",
-      "completed": false,
+      "status": "done",
+      "completed": true,
       "priority": "low",
       "project": null,
       "dueDate": null,
       "createdAt": "2026-01-07T15:44:04.807Z",
-      "completedAt": null,
+      "completedAt": "2026-01-07T16:31:41.923Z",
       "postponeCount": 0,
       "tags": []
     },
@@ -399,13 +399,13 @@
       "id": "e5d578fd",
       "title": "Learn TypeScript generics",
       "nextAction": "Learn TypeScript generics",
-      "status": "active",
-      "completed": false,
+      "status": "done",
+      "completed": true,
       "priority": "medium",
       "project": "Learning",
       "dueDate": null,
       "createdAt": "2026-01-07T15:44:04.862Z",
-      "completedAt": null,
+      "completedAt": "2026-01-07T16:31:41.887Z",
       "postponeCount": 0,
       "tags": []
     },
@@ -413,13 +413,13 @@
       "id": "afcbeffd",
       "title": "Plan weekend trip",
       "nextAction": "Plan weekend trip",
-      "status": "active",
-      "completed": false,
+      "status": "done",
+      "completed": true,
       "priority": "medium",
       "project": null,
       "dueDate": "2026-01-12",
       "createdAt": "2026-01-07T15:44:04.915Z",
-      "completedAt": null,
+      "completedAt": "2026-01-07T16:31:38.611Z",
       "postponeCount": 0,
       "tags": []
     },
@@ -427,13 +427,13 @@
       "id": "3cbced62",
       "title": "Organize photo library",
       "nextAction": "Organize photo library",
-      "status": "active",
-      "completed": false,
+      "status": "done",
+      "completed": true,
       "priority": "low",
       "project": null,
       "dueDate": null,
       "createdAt": "2026-01-07T15:44:04.969Z",
-      "completedAt": null,
+      "completedAt": "2026-01-07T16:31:41.962Z",
       "postponeCount": 0,
       "tags": []
     },
@@ -441,13 +441,13 @@
       "id": "26211be6",
       "title": "Call mom",
       "nextAction": "Call mom",
-      "status": "active",
-      "completed": false,
+      "status": "done",
+      "completed": true,
       "priority": "medium",
       "project": null,
       "dueDate": "2026-01-09",
       "createdAt": "2026-01-07T15:44:05.024Z",
-      "completedAt": null,
+      "completedAt": "2026-01-07T17:04:07.247Z",
       "postponeCount": 0,
       "tags": []
     },
@@ -525,13 +525,13 @@
       "id": "2a4130f9",
       "title": "Research new testing framework",
       "nextAction": "Research new testing framework",
-      "status": "active",
-      "completed": false,
+      "status": "done",
+      "completed": true,
       "priority": "medium",
       "project": null,
       "dueDate": "2026-01-10",
       "createdAt": "2026-01-07T15:47:57.805Z",
-      "completedAt": null,
+      "completedAt": "2026-01-07T16:31:38.574Z",
       "postponeCount": 0,
       "tags": []
     },
@@ -539,13 +539,13 @@
       "id": "8efd8914",
       "title": "Plan team retrospective",
       "nextAction": "Plan team retrospective",
-      "status": "active",
-      "completed": false,
+      "status": "done",
+      "completed": true,
       "priority": "medium",
       "project": null,
       "dueDate": "2026-01-12",
       "createdAt": "2026-01-07T15:47:57.842Z",
-      "completedAt": null,
+      "completedAt": "2026-01-07T16:31:38.646Z",
       "postponeCount": 0,
       "tags": []
     },
@@ -553,13 +553,13 @@
       "id": "813b00dc",
       "title": "Refactor database queries",
       "nextAction": "Refactor database queries",
-      "status": "active",
-      "completed": false,
+      "status": "done",
+      "completed": true,
       "priority": "medium",
       "project": null,
       "dueDate": "2026-01-14",
       "createdAt": "2026-01-07T15:47:57.877Z",
-      "completedAt": null,
+      "completedAt": "2026-01-07T16:31:41.776Z",
       "postponeCount": 0,
       "tags": []
     },
@@ -567,13 +567,13 @@
       "id": "27e9ea4e",
       "title": "Write blog post draft",
       "nextAction": "Write blog post draft",
-      "status": "active",
-      "completed": false,
+      "status": "done",
+      "completed": true,
       "priority": "medium",
       "project": null,
       "dueDate": "2026-01-17",
       "createdAt": "2026-01-07T15:47:57.912Z",
-      "completedAt": null,
+      "completedAt": "2026-01-07T16:31:41.811Z",
       "postponeCount": 0,
       "tags": []
     },
@@ -581,13 +581,139 @@
       "id": "fe3aa1b2",
       "title": "Review quarterly goals",
       "nextAction": "Review quarterly goals",
-      "status": "active",
-      "completed": false,
+      "status": "done",
+      "completed": true,
       "priority": "medium",
       "project": null,
       "dueDate": "2026-01-21",
       "createdAt": "2026-01-07T15:47:57.945Z",
+      "completedAt": "2026-01-07T16:31:41.851Z",
+      "postponeCount": 0,
+      "tags": []
+    },
+    {
+      "id": "a2092259",
+      "title": "Developing GTD chat",
+      "nextAction": "Developing GTD chat",
+      "status": "done",
+      "completed": true,
+      "priority": "medium",
+      "project": "Developing GTD chat",
+      "dueDate": null,
+      "createdAt": "2026-01-07T16:41:52.640Z",
+      "completedAt": "2026-01-07T16:52:52.217Z",
+      "postponeCount": 0,
+      "tags": []
+    },
+    {
+      "id": "70c32e8e",
+      "title": "Do initial testing and figure out improvements",
+      "nextAction": "Do initial testing and figure out improvements",
+      "status": "done",
+      "completed": true,
+      "priority": "medium",
+      "project": "Developing GTD chat",
+      "dueDate": "2026-01-07",
+      "createdAt": "2026-01-07T16:52:45.849Z",
+      "completedAt": "2026-01-07T16:57:40.958Z",
+      "postponeCount": 0,
+      "tags": []
+    },
+    {
+      "id": "b74768b9",
+      "title": "test",
+      "nextAction": "test",
+      "status": "done",
+      "completed": true,
+      "priority": "medium",
+      "project": "Developing GTD chat",
+      "dueDate": "2026-01-07",
+      "createdAt": "2026-01-07T16:58:01.778Z",
+      "completedAt": "2026-01-07T16:58:19.815Z",
+      "postponeCount": 0,
+      "tags": []
+    },
+    {
+      "id": "84d216c3",
+      "title": "Test",
+      "nextAction": "Test",
+      "status": "done",
+      "completed": true,
+      "priority": "medium",
+      "project": null,
+      "dueDate": "2026-01-07",
+      "createdAt": "2026-01-07T17:00:48.422Z",
+      "completedAt": "2026-01-07T17:04:04.159Z",
+      "postponeCount": 0,
+      "tags": []
+    },
+    {
+      "id": "e7cfcd07",
+      "title": "Test 2",
+      "nextAction": "Test 2",
+      "status": "done",
+      "completed": true,
+      "priority": "medium",
+      "project": null,
+      "dueDate": "2026-01-07",
+      "createdAt": "2026-01-07T17:01:17.883Z",
+      "completedAt": "2026-01-07T17:04:04.165Z",
+      "postponeCount": 0,
+      "tags": []
+    },
+    {
+      "id": "aa07e8f3",
+      "title": "test 2",
+      "nextAction": "test 2",
+      "status": "done",
+      "completed": true,
+      "priority": "medium",
+      "project": null,
+      "dueDate": "2026-01-07",
+      "createdAt": "2026-01-07T17:01:26.272Z",
+      "completedAt": "2026-01-07T17:04:04.170Z",
+      "postponeCount": 0,
+      "tags": []
+    },
+    {
+      "id": "aecd6f00",
+      "title": "test 1",
+      "nextAction": "test 1",
+      "status": "done",
+      "completed": true,
+      "priority": "medium",
+      "project": null,
+      "dueDate": null,
+      "createdAt": "2026-01-07T17:04:16.511Z",
+      "completedAt": "2026-01-07T17:05:04.603Z",
+      "postponeCount": 0,
+      "tags": []
+    },
+    {
+      "id": "b495c1aa",
+      "title": "Buy groceries",
+      "nextAction": "Buy groceries",
+      "status": "active",
+      "completed": false,
+      "priority": "medium",
+      "project": null,
+      "dueDate": "2026-01-09",
+      "createdAt": "2026-01-07T17:04:44.786Z",
       "completedAt": null,
+      "postponeCount": 1,
+      "tags": []
+    },
+    {
+      "id": "20afbea4",
+      "title": "tst",
+      "nextAction": "tst",
+      "status": "done",
+      "completed": true,
+      "priority": "medium",
+      "project": null,
+      "dueDate": "2026-01-07",
+      "createdAt": "2026-01-07T17:07:55.267Z",
+      "completedAt": "2026-01-07T17:08:15.901Z",
       "postponeCount": 0,
       "tags": []
     }
@@ -1377,6 +1503,261 @@
       "itemId": "b62f9379",
       "action": "completed",
       "timestamp": "2026-01-07T15:51:34.339Z",
+      "details": {}
+    },
+    {
+      "id": "d49f24f6",
+      "itemId": "3d4e8b68",
+      "action": "completed",
+      "timestamp": "2026-01-07T16:31:04.221Z",
+      "details": {}
+    },
+    {
+      "id": "be43f415",
+      "itemId": "65feb212",
+      "action": "completed",
+      "timestamp": "2026-01-07T16:31:04.226Z",
+      "details": {}
+    },
+    {
+      "id": "b02321b5",
+      "itemId": "12ee2faa",
+      "action": "completed",
+      "timestamp": "2026-01-07T16:31:04.231Z",
+      "details": {}
+    },
+    {
+      "id": "fc5a7c8d",
+      "itemId": "c1f6e8d3",
+      "action": "completed",
+      "timestamp": "2026-01-07T16:31:38.500Z",
+      "details": {}
+    },
+    {
+      "id": "9e9869c3",
+      "itemId": "ef7c4dd6",
+      "action": "completed",
+      "timestamp": "2026-01-07T16:31:38.539Z",
+      "details": {}
+    },
+    {
+      "id": "e1e497d8",
+      "itemId": "2a4130f9",
+      "action": "completed",
+      "timestamp": "2026-01-07T16:31:38.575Z",
+      "details": {}
+    },
+    {
+      "id": "91d7dd9c",
+      "itemId": "afcbeffd",
+      "action": "completed",
+      "timestamp": "2026-01-07T16:31:38.612Z",
+      "details": {}
+    },
+    {
+      "id": "03f88869",
+      "itemId": "8efd8914",
+      "action": "completed",
+      "timestamp": "2026-01-07T16:31:38.646Z",
+      "details": {}
+    },
+    {
+      "id": "13f95016",
+      "itemId": "82b50ea2",
+      "action": "completed",
+      "timestamp": "2026-01-07T16:31:38.684Z",
+      "details": {}
+    },
+    {
+      "id": "4862665a",
+      "itemId": "813b00dc",
+      "action": "completed",
+      "timestamp": "2026-01-07T16:31:41.776Z",
+      "details": {}
+    },
+    {
+      "id": "ac994793",
+      "itemId": "27e9ea4e",
+      "action": "completed",
+      "timestamp": "2026-01-07T16:31:41.812Z",
+      "details": {}
+    },
+    {
+      "id": "aa6dafae",
+      "itemId": "fe3aa1b2",
+      "action": "completed",
+      "timestamp": "2026-01-07T16:31:41.851Z",
+      "details": {}
+    },
+    {
+      "id": "a21c8d9b",
+      "itemId": "e5d578fd",
+      "action": "completed",
+      "timestamp": "2026-01-07T16:31:41.887Z",
+      "details": {}
+    },
+    {
+      "id": "eefab911",
+      "itemId": "3fbe7dd6",
+      "action": "completed",
+      "timestamp": "2026-01-07T16:31:41.923Z",
+      "details": {}
+    },
+    {
+      "id": "0f8be59c",
+      "itemId": "3cbced62",
+      "action": "completed",
+      "timestamp": "2026-01-07T16:31:41.962Z",
+      "details": {}
+    },
+    {
+      "id": "15cfd65b",
+      "itemId": "a2092259",
+      "action": "created",
+      "timestamp": "2026-01-07T16:41:52.642Z",
+      "details": {}
+    },
+    {
+      "id": "bb6136e9",
+      "itemId": "70c32e8e",
+      "action": "created",
+      "timestamp": "2026-01-07T16:52:45.849Z",
+      "details": {}
+    },
+    {
+      "id": "daf64c22",
+      "itemId": "a2092259",
+      "action": "completed",
+      "timestamp": "2026-01-07T16:52:52.217Z",
+      "details": {}
+    },
+    {
+      "id": "f70c9a12",
+      "itemId": "24bf9e8a",
+      "action": "created",
+      "timestamp": "2026-01-07T16:53:09.011Z",
+      "details": {}
+    },
+    {
+      "id": "35e68020",
+      "itemId": "24bf9e8a",
+      "action": "deleted",
+      "timestamp": "2026-01-07T16:56:59.888Z",
+      "details": {}
+    },
+    {
+      "id": "100d7a8a",
+      "itemId": "70c32e8e",
+      "action": "completed",
+      "timestamp": "2026-01-07T16:57:40.958Z",
+      "details": {}
+    },
+    {
+      "id": "df27a2f0",
+      "itemId": "b74768b9",
+      "action": "created",
+      "timestamp": "2026-01-07T16:58:01.778Z",
+      "details": {}
+    },
+    {
+      "id": "3a632ca4",
+      "itemId": "b74768b9",
+      "action": "completed",
+      "timestamp": "2026-01-07T16:58:19.815Z",
+      "details": {}
+    },
+    {
+      "id": "e0b3d8bc",
+      "itemId": "84d216c3",
+      "action": "created",
+      "timestamp": "2026-01-07T17:00:48.422Z",
+      "details": {}
+    },
+    {
+      "id": "34602c66",
+      "itemId": "e7cfcd07",
+      "action": "created",
+      "timestamp": "2026-01-07T17:01:17.883Z",
+      "details": {}
+    },
+    {
+      "id": "5bed4f8b",
+      "itemId": "aa07e8f3",
+      "action": "created",
+      "timestamp": "2026-01-07T17:01:26.272Z",
+      "details": {}
+    },
+    {
+      "id": "3e03de13",
+      "itemId": "84d216c3",
+      "action": "completed",
+      "timestamp": "2026-01-07T17:04:04.160Z",
+      "details": {}
+    },
+    {
+      "id": "80156a54",
+      "itemId": "e7cfcd07",
+      "action": "completed",
+      "timestamp": "2026-01-07T17:04:04.165Z",
+      "details": {}
+    },
+    {
+      "id": "dfa4a8c3",
+      "itemId": "aa07e8f3",
+      "action": "completed",
+      "timestamp": "2026-01-07T17:04:04.170Z",
+      "details": {}
+    },
+    {
+      "id": "bd8a15c4",
+      "itemId": "26211be6",
+      "action": "completed",
+      "timestamp": "2026-01-07T17:04:07.247Z",
+      "details": {}
+    },
+    {
+      "id": "361c31e5",
+      "itemId": "aecd6f00",
+      "action": "created",
+      "timestamp": "2026-01-07T17:04:16.511Z",
+      "details": {}
+    },
+    {
+      "id": "65ebcdac",
+      "itemId": "b495c1aa",
+      "action": "created",
+      "timestamp": "2026-01-07T17:04:44.788Z",
+      "details": {}
+    },
+    {
+      "id": "35ebacfe",
+      "itemId": "aecd6f00",
+      "action": "completed",
+      "timestamp": "2026-01-07T17:05:04.603Z",
+      "details": {}
+    },
+    {
+      "id": "839a1ed7",
+      "itemId": "b495c1aa",
+      "action": "postponed",
+      "timestamp": "2026-01-07T17:05:28.886Z",
+      "details": {
+        "fromDate": "2026-01-07",
+        "toDate": "2026-01-09"
+      }
+    },
+    {
+      "id": "62cc0c69",
+      "itemId": "20afbea4",
+      "action": "created",
+      "timestamp": "2026-01-07T17:07:55.267Z",
+      "details": {}
+    },
+    {
+      "id": "6eb24c59",
+      "itemId": "20afbea4",
+      "action": "completed",
+      "timestamp": "2026-01-07T17:08:15.901Z",
       "details": {}
     }
   ]
