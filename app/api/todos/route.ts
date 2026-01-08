@@ -12,27 +12,42 @@
  * DELETE /api/todos - Remove item
  */
 
-import { loadTodos, saveTodos, filterByTab, logActivity } from '../../../scripts/gtd/lib/store';
+import { loadTodos, saveTodos, filterByTab, logActivity, getItemTab } from '../../../scripts/gtd/lib/store';
 import { TabType } from '../../../scripts/gtd/lib/types';
+
+function log(message: string, data?: unknown) {
+  const timestamp = new Date().toISOString().slice(11, 23);
+  if (data !== undefined) {
+    console.log(`[${timestamp}] [todos] ${message}`, data);
+  } else {
+    console.log(`[${timestamp}] [todos] ${message}`);
+  }
+}
 
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const tab = searchParams.get('tab') as TabType | null;
 
+    log(`GET request - tab: ${tab || 'all'}`);
+
     const data = await loadTodos();
     let items = data.items;
+
+    log(`Loaded ${data.items.length} total items from store`);
 
     // Filter by tab if specified
     if (tab) {
       // Support legacy tab names as aliases
       let tabName = tab as string;
       if (tabName === 'optional' || tabName === 'mightdo') {
+        log(`Legacy tab name '${tabName}' -> 'cando'`);
         tabName = 'cando';
       }
       const validTabs: TabType[] = ['focus', 'later', 'cando', 'inbox', 'projects', 'done'];
       if (validTabs.includes(tabName as TabType)) {
         items = filterByTab(items, tabName as TabType);
+        log(`Filtered to ${items.length} items for tab '${tabName}'`);
       }
     }
 
@@ -55,12 +70,15 @@ export async function GET(req: Request) {
       return priorityOrder[a.priority] - priorityOrder[b.priority];
     });
 
+    log(`Returning ${items.length} items`);
+
     return Response.json({
       items,
       lastModified: data.lastModified,
       count: items.length,
     });
   } catch (error) {
+    log(`ERROR in GET:`, error);
     // If file doesn't exist or is invalid, return empty list
     return Response.json({
       items: [],
@@ -75,7 +93,10 @@ export async function PATCH(req: Request) {
     const body = await req.json();
     const { id, completed, status, dueDate } = body;
 
+    log(`PATCH request - id: ${id}, completed: ${completed}, status: ${status}, dueDate: ${dueDate}`);
+
     if (!id) {
+      log(`PATCH failed: no ID provided`);
       return Response.json({ error: 'Item ID is required' }, { status: 400 });
     }
 
@@ -83,13 +104,17 @@ export async function PATCH(req: Request) {
 
     const todoIndex = data.items.findIndex((t) => t.id === id);
     if (todoIndex === -1) {
+      log(`PATCH failed: item ${id} not found`);
       return Response.json({ error: 'Todo not found' }, { status: 404 });
     }
 
     const item = data.items[todoIndex];
+    const oldTab = getItemTab(item);
+    log(`Found item: "${item.nextAction || item.title}" (current tab: ${oldTab})`);
 
     // Handle completion toggle
     if (typeof completed === 'boolean') {
+      log(`Toggling completion: ${item.completed} -> ${completed}`);
       item.completed = completed;
       item.status = completed ? 'done' : 'active';
       item.completedAt = completed ? new Date().toISOString() : null;
@@ -98,6 +123,7 @@ export async function PATCH(req: Request) {
 
     // Handle status change
     if (status && ['inbox', 'active', 'someday', 'done'].includes(status)) {
+      log(`Changing status: ${item.status} -> ${status}`);
       item.status = status;
       item.completed = status === 'done';
       if (status === 'done' && !item.completedAt) {
@@ -109,6 +135,7 @@ export async function PATCH(req: Request) {
 
     // Handle due date change
     if (dueDate !== undefined) {
+      log(`Changing due date: ${item.dueDate} -> ${dueDate}`);
       item.dueDate = dueDate;
       // When setting a due date, also set hasDeadline to true
       if (dueDate) {
@@ -116,10 +143,17 @@ export async function PATCH(req: Request) {
       }
     }
 
+    const newTab = getItemTab(item);
+    if (oldTab !== newTab) {
+      log(`Item moved: ${oldTab} -> ${newTab}`);
+    }
+
     await saveTodos(data);
+    log(`Item updated and saved successfully`);
 
     return Response.json({ success: true, item });
   } catch (error) {
+    log(`ERROR in PATCH:`, error);
     return Response.json({ error: 'Failed to update todo' }, { status: 500 });
   }
 }
@@ -129,7 +163,10 @@ export async function DELETE(req: Request) {
     const body = await req.json();
     const { id } = body;
 
+    log(`DELETE request - id: ${id}`);
+
     if (!id) {
+      log(`DELETE failed: no ID provided`);
       return Response.json({ error: 'Item ID is required' }, { status: 400 });
     }
 
@@ -137,18 +174,22 @@ export async function DELETE(req: Request) {
 
     const todoIndex = data.items.findIndex((t) => t.id === id);
     if (todoIndex === -1) {
+      log(`DELETE failed: item ${id} not found`);
       return Response.json({ error: 'Todo not found' }, { status: 404 });
     }
 
     const item = data.items[todoIndex];
+    log(`Deleting item: "${item.nextAction || item.title}"`);
     data.items.splice(todoIndex, 1);
 
     logActivity(data, item.id, 'deleted');
 
     await saveTodos(data);
+    log(`Item deleted successfully. ${data.items.length} items remaining`);
 
     return Response.json({ success: true });
   } catch (error) {
+    log(`ERROR in DELETE:`, error);
     return Response.json({ error: 'Failed to delete todo' }, { status: 500 });
   }
 }

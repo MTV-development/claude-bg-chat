@@ -1,7 +1,332 @@
 {
   "version": "3.0",
-  "lastModified": "2026-01-08T00:00:00.000Z",
+  "lastModified": "2026-01-08T14:27:11.518Z",
   "lastAutoReview": null,
-  "items": [],
-  "activityLog": []
+  "items": [
+    {
+      "id": "focus001",
+      "title": "Submit quarterly report",
+      "nextAction": "Submit quarterly report to finance by end of day",
+      "status": "active",
+      "completed": false,
+      "priority": "high",
+      "project": "Finance",
+      "dueDate": "2026-01-08",
+      "hasDeadline": true,
+      "canDoAnytime": false,
+      "createdAt": "2026-01-07T10:00:00.000Z",
+      "completedAt": null,
+      "postponeCount": 0,
+      "tags": [
+        "urgent",
+        "report"
+      ]
+    },
+    {
+      "id": "focus002",
+      "title": "Fix critical production bug",
+      "nextAction": "Hotfix the null pointer exception in checkout flow",
+      "status": "active",
+      "completed": false,
+      "priority": "high",
+      "project": "Bug Fixes",
+      "dueDate": "2026-01-07",
+      "hasDeadline": true,
+      "canDoAnytime": false,
+      "createdAt": "2026-01-06T08:00:00.000Z",
+      "completedAt": null,
+      "postponeCount": 1,
+      "tags": [
+        "bug",
+        "production"
+      ]
+    },
+    {
+      "id": "later001",
+      "title": "Prepare presentation for board meeting",
+      "nextAction": "Create slides for Q4 results presentation",
+      "status": "active",
+      "completed": false,
+      "priority": "high",
+      "project": "Board Meeting",
+      "dueDate": "2026-01-15",
+      "hasDeadline": true,
+      "canDoAnytime": false,
+      "createdAt": "2026-01-05T14:00:00.000Z",
+      "completedAt": null,
+      "postponeCount": 0,
+      "tags": [
+        "presentation",
+        "board"
+      ]
+    },
+    {
+      "id": "later002",
+      "title": "Review team performance evaluations",
+      "nextAction": "Write performance reviews for all 5 team members",
+      "status": "active",
+      "completed": false,
+      "priority": "medium",
+      "project": "HR",
+      "dueDate": "2026-01-20",
+      "hasDeadline": true,
+      "canDoAnytime": false,
+      "createdAt": "2026-01-03T09:00:00.000Z",
+      "completedAt": null,
+      "postponeCount": 0,
+      "tags": [
+        "hr",
+        "reviews"
+      ]
+    },
+    {
+      "id": "later003",
+      "title": "Submit expense reports",
+      "nextAction": "Compile and submit December expense receipts",
+      "status": "active",
+      "completed": false,
+      "priority": "low",
+      "project": "Finance",
+      "dueDate": "2026-01-31",
+      "hasDeadline": true,
+      "canDoAnytime": false,
+      "createdAt": "2026-01-02T11:00:00.000Z",
+      "completedAt": null,
+      "postponeCount": 0,
+      "tags": [
+        "expenses"
+      ]
+    },
+    {
+      "id": "cando001",
+      "title": "Read industry newsletter",
+      "nextAction": "Read and take notes on this week's tech newsletter",
+      "status": "active",
+      "completed": false,
+      "priority": "low",
+      "project": null,
+      "dueDate": null,
+      "hasDeadline": false,
+      "canDoAnytime": true,
+      "createdAt": "2026-01-06T16:00:00.000Z",
+      "completedAt": null,
+      "postponeCount": 0,
+      "tags": [
+        "reading",
+        "learning"
+      ]
+    },
+    {
+      "id": "cando002",
+      "title": "Organize desk drawers",
+      "nextAction": "Clean out and organize the left desk drawer",
+      "status": "done",
+      "completed": true,
+      "priority": "low",
+      "project": "Home Office",
+      "dueDate": "2026-01-08",
+      "hasDeadline": true,
+      "canDoAnytime": true,
+      "createdAt": "2026-01-04T12:00:00.000Z",
+      "completedAt": "2026-01-08T14:27:11.517Z",
+      "postponeCount": 0,
+      "tags": [
+        "organization"
+      ]
+    },
+    {
+      "id": "cando003",
+      "title": "Update LinkedIn profile",
+      "nextAction": "Add recent project achievements to LinkedIn",
+      "status": "active",
+      "completed": false,
+      "priority": "medium",
+      "project": null,
+      "dueDate": null,
+      "hasDeadline": false,
+      "canDoAnytime": true,
+      "createdAt": "2026-01-01T10:00:00.000Z",
+      "completedAt": null,
+      "postponeCount": 2,
+      "tags": [
+        "career",
+        "social"
+      ]
+    },
+    {
+      "id": "inbox001",
+      "title": "Think about vacation plans",
+      "nextAction": "Think about vacation plans",
+      "status": "inbox",
+      "completed": false,
+      "priority": "medium",
+      "project": null,
+      "dueDate": null,
+      "hasDeadline": false,
+      "canDoAnytime": false,
+      "createdAt": "2026-01-07T20:00:00.000Z",
+      "completedAt": null,
+      "postponeCount": 0,
+      "tags": []
+    },
+    {
+      "id": "inbox002",
+      "title": "Follow up on that email",
+      "nextAction": "Follow up on that email",
+      "status": "inbox",
+      "completed": false,
+      "priority": "medium",
+      "project": null,
+      "dueDate": null,
+      "hasDeadline": false,
+      "canDoAnytime": false,
+      "createdAt": "2026-01-06T18:00:00.000Z",
+      "completedAt": null,
+      "postponeCount": 0,
+      "tags": [
+        "email"
+      ]
+    },
+    {
+      "id": "inbox003",
+      "title": "Research new project management tools",
+      "nextAction": "Compare Asana, Monday.com, and Linear features",
+      "status": "active",
+      "completed": false,
+      "priority": "low",
+      "project": null,
+      "dueDate": null,
+      "hasDeadline": false,
+      "canDoAnytime": false,
+      "createdAt": "2026-01-05T15:00:00.000Z",
+      "completedAt": null,
+      "postponeCount": 0,
+      "tags": [
+        "research",
+        "tools"
+      ]
+    },
+    {
+      "id": "inbox004",
+      "title": "Call mom",
+      "nextAction": "Call mom to check in",
+      "status": "active",
+      "completed": false,
+      "priority": "medium",
+      "project": null,
+      "dueDate": null,
+      "hasDeadline": false,
+      "canDoAnytime": false,
+      "createdAt": "2026-01-04T19:00:00.000Z",
+      "completedAt": null,
+      "postponeCount": 0,
+      "tags": [
+        "personal",
+        "family"
+      ]
+    }
+  ],
+  "activityLog": [
+    {
+      "id": "log001",
+      "itemId": "focus001",
+      "action": "created",
+      "timestamp": "2026-01-07T10:00:00.000Z",
+      "details": {}
+    },
+    {
+      "id": "log002",
+      "itemId": "focus002",
+      "action": "created",
+      "timestamp": "2026-01-06T08:00:00.000Z",
+      "details": {}
+    },
+    {
+      "id": "log003",
+      "itemId": "focus002",
+      "action": "postponed",
+      "timestamp": "2026-01-07T09:00:00.000Z",
+      "details": {
+        "fromDate": "2026-01-06",
+        "toDate": "2026-01-07"
+      }
+    },
+    {
+      "id": "log004",
+      "itemId": "later001",
+      "action": "created",
+      "timestamp": "2026-01-05T14:00:00.000Z",
+      "details": {}
+    },
+    {
+      "id": "log005",
+      "itemId": "later002",
+      "action": "created",
+      "timestamp": "2026-01-03T09:00:00.000Z",
+      "details": {}
+    },
+    {
+      "id": "log006",
+      "itemId": "later003",
+      "action": "created",
+      "timestamp": "2026-01-02T11:00:00.000Z",
+      "details": {}
+    },
+    {
+      "id": "log007",
+      "itemId": "cando001",
+      "action": "created",
+      "timestamp": "2026-01-06T16:00:00.000Z",
+      "details": {}
+    },
+    {
+      "id": "log008",
+      "itemId": "cando002",
+      "action": "created",
+      "timestamp": "2026-01-04T12:00:00.000Z",
+      "details": {}
+    },
+    {
+      "id": "log009",
+      "itemId": "cando003",
+      "action": "created",
+      "timestamp": "2026-01-01T10:00:00.000Z",
+      "details": {}
+    },
+    {
+      "id": "log010",
+      "itemId": "inbox001",
+      "action": "created",
+      "timestamp": "2026-01-07T20:00:00.000Z",
+      "details": {}
+    },
+    {
+      "id": "log011",
+      "itemId": "inbox002",
+      "action": "created",
+      "timestamp": "2026-01-06T18:00:00.000Z",
+      "details": {}
+    },
+    {
+      "id": "log012",
+      "itemId": "inbox003",
+      "action": "created",
+      "timestamp": "2026-01-05T15:00:00.000Z",
+      "details": {}
+    },
+    {
+      "id": "log013",
+      "itemId": "inbox004",
+      "action": "created",
+      "timestamp": "2026-01-04T19:00:00.000Z",
+      "details": {}
+    },
+    {
+      "id": "a0ae8ae0",
+      "itemId": "cando002",
+      "action": "completed",
+      "timestamp": "2026-01-08T14:27:11.518Z",
+      "details": {}
+    }
+  ]
 }
