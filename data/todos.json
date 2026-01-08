@@ -1,157 +1,98 @@
 {
-  "version": "3.0",
-  "lastModified": "2026-01-08T14:27:11.518Z",
+  "version": "4.0",
+  "lastModified": "2026-01-08T16:41:12.561Z",
   "lastAutoReview": null,
   "items": [
     {
       "id": "focus001",
-      "title": "Submit quarterly report",
-      "nextAction": "Submit quarterly report to finance by end of day",
+      "title": "Submit expense report",
+      "nextAction": "Fill out expense form and attach receipts",
       "status": "active",
       "completed": false,
-      "priority": "high",
-      "project": "Finance",
+      "project": "Work",
       "dueDate": "2026-01-08",
-      "hasDeadline": true,
       "canDoAnytime": false,
-      "createdAt": "2026-01-07T10:00:00.000Z",
+      "createdAt": "2026-01-05T09:00:00.000Z",
       "completedAt": null,
-      "postponeCount": 0,
-      "tags": [
-        "urgent",
-        "report"
-      ]
+      "postponeCount": 0
     },
     {
       "id": "focus002",
-      "title": "Fix critical production bug",
-      "nextAction": "Hotfix the null pointer exception in checkout flow",
+      "title": "Pay electricity bill",
+      "nextAction": "Log into utility portal and pay",
       "status": "active",
       "completed": false,
-      "priority": "high",
-      "project": "Bug Fixes",
+      "project": "Home",
       "dueDate": "2026-01-07",
-      "hasDeadline": true,
       "canDoAnytime": false,
-      "createdAt": "2026-01-06T08:00:00.000Z",
+      "createdAt": "2026-01-01T10:00:00.000Z",
       "completedAt": null,
-      "postponeCount": 1,
-      "tags": [
-        "bug",
-        "production"
-      ]
+      "postponeCount": 2
+    },
+    {
+      "id": "optional001",
+      "title": "Read that article on TypeScript",
+      "nextAction": "Open browser and read the saved article",
+      "status": "active",
+      "completed": false,
+      "project": null,
+      "dueDate": null,
+      "canDoAnytime": true,
+      "createdAt": "2026-01-03T14:00:00.000Z",
+      "completedAt": null,
+      "postponeCount": 0
+    },
+    {
+      "id": "optional002",
+      "title": "Clean desk",
+      "nextAction": "Organize papers and wipe down surface",
+      "status": "active",
+      "completed": false,
+      "project": "Home",
+      "dueDate": null,
+      "canDoAnytime": true,
+      "createdAt": "2026-01-02T11:00:00.000Z",
+      "completedAt": null,
+      "postponeCount": 0
+    },
+    {
+      "id": "optional003",
+      "title": "Review code style guide",
+      "nextAction": "Read through team style guide document",
+      "status": "active",
+      "completed": false,
+      "project": "Work",
+      "dueDate": "2026-01-15",
+      "canDoAnytime": true,
+      "createdAt": "2026-01-06T09:00:00.000Z",
+      "completedAt": null,
+      "postponeCount": 0
     },
     {
       "id": "later001",
-      "title": "Prepare presentation for board meeting",
-      "nextAction": "Create slides for Q4 results presentation",
+      "title": "Prepare quarterly presentation",
+      "nextAction": "Create outline for Q1 results slides",
       "status": "active",
       "completed": false,
-      "priority": "high",
-      "project": "Board Meeting",
-      "dueDate": "2026-01-15",
-      "hasDeadline": true,
+      "project": "Work",
+      "dueDate": "2026-01-20",
       "canDoAnytime": false,
-      "createdAt": "2026-01-05T14:00:00.000Z",
+      "createdAt": "2026-01-05T08:00:00.000Z",
       "completedAt": null,
-      "postponeCount": 0,
-      "tags": [
-        "presentation",
-        "board"
-      ]
+      "postponeCount": 0
     },
     {
       "id": "later002",
-      "title": "Review team performance evaluations",
-      "nextAction": "Write performance reviews for all 5 team members",
+      "title": "Schedule dentist appointment",
+      "nextAction": "Call dentist office to book checkup",
       "status": "active",
       "completed": false,
-      "priority": "medium",
-      "project": "HR",
-      "dueDate": "2026-01-20",
-      "hasDeadline": true,
+      "project": "Health",
+      "dueDate": "2026-01-25",
       "canDoAnytime": false,
-      "createdAt": "2026-01-03T09:00:00.000Z",
+      "createdAt": "2026-01-04T10:00:00.000Z",
       "completedAt": null,
-      "postponeCount": 0,
-      "tags": [
-        "hr",
-        "reviews"
-      ]
-    },
-    {
-      "id": "later003",
-      "title": "Submit expense reports",
-      "nextAction": "Compile and submit December expense receipts",
-      "status": "active",
-      "completed": false,
-      "priority": "low",
-      "project": "Finance",
-      "dueDate": "2026-01-31",
-      "hasDeadline": true,
-      "canDoAnytime": false,
-      "createdAt": "2026-01-02T11:00:00.000Z",
-      "completedAt": null,
-      "postponeCount": 0,
-      "tags": [
-        "expenses"
-      ]
-    },
-    {
-      "id": "cando001",
-      "title": "Read industry newsletter",
-      "nextAction": "Read and take notes on this week's tech newsletter",
-      "status": "active",
-      "completed": false,
-      "priority": "low",
-      "project": null,
-      "dueDate": null,
-      "hasDeadline": false,
-      "canDoAnytime": true,
-      "createdAt": "2026-01-06T16:00:00.000Z",
-      "completedAt": null,
-      "postponeCount": 0,
-      "tags": [
-        "reading",
-        "learning"
-      ]
-    },
-    {
-      "id": "cando002",
-      "title": "Organize desk drawers",
-      "nextAction": "Clean out and organize the left desk drawer",
-      "status": "done",
-      "completed": true,
-      "priority": "low",
-      "project": "Home Office",
-      "dueDate": "2026-01-08",
-      "hasDeadline": true,
-      "canDoAnytime": true,
-      "createdAt": "2026-01-04T12:00:00.000Z",
-      "completedAt": "2026-01-08T14:27:11.517Z",
-      "postponeCount": 0,
-      "tags": [
-        "organization"
-      ]
-    },
-    {
-      "id": "cando003",
-      "title": "Update LinkedIn profile",
-      "nextAction": "Add recent project achievements to LinkedIn",
-      "status": "active",
-      "completed": false,
-      "priority": "medium",
-      "project": null,
-      "dueDate": null,
-      "hasDeadline": false,
-      "canDoAnytime": true,
-      "createdAt": "2026-01-01T10:00:00.000Z",
-      "completedAt": null,
-      "postponeCount": 2,
-      "tags": [
-        "career",
-        "social"
-      ]
+      "postponeCount": 0
     },
     {
       "id": "inbox001",
@@ -159,173 +100,72 @@
       "nextAction": "Think about vacation plans",
       "status": "inbox",
       "completed": false,
-      "priority": "medium",
       "project": null,
       "dueDate": null,
-      "hasDeadline": false,
       "canDoAnytime": false,
-      "createdAt": "2026-01-07T20:00:00.000Z",
+      "createdAt": "2026-01-06T16:00:00.000Z",
       "completedAt": null,
-      "postponeCount": 0,
-      "tags": []
+      "postponeCount": 0
     },
     {
       "id": "inbox002",
-      "title": "Follow up on that email",
-      "nextAction": "Follow up on that email",
+      "title": "Research new laptop options",
+      "nextAction": "Research new laptop options",
       "status": "inbox",
       "completed": false,
-      "priority": "medium",
       "project": null,
       "dueDate": null,
-      "hasDeadline": false,
       "canDoAnytime": false,
-      "createdAt": "2026-01-06T18:00:00.000Z",
+      "createdAt": "2026-01-07T12:00:00.000Z",
       "completedAt": null,
-      "postponeCount": 0,
-      "tags": [
-        "email"
-      ]
+      "postponeCount": 0
     },
     {
-      "id": "inbox003",
-      "title": "Research new project management tools",
-      "nextAction": "Compare Asana, Monday.com, and Linear features",
-      "status": "active",
-      "completed": false,
-      "priority": "low",
-      "project": null,
-      "dueDate": null,
-      "hasDeadline": false,
+      "id": "done001",
+      "title": "Set up project repository",
+      "nextAction": "Initialize git repo and push to GitHub",
+      "status": "done",
+      "completed": true,
+      "project": "Work",
+      "dueDate": "2026-01-05",
       "canDoAnytime": false,
-      "createdAt": "2026-01-05T15:00:00.000Z",
-      "completedAt": null,
-      "postponeCount": 0,
-      "tags": [
-        "research",
-        "tools"
-      ]
+      "createdAt": "2026-01-03T09:00:00.000Z",
+      "completedAt": "2026-01-05T14:30:00.000Z",
+      "postponeCount": 0
     },
     {
-      "id": "inbox004",
-      "title": "Call mom",
-      "nextAction": "Call mom to check in",
+      "id": "done002",
+      "title": "Buy birthday gift",
+      "nextAction": "Order gift from Amazon",
+      "status": "done",
+      "completed": true,
+      "project": null,
+      "dueDate": "2026-01-06",
+      "canDoAnytime": false,
+      "createdAt": "2026-01-02T10:00:00.000Z",
+      "completedAt": "2026-01-06T11:00:00.000Z",
+      "postponeCount": 1
+    },
+    {
+      "id": "96c63647",
+      "title": "collect receipts",
+      "nextAction": "collect receipts",
       "status": "active",
       "completed": false,
-      "priority": "medium",
-      "project": null,
-      "dueDate": null,
-      "hasDeadline": false,
+      "project": "Work",
+      "dueDate": "2026-01-08",
       "canDoAnytime": false,
-      "createdAt": "2026-01-04T19:00:00.000Z",
+      "createdAt": "2026-01-08T16:41:08.715Z",
       "completedAt": null,
-      "postponeCount": 0,
-      "tags": [
-        "personal",
-        "family"
-      ]
+      "postponeCount": 0
     }
   ],
   "activityLog": [
     {
-      "id": "log001",
-      "itemId": "focus001",
+      "id": "cf21f7f8",
+      "itemId": "96c63647",
       "action": "created",
-      "timestamp": "2026-01-07T10:00:00.000Z",
-      "details": {}
-    },
-    {
-      "id": "log002",
-      "itemId": "focus002",
-      "action": "created",
-      "timestamp": "2026-01-06T08:00:00.000Z",
-      "details": {}
-    },
-    {
-      "id": "log003",
-      "itemId": "focus002",
-      "action": "postponed",
-      "timestamp": "2026-01-07T09:00:00.000Z",
-      "details": {
-        "fromDate": "2026-01-06",
-        "toDate": "2026-01-07"
-      }
-    },
-    {
-      "id": "log004",
-      "itemId": "later001",
-      "action": "created",
-      "timestamp": "2026-01-05T14:00:00.000Z",
-      "details": {}
-    },
-    {
-      "id": "log005",
-      "itemId": "later002",
-      "action": "created",
-      "timestamp": "2026-01-03T09:00:00.000Z",
-      "details": {}
-    },
-    {
-      "id": "log006",
-      "itemId": "later003",
-      "action": "created",
-      "timestamp": "2026-01-02T11:00:00.000Z",
-      "details": {}
-    },
-    {
-      "id": "log007",
-      "itemId": "cando001",
-      "action": "created",
-      "timestamp": "2026-01-06T16:00:00.000Z",
-      "details": {}
-    },
-    {
-      "id": "log008",
-      "itemId": "cando002",
-      "action": "created",
-      "timestamp": "2026-01-04T12:00:00.000Z",
-      "details": {}
-    },
-    {
-      "id": "log009",
-      "itemId": "cando003",
-      "action": "created",
-      "timestamp": "2026-01-01T10:00:00.000Z",
-      "details": {}
-    },
-    {
-      "id": "log010",
-      "itemId": "inbox001",
-      "action": "created",
-      "timestamp": "2026-01-07T20:00:00.000Z",
-      "details": {}
-    },
-    {
-      "id": "log011",
-      "itemId": "inbox002",
-      "action": "created",
-      "timestamp": "2026-01-06T18:00:00.000Z",
-      "details": {}
-    },
-    {
-      "id": "log012",
-      "itemId": "inbox003",
-      "action": "created",
-      "timestamp": "2026-01-05T15:00:00.000Z",
-      "details": {}
-    },
-    {
-      "id": "log013",
-      "itemId": "inbox004",
-      "action": "created",
-      "timestamp": "2026-01-04T19:00:00.000Z",
-      "details": {}
-    },
-    {
-      "id": "a0ae8ae0",
-      "itemId": "cando002",
-      "action": "completed",
-      "timestamp": "2026-01-08T14:27:11.518Z",
+      "timestamp": "2026-01-08T16:41:08.715Z",
       "details": {}
     }
   ]

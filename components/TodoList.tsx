@@ -5,7 +5,7 @@ import PostponeDropdown from './PostponeDropdown';
 import ConfirmationModal from './ConfirmationModal';
 import AddItemModal from './AddItemModal';
 
-type TabType = 'focus' | 'later' | 'cando' | 'inbox' | 'projects' | 'done' | 'howto';
+type TabType = 'focus' | 'optional' | 'later' | 'inbox' | 'projects' | 'done' | 'howto';
 
 interface TodoItem {
   id: string;
@@ -13,13 +13,12 @@ interface TodoItem {
   nextAction: string | null;
   status: 'inbox' | 'active' | 'done' | 'someday';
   completed: boolean;
-  priority: 'high' | 'medium' | 'low';
   project: string | null;
   dueDate: string | null;
+  canDoAnytime: boolean;
   createdAt: string;
   completedAt: string | null;
   postponeCount: number;
-  tags: string[];
 }
 
 interface TodoData {
@@ -37,23 +36,11 @@ interface Project {
 
 const POLL_INTERVAL = 2000;
 
-const priorityColors = {
-  high: 'bg-red-100 text-red-700 border-red-200',
-  medium: 'bg-yellow-100 text-yellow-700 border-yellow-200',
-  low: 'bg-green-100 text-green-700 border-green-200',
-};
-
-const priorityIcons = {
-  high: '!!!',
-  medium: '!!',
-  low: '!',
-};
-
 const tabs: { id: TabType; label: string; description: string }[] = [
-  { id: 'focus', label: 'Focus', description: 'Tasks with deadlines due today' },
+  { id: 'focus', label: 'Focus', description: 'Tasks on or past deadline' },
+  { id: 'optional', label: 'Optional', description: 'Tasks you can do anytime' },
   { id: 'later', label: 'Later', description: 'Tasks with future deadlines' },
-  { id: 'cando', label: 'Can Do', description: 'Tasks you can do anytime' },
-  { id: 'inbox', label: 'Inbox', description: 'Needs clarification' },
+  { id: 'inbox', label: 'Inbox', description: 'Tasks needing clarification' },
   { id: 'projects', label: 'Projects', description: 'Tasks by project' },
   { id: 'done', label: 'Done', description: 'Completed tasks' },
   { id: 'howto', label: 'How To', description: 'Beginner guide' },
@@ -355,7 +342,7 @@ export default function TodoList() {
   };
 
   // Determine if we should show the floating add button
-  const showAddButton = activeTab === 'focus' || activeTab === 'later' || activeTab === 'cando' ||
+  const showAddButton = activeTab === 'focus' || activeTab === 'later' || activeTab === 'optional' ||
     (activeTab === 'projects' && !selectedProject) ||
     (activeTab === 'projects' && selectedProject);
 
@@ -444,7 +431,7 @@ export default function TodoList() {
                 <ul className="text-blue-700 text-sm mt-2 space-y-1">
                   <li>&quot;buy groceries by Friday&quot; - Goes to Focus when deadline is due</li>
                   <li>&quot;think about vacation&quot; - Goes to Inbox (needs clarifying)</li>
-                  <li>&quot;read that book sometime&quot; - Goes to Can Do (anytime task)</li>
+                  <li>&quot;read that book sometime&quot; - Goes to Optional (anytime task)</li>
                 </ul>
               </div>
 
@@ -453,7 +440,7 @@ export default function TodoList() {
                 <ul className="text-green-700 text-sm space-y-2">
                   <li><strong>Focus</strong> - Tasks with deadlines due today. Use Postpone to push them out.</li>
                   <li><strong>Later</strong> - Tasks with future deadlines. They move to Focus when due.</li>
-                  <li><strong>Can Do</strong> - Tasks you can do anytime. Click &quot;Do Today&quot; to add a deadline.</li>
+                  <li><strong>Optional</strong> - Tasks you can do anytime. Click &quot;Do Today&quot; to add a deadline.</li>
                   <li><strong>Inbox</strong> - Needs clarification. Chat to clarify what the next action is.</li>
                   <li><strong>Done</strong> - Completed tasks for reference.</li>
                 </ul>
@@ -480,7 +467,7 @@ export default function TodoList() {
                 <ul className="text-gray-700 text-sm space-y-1">
                   <li>Keep Focus tab small - only what you&apos;ll actually do today</li>
                   <li>Clear your Inbox regularly by clarifying vague tasks</li>
-                  <li>Use &quot;Do Today&quot; to pull Can Do tasks when ready</li>
+                  <li>Use &quot;Do Today&quot; to pull Optional tasks when ready</li>
                 </ul>
               </div>
             </div>
@@ -572,9 +559,6 @@ export default function TodoList() {
                           <p className="text-xs text-gray-400 mt-0.5">{todo.title}</p>
                         )}
                         <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                          <span className={`text-xs px-2 py-0.5 rounded-full border ${priorityColors[todo.priority]}`}>
-                            {priorityIcons[todo.priority]} {todo.priority}
-                          </span>
                           {todo.dueDate && (
                             <span className={`text-xs px-2 py-0.5 rounded-full ${
                               isOverdue(todo.dueDate)
@@ -608,14 +592,14 @@ export default function TodoList() {
             <p className="text-lg mb-2">
               {activeTab === 'focus' && 'All caught up for today!'}
               {activeTab === 'later' && 'No upcoming deadlines'}
-              {activeTab === 'cando' && 'No tasks to do anytime'}
+              {activeTab === 'optional' && 'No optional tasks'}
               {activeTab === 'inbox' && 'Inbox is clear'}
               {activeTab === 'done' && 'No completed tasks'}
             </p>
             <p className="text-sm">
               {activeTab === 'focus' && 'No tasks with deadlines due today'}
               {activeTab === 'later' && 'Tasks with future deadlines appear here'}
-              {activeTab === 'cando' && 'Tasks you can do anytime appear here'}
+              {activeTab === 'optional' && 'Tasks you can do anytime appear here'}
               {activeTab === 'inbox' && 'Tasks needing clarification appear here'}
               {activeTab === 'done' && 'Completed tasks will appear here'}
             </p>
@@ -657,11 +641,6 @@ export default function TodoList() {
                       <p className="text-xs text-gray-400 mt-0.5">{todo.title}</p>
                     )}
                     <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                      <span
-                        className={`text-xs px-2 py-0.5 rounded-full border ${priorityColors[todo.priority]}`}
-                      >
-                        {priorityIcons[todo.priority]} {todo.priority}
-                      </span>
                       {todo.dueDate && (
                         <span
                           className={`text-xs px-2 py-0.5 rounded-full ${
@@ -688,14 +667,6 @@ export default function TodoList() {
                           Postponed {todo.postponeCount}x
                         </span>
                       )}
-                      {todo.tags.map((tag) => (
-                        <span
-                          key={tag}
-                          className="text-xs px-2 py-0.5 bg-blue-50 text-blue-600 rounded-full"
-                        >
-                          #{tag}
-                        </span>
-                      ))}
                       {todo.completedAt && (
                         <span className="text-xs text-gray-400">
                           Completed {new Date(todo.completedAt).toLocaleDateString()}
@@ -707,7 +678,7 @@ export default function TodoList() {
                   {todo.status !== 'done' && (
                     <div className="ml-2 flex-shrink-0 flex gap-1">
                       {/* Do Today button - on Later and Can Do tabs */}
-                      {(activeTab === 'later' || activeTab === 'cando') && (
+                      {(activeTab === 'later' || activeTab === 'optional') && (
                         <button
                           onClick={() => handleDoToday(todo.id)}
                           className="text-xs px-2 py-1 rounded bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors"

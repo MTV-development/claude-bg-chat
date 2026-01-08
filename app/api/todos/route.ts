@@ -7,7 +7,7 @@
  * Uses shared store module for data access.
  *
  * GET /api/todos - List all items
- * GET /api/todos?tab=focus|later|cando|inbox|done - Filter by tab
+ * GET /api/todos?tab=focus|optional|later|inbox|done - Filter by tab
  * PATCH /api/todos - Update item (complete/uncomplete)
  * DELETE /api/todos - Remove item
  */
@@ -40,18 +40,18 @@ export async function GET(req: Request) {
     if (tab) {
       // Support legacy tab names as aliases
       let tabName = tab as string;
-      if (tabName === 'optional' || tabName === 'mightdo') {
-        log(`Legacy tab name '${tabName}' -> 'cando'`);
-        tabName = 'cando';
+      if (tabName === 'cando' || tabName === 'mightdo') {
+        log(`Legacy tab name '${tabName}' -> 'optional'`);
+        tabName = 'optional';
       }
-      const validTabs: TabType[] = ['focus', 'later', 'cando', 'inbox', 'projects', 'done'];
+      const validTabs: TabType[] = ['focus', 'optional', 'later', 'inbox', 'projects', 'done'];
       if (validTabs.includes(tabName as TabType)) {
         items = filterByTab(items, tabName as TabType);
         log(`Filtered to ${items.length} items for tab '${tabName}'`);
       }
     }
 
-    // Sort items: overdue first, then by due date, then by priority
+    // Sort items: overdue first, then by due date
     items.sort((a, b) => {
       // Done items last (unless on done tab)
       if (a.status === 'done' && b.status !== 'done') return 1;
@@ -61,13 +61,10 @@ export async function GET(req: Request) {
       if (a.dueDate && !b.dueDate) return -1;
       if (!a.dueDate && b.dueDate) return 1;
       if (a.dueDate && b.dueDate) {
-        const cmp = a.dueDate.localeCompare(b.dueDate);
-        if (cmp !== 0) return cmp;
+        return a.dueDate.localeCompare(b.dueDate);
       }
 
-      // Priority sorting
-      const priorityOrder = { high: 0, medium: 1, low: 2 };
-      return priorityOrder[a.priority] - priorityOrder[b.priority];
+      return 0;
     });
 
     log(`Returning ${items.length} items`);
@@ -137,10 +134,6 @@ export async function PATCH(req: Request) {
     if (dueDate !== undefined) {
       log(`Changing due date: ${item.dueDate} -> ${dueDate}`);
       item.dueDate = dueDate;
-      // When setting a due date, also set hasDeadline to true
-      if (dueDate) {
-        item.hasDeadline = true;
-      }
     }
 
     const newTab = getItemTab(item);

@@ -1,18 +1,19 @@
 ---
 name: todo-manager
-description: Manages your personal todo list with GTD workflow. Add tasks, clarify next actions, view by tab (Focus/Optional/Inbox/Done), postpone, and complete. Use when you want to add todos, show your list, mark items done, or organize tasks.
+description: Manages your personal todo list with GTD workflow. Add tasks, clarify next actions, view by tab (Focus/Optional/Later/Inbox/Done), postpone, and complete. Use when you want to add todos, show your list, mark items done, or organize tasks.
 allowed-tools: Bash
 ---
 
-# GTD Todo Manager (v2.0)
+# GTD Todo Manager (v4.0)
 
 ## Overview
 
 I manage your personal todo list using GTD (Getting Things Done) methodology. Tasks flow through:
-1. **Inbox** - Captured items needing clarification
-2. **Today** - Tasks due today or overdue
-3. **Optional** - Tasks with future or no deadlines
-4. **Done** - Completed tasks
+1. **Focus** - Tasks with deadlines on or past due
+2. **Optional** - Tasks you can do anytime (with or without deadlines)
+3. **Later** - Tasks with future deadlines
+4. **Inbox** - Captured items needing clarification
+5. **Done** - Completed tasks
 
 ## IMPORTANT: Tool Usage
 
@@ -40,7 +41,7 @@ Activate this skill when the user mentions:
 - Viewing, listing, showing, or checking todos/tasks
 - Completing, finishing, or marking tasks done
 - Removing, deleting, or clearing tasks
-- Priorities, due dates, or task organization
+- Due dates or task organization
 - Their "list", "todos", "tasks", or "reminders"
 - GTD concepts like "inbox", "next action", "clarify", "postpone"
 
@@ -53,17 +54,17 @@ node scripts/gtd/dist/cli.js add "Task title" [options]
 ```
 
 **Options:**
-- `--priority high|medium|low` - Set priority (default: medium)
 - `--due DATE` - Due date (YYYY-MM-DD, today, tomorrow, +N days)
-- `--tags tag1,tag2` - Add tags
 - `--project "Name"` - Assign to project
 - `--status inbox|active|someday` - Set status (default: active)
+- `--can-do-anytime` - Mark as optional (can be done anytime)
 
 **Examples:**
 ```bash
 node scripts/gtd/dist/cli.js add "Buy groceries" --due tomorrow
 node scripts/gtd/dist/cli.js add "Plan vacation" --status inbox
-node scripts/gtd/dist/cli.js add "Review PR" --priority high --project "Work"
+node scripts/gtd/dist/cli.js add "Read that book" --can-do-anytime
+node scripts/gtd/dist/cli.js add "Review PR" --project "Work"
 ```
 
 ### List Tasks
@@ -73,17 +74,16 @@ node scripts/gtd/dist/cli.js list [options]
 ```
 
 **Options:**
-- `--tab focus|optional|inbox|done` - Filter by GTD tab
+- `--tab focus|optional|later|inbox|done` - Filter by GTD tab
 - `--completed` - Show completed only
 - `--pending` - Show pending only
-- `--priority high|medium|low` - Filter by priority
 - `--project "Name"` - Filter by project
 
 **Examples:**
 ```bash
-node scripts/gtd/dist/cli.js list --tab focus      # Today (due today/overdue)
+node scripts/gtd/dist/cli.js list --tab focus      # On/past deadline
+node scripts/gtd/dist/cli.js list --tab optional   # Can do anytime
 node scripts/gtd/dist/cli.js list --tab inbox      # Needs clarification
-node scripts/gtd/dist/cli.js list --tab optional   # No deadline pressure
 ```
 
 ### List Projects
@@ -142,10 +142,10 @@ node scripts/gtd/dist/cli.js update "<id or title>" [options]
 **Options:**
 - `--title "..."` - New title
 - `--next-action "..."` - New next action
-- `--priority high|medium|low` - New priority
 - `--due DATE` - New due date (or 'none' to clear)
 - `--project "Name"` - New project (or 'none' to clear)
 - `--status inbox|active|someday|done` - New status
+- `--can-do-anytime true|false` - Toggle optional status
 
 ### Remove a Task
 
@@ -169,68 +169,36 @@ node scripts/gtd/dist/cli.js help
 
 When adding tasks, route based on clarity:
 
-**Clear actions → status: active**
+**Clear actions (status: active)**
 - "buy milk", "call dentist", "send email to John"
 - These have obvious next steps
 
-**Vague/project items → status: inbox**
+**Vague/project items (status: inbox)**
 - "think about career", "plan vacation", "organize garage"
 - These need clarification
 
 ## Tab Logic
 
-- **Today**: `status=active` AND `nextAction` AND `dueDate <= today` (has Postpone button)
-- **Optional**: `status=active|someday` AND `nextAction` AND (`dueDate > today` OR no dueDate) (has "Do Today" button)
-- **Inbox**: `status=inbox` OR no `nextAction`
-- **Done**: `status=done`
+- **Focus**: `dueDate <= today` (on or past deadline)
+- **Optional**: `canDoAnytime === true` (can do anytime, with or without deadline)
+- **Later**: `dueDate > today` AND NOT `canDoAnytime`
+- **Inbox**: No `dueDate` AND NOT `canDoAnytime` (or no `nextAction`)
+- **Done**: `status === 'done'`
 
 ## CRITICAL: Always Take Action
 
 **You MUST either execute a CLI command OR ask the user a clarifying question. Never just reason internally.**
 
-1. **If the request is clear** → Execute the appropriate CLI command immediately
-2. **If the request is ambiguous** → Ask the user directly in plain language
+1. **If the request is clear** - Execute the appropriate CLI command immediately
+2. **If the request is ambiguous** - Ask the user directly in plain language
 
 ## CRITICAL: Always Check Actual Data
 
 **NEVER assume what tasks exist based on conversation history.** The task list may have changed outside this conversation.
 
-- Before completing, updating, or removing tasks → Run `list` first to verify they exist
-- Before showing the user their tasks → Always fetch fresh data
+- Before completing, updating, or removing tasks: Run `list` first to verify they exist
+- Before showing the user their tasks: Always fetch fresh data
 - Use conversation context only to understand *intent*, not as a source of truth for *data*
-
-**WRONG:**
-```
-User: "complete the grocery task"
-[Assumes "Buy groceries" exists because it was added earlier in chat]
-[Runs complete command, fails because task was already done/removed]
-```
-
-**RIGHT:**
-```
-User: "complete the grocery task"
-[Runs list command to find matching tasks]
-[Completes the actual task found in data]
-```
-
-**WRONG:**
-```
-I need to understand the data model...
-Let me check the status values...
-[internal reasoning displayed to user]
-```
-
-**RIGHT:**
-```
-Which tasks would you like to move to Focus?
-- [ ] paint office
-- [ ] cook dinner
-```
-
-**Or just do it:**
-```
-Done. Moved "paint office" to Focus (due today).
-```
 
 ## Response Guidelines
 
@@ -244,58 +212,14 @@ Done. Moved "paint office" to Focus (due today).
 
 **NEVER mention to the user:**
 - CLI commands, compilation, or build steps
-- "Let me compile", "Building the CLI", "Running the command"
 - JSON output, parsing, or technical errors
-- Internal file paths or script names (like `/home/.../todos.json`)
+- Internal file paths or script names
 - "Invoking the skill" or "activating" anything
-- Data structures, IDs, or internal fields (like `id: 24bf9e8a`)
-- "Let me check the data", "understand the structure", "find the ID"
+- Data structures, IDs, or internal fields
 - File permissions or requests for write access
-- "I need permission to edit", "Could you grant access"
 - Any reasoning about HOW you're doing something
 
-**The user should only see the result**, as if it's a native app:
-
-**WRONG:**
-```
-I'll help you remove the test project. Let me first check the current data to understand the structure and find the test project.
-I can see there's a "Test project" with one item (id: `24bf9e8a`). I'll remove this item from the data file.
-I need write permission to edit `/home/.../todos.json`. Could you grant permission?
-```
-
-**RIGHT:**
-```
-Removed "Test project".
-```
-
-**WRONG:**
-```
-I'll invoke the todo-manager skill...
-The CLI needs to be built first. Let me compile it.
-Now let me run the add command...
-Done! Added 5 tasks.
-```
-
-**RIGHT:**
-```
-Added 5 tasks:
-
-**Today:**
-- [ ] Buy groceries
-- [ ] Call dentist
-
-**Optional:**
-- [ ] Plan vacation (due Jan 15)
-```
-
-Just show the outcome. No process, no technical steps, no "let me do X".
-
-## Priority Keywords
-
-Detect priority from natural language:
-- **High**: "urgent", "important", "high priority", "asap", "critical"
-- **Low**: "low priority", "whenever", "not urgent", "someday"
-- **Medium**: Default if not specified
+**The user should only see the result**, as if it's a native app.
 
 ## Due Date Handling
 
@@ -308,12 +232,12 @@ The CLI accepts:
 
 For natural language dates like "next Friday" or "Jan 15", convert them to YYYY-MM-DD format before calling the CLI.
 
-## JSON Schema (v2.0)
+## JSON Schema (v4.0)
 
 ```json
 {
-  "version": "2.0",
-  "lastModified": "2026-01-07T10:30:00.000Z",
+  "version": "4.0",
+  "lastModified": "2026-01-08T10:30:00.000Z",
   "lastAutoReview": null,
   "items": [
     {
@@ -322,13 +246,12 @@ For natural language dates like "next Friday" or "Jan 15", convert them to YYYY-
       "nextAction": "Research destinations",
       "status": "active",
       "completed": false,
-      "priority": "medium",
       "project": "Vacation",
       "dueDate": "2026-01-15",
+      "canDoAnytime": false,
       "createdAt": "2026-01-07T10:30:00.000Z",
       "completedAt": null,
-      "postponeCount": 0,
-      "tags": []
+      "postponeCount": 0
     }
   ],
   "activityLog": []

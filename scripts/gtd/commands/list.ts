@@ -4,8 +4,8 @@
  * Lists todo items with optional filters
  *
  * Usage:
- *   list [--completed] [--pending] [--priority high|medium|low]
- *   list [--tab focus|later|cando|inbox|done|projects]
+ *   list [--completed] [--pending]
+ *   list [--tab focus|optional|later|inbox|done|projects]
  *   list [--project "Project Name"]
  */
 
@@ -22,10 +22,10 @@ export async function list(args: string[]): Promise<CommandResult> {
   if (flags.tab) {
     // Support legacy tab names as aliases
     let tabName = flags.tab as string;
-    if (tabName === 'optional' || tabName === 'mightdo') {
-      tabName = 'cando';
+    if (tabName === 'cando' || tabName === 'mightdo') {
+      tabName = 'optional';
     }
-    const validTabs: TabType[] = ['focus', 'later', 'cando', 'inbox', 'done', 'projects'];
+    const validTabs: TabType[] = ['focus', 'optional', 'later', 'inbox', 'done', 'projects'];
     if (!validTabs.includes(tabName as TabType)) {
       return {
         success: false,
@@ -49,17 +49,12 @@ export async function list(args: string[]): Promise<CommandResult> {
     items = items.filter(item => !item.completed && item.status !== 'done');
   }
 
-  // Filter by priority
-  if (flags.priority) {
-    items = items.filter(item => item.priority === flags.priority);
-  }
-
   // Filter by status
   if (flags.status) {
     items = items.filter(item => item.status === flags.status);
   }
 
-  // Sort: overdue first, then by due date, then by priority
+  // Sort: overdue first, then by due date
   items.sort((a, b) => {
     // Done items last
     if (a.status === 'done' && b.status !== 'done') return 1;
@@ -69,13 +64,10 @@ export async function list(args: string[]): Promise<CommandResult> {
     if (a.dueDate && !b.dueDate) return -1;
     if (!a.dueDate && b.dueDate) return 1;
     if (a.dueDate && b.dueDate) {
-      const cmp = a.dueDate.localeCompare(b.dueDate);
-      if (cmp !== 0) return cmp;
+      return a.dueDate.localeCompare(b.dueDate);
     }
 
-    // Priority sorting
-    const priorityOrder = { high: 0, medium: 1, low: 2 };
-    return priorityOrder[a.priority] - priorityOrder[b.priority];
+    return 0;
   });
 
   return {

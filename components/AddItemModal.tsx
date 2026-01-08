@@ -27,7 +27,7 @@ export default function AddItemModal({
   onAdd,
 }: AddItemModalProps) {
   const [title, setTitle] = useState('');
-  const [priority, setPriority] = useState<'high' | 'medium' | 'low'>('medium');
+  
   const [hasDeadline, setHasDeadline] = useState(false);
   const [dueDate, setDueDate] = useState('');
   const [canDoAnytime, setCanDoAnytime] = useState(false);
@@ -37,7 +37,6 @@ export default function AddItemModal({
   useEffect(() => {
     if (isOpen) {
       setTitle('');
-      setPriority('medium');
       setHasDeadline(defaultToToday);
       setDueDate(defaultToToday ? getTodayString() : '');
       setCanDoAnytime(false);
@@ -57,7 +56,6 @@ export default function AddItemModal({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             title: title.trim(),
-            priority,
             hasDeadline,
             dueDate: hasDeadline && dueDate ? dueDate : null,
             canDoAnytime,
@@ -72,7 +70,7 @@ export default function AddItemModal({
           body: JSON.stringify({
             title: `Set up ${title.trim()}`,
             project: title.trim(),
-            priority: 'medium',
+
             status: 'inbox',
           }),
         });
@@ -116,32 +114,6 @@ export default function AddItemModal({
 
           {mode === 'task' && (
             <>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Priority
-                </label>
-                <div className="flex gap-2">
-                  {(['low', 'medium', 'high'] as const).map((p) => (
-                    <button
-                      key={p}
-                      type="button"
-                      onClick={() => setPriority(p)}
-                      className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
-                        priority === p
-                          ? p === 'high'
-                            ? 'bg-red-100 text-red-700 border-2 border-red-300'
-                            : p === 'medium'
-                            ? 'bg-yellow-100 text-yellow-700 border-2 border-yellow-300'
-                            : 'bg-green-100 text-green-700 border-2 border-green-300'
-                          : 'bg-gray-100 text-gray-600 border-2 border-transparent hover:bg-gray-200'
-                      }`}
-                    >
-                      {p.charAt(0).toUpperCase() + p.slice(1)}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Does this have a deadline?
@@ -201,7 +173,7 @@ export default function AddItemModal({
                           : 'bg-gray-100 text-gray-600 border-2 border-transparent hover:bg-gray-200'
                       }`}
                     >
-                      Yes (Might Do)
+                      Yes (Optional)
                     </button>
                     <button
                       type="button"
@@ -217,7 +189,7 @@ export default function AddItemModal({
                   </div>
                   <p className="text-xs text-gray-500 mt-1">
                     {canDoAnytime
-                      ? 'Task will go to Might Do tab'
+                      ? 'Task will go to Optional tab'
                       : 'Task will go to Inbox for clarification'}
                   </p>
                 </div>

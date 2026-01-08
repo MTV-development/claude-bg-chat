@@ -21,7 +21,6 @@ export async function POST(req: Request) {
     const body = await req.json();
     const {
       title,
-      priority = 'medium',
       dueDate,
       hasDeadline,
       canDoAnytime,
@@ -39,7 +38,7 @@ export async function POST(req: Request) {
     const data = await loadTodos();
     const today = getLocalDateString();
 
-    // Resolve due date - only default to today if explicitly set to 'today'
+    // Resolve due date
     let resolvedDueDate: string | null = null;
     if (dueDate === 'today') {
       resolvedDueDate = today;
@@ -48,9 +47,8 @@ export async function POST(req: Request) {
       resolvedDueDate = dueDate;
     }
 
-    // Validate: if hasDeadline is true, dueDate should be provided
-    const resolvedHasDeadline = hasDeadline === true;
-    if (resolvedHasDeadline && !resolvedDueDate) {
+    // If hasDeadline is true but no dueDate, that's an error
+    if (hasDeadline && !resolvedDueDate) {
       log(`Failed: hasDeadline=true but no dueDate provided`);
       return Response.json(
         { error: 'Due date is required when hasDeadline is true' },
@@ -63,18 +61,15 @@ export async function POST(req: Request) {
     const newItem: TodoItem = {
       id: generateId(),
       title: title.trim(),
-      nextAction: title.trim(), // For simple tasks, nextAction = title
+      nextAction: title.trim(),
       status: status === 'inbox' ? 'inbox' : 'active',
       completed: false,
-      priority: priority || 'medium',
       project: project || null,
       dueDate: resolvedDueDate,
-      hasDeadline: resolvedHasDeadline,
       canDoAnytime: resolvedCanDoAnytime,
       createdAt: new Date().toISOString(),
       completedAt: null,
       postponeCount: 0,
-      tags: [],
     };
 
     const tab = getItemTab(newItem);

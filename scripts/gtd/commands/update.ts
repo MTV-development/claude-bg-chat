@@ -4,9 +4,9 @@
  * Updates a todo item's properties
  *
  * Usage:
- *   update <id> [--title "..."] [--priority high|medium|low] [--due YYYY-MM-DD|today|tomorrow]
+ *   update <id> [--title "..."] [--due YYYY-MM-DD|today|tomorrow]
  *               [--project "..."] [--status inbox|active|someday] [--next-action "..."]
- *               [--has-deadline true|false] [--can-do-anytime true|false]
+ *               [--can-do-anytime true|false]
  */
 
 import { loadTodos, saveTodos, findItem, parseDate, parseArgs, getItemTab } from '../lib/store';
@@ -41,17 +41,6 @@ export async function update(args: string[]): Promise<CommandResult> {
   // Update nextAction if provided
   if (flags['next-action']) {
     item.nextAction = flags['next-action'];
-  }
-
-  // Update priority if provided
-  if (flags.priority) {
-    if (!['high', 'medium', 'low'].includes(flags.priority)) {
-      return {
-        success: false,
-        error: 'Priority must be high, medium, or low',
-      };
-    }
-    item.priority = flags.priority as 'high' | 'medium' | 'low';
   }
 
   // Update due date if provided
@@ -91,11 +80,6 @@ export async function update(args: string[]): Promise<CommandResult> {
     } else if (flags.status !== 'done') {
       item.completedAt = null;
     }
-  }
-
-  // Update hasDeadline if provided
-  if (flags['has-deadline'] !== undefined) {
-    item.hasDeadline = flags['has-deadline'] === 'true';
   }
 
   // Update canDoAnytime if provided

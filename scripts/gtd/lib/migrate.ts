@@ -1,7 +1,8 @@
 /**
  * Migration utilities for GTD data schema
  *
- * Handles migration from v1.0 to v2.0 to v3.0 schema
+ * Handles migration from v1.0 to v2.0 to v3.0 to v4.0 schema
+ * v4.0: Removed priority, tags, hasDeadline (deadline implicit from dueDate)
  */
 
 import { TodoData, TodoItem, createEmptyTodoData } from './types';
@@ -10,11 +11,11 @@ interface V1Item {
   id: string;
   title: string;
   completed: boolean;
-  priority: 'high' | 'medium' | 'low';
+  priority?: 'high' | 'medium' | 'low';
   dueDate: string | null;
   createdAt: string;
   completedAt: string | null;
-  tags: string[];
+  tags?: string[];
 }
 
 interface V1Data {
@@ -24,36 +25,32 @@ interface V1Data {
 }
 
 /**
- * Migrate a v1 item to v2/v3 format
+ * Migrate a v1 item to v4 format
  */
 export function migrateItem(v1Item: V1Item): TodoItem {
-  const hasDeadline = v1Item.dueDate !== null;
-  const canDoAnytime = !hasDeadline && !v1Item.completed;
+  const canDoAnytime = v1Item.dueDate === null && !v1Item.completed;
 
   return {
     id: v1Item.id,
     title: v1Item.title,
     nextAction: v1Item.title,  // Copy title as initial nextAction
-    status: v1Item.completed ? 'done' : 'active',  // Completed → done, else active
+    status: v1Item.completed ? 'done' : 'active',
     completed: v1Item.completed,
-    priority: v1Item.priority,
     project: null,
     dueDate: v1Item.dueDate,
-    hasDeadline,
     canDoAnytime,
     createdAt: v1Item.createdAt,
     completedAt: v1Item.completedAt,
     postponeCount: 0,
-    tags: v1Item.tags || [],
   };
 }
 
 /**
- * Migrate v1 data to v2 format
+ * Migrate v1 data to v4 format
  */
-export function migrateV1ToV2(v1Data: V1Data): TodoData {
+export function migrateV1ToV4(v1Data: V1Data): TodoData {
   return {
-    version: '2.0',
+    version: '4.0',
     lastModified: v1Data.lastModified || new Date().toISOString(),
     lastAutoReview: null,
     items: v1Data.items.map(migrateItem),
@@ -62,27 +59,18 @@ export function migrateV1ToV2(v1Data: V1Data): TodoData {
 }
 
 /**
- * Check if data needs migration to v2
+ * Check if data needs migration to v4
  */
-export function needsMigrationToV2(data: { version?: string }): boolean {
+export function needsMigrationToV4(data: { version?: string }): boolean {
   if (!data.version) return true;
   const major = parseInt(data.version.split('.')[0], 10);
-  return major < 2;
+  return major < 4;
 }
 
 /**
- * Check if data needs migration to v3
+ * Migrate data to v4 format (main entry point)
  */
-export function needsMigrationToV3(data: { version?: string }): boolean {
-  if (!data.version) return true;
-  const major = parseInt(data.version.split('.')[0], 10);
-  return major < 3;
-}
-
-/**
- * Migrate data if needed, return v2 format
- */
-export function ensureV2(data: unknown): TodoData {
+export function ensureV4(data: unknown): TodoData {
   // Handle null/undefined
   if (!data || typeof data !== 'object') {
     return createEmptyTodoData();
@@ -90,105 +78,79 @@ export function ensureV2(data: unknown): TodoData {
 
   const d = data as Record<string, unknown>;
 
-  // Check version
-  if (needsMigrationToV2(d as { version?: string })) {
-    return migrateV1ToV2(d as unknown as V1Data);
-  }
-
-  // Already v2, ensure all fields exist
-  const v2Data = d as unknown as TodoData;
-  return {
-    version: v2Data.version || '2.0',
-    lastModified: v2Data.lastModified || new Date().toISOString(),
-    lastAutoReview: v2Data.lastAutoReview ?? null,
-    items: (v2Data.items || []).map(ensureItemV2),
-    activityLog: v2Data.activityLog || [],
-  };
-}
-
-/**
- * Migrate data to v3 format
- */
-export function ensureV3(data: unknown): TodoData {
-  // First ensure v2 format
-  const v2Data = ensureV2(data);
-
-  // Check if already v3
-  if (!needsMigrationToV3({ version: v2Data.version })) {
-    // Already v3, just ensure all v3 fields exist
+  // Check if already v4
+  if (!needsMigrationToV4(d as { version?: string })) {
+    const v4Data = d as unknown as TodoData;
     return {
-      ...v2Data,
-      items: v2Data.items.map(ensureItemV3),
+      version: v4Data.version || '4.0',
+      lastModified: v4Data.lastModified || new Date().toISOString(),
+      lastAutoReview: v4Data.lastAutoReview ?? null,
+      items: (v4Data.items || []).map(ensureItemV4),
+      activityLog: v4Data.activityLog || [],
     };
   }
 
-  // Migrate v2 to v3
-  console.log('[migrate] Migrating data from v2 to v3...');
+  // Migrate older data to v4
+  console.log('[migrate] Migrating data to v4...');
+  const oldData = d as unknown as { items?: unknown[]; lastModified?: string; lastAutoReview?: string | null; activityLog?: unknown[] };
+
   return {
-    version: '3.0',
-    lastModified: v2Data.lastModified,
-    lastAutoReview: v2Data.lastAutoReview,
-    items: v2Data.items.map(migrateItemV2ToV3),
-    activityLog: v2Data.activityLog,
+    version: '4.0',
+    lastModified: oldData.lastModified || new Date().toISOString(),
+    lastAutoReview: oldData.lastAutoReview ?? null,
+    items: (oldData.items || []).map((item) => migrateOldItemToV4(item as Record<string, unknown>)),
+    activityLog: (oldData.activityLog || []) as TodoData['activityLog'],
   };
 }
 
 /**
- * Migrate a v2 item to v3 format
- *
- * Migration rules:
- * - hasDeadline = dueDate !== null
- * - canDoAnytime = status === 'someday' || (!dueDate && status !== 'inbox')
+ * Migrate an old item (v1-v3) to v4 format
  */
-function migrateItemV2ToV3(item: Partial<TodoItem> & { id: string; title: string }): TodoItem {
-  const base = ensureItemV2(item);
+function migrateOldItemToV4(item: Record<string, unknown>): TodoItem {
+  const id = item.id as string;
+  const title = item.title as string;
+  const nextAction = (item.nextAction as string | null) ?? title;
+  const completed = item.completed as boolean ?? false;
+  const status = (item.status as TodoItem['status']) ?? (completed ? 'done' : 'active');
+  const dueDate = item.dueDate as string | null ?? null;
 
-  // Determine hasDeadline: true if there's a dueDate
-  const hasDeadline = base.dueDate !== null;
-
-  // Determine canDoAnytime:
-  // - status === 'someday' (previously Optional/Someday items)
-  // - OR no dueDate and status is 'active' (was in Optional tab)
-  const canDoAnytime = base.status === 'someday' ||
-    (base.dueDate === null && base.status === 'active');
+  // Determine canDoAnytime from old hasDeadline/canDoAnytime or infer from data
+  let canDoAnytime = item.canDoAnytime as boolean ?? false;
+  if (!canDoAnytime && item.hasDeadline === false && dueDate === null && status !== 'inbox') {
+    // Old v3 items without deadline that were active should be canDoAnytime
+    canDoAnytime = true;
+  }
 
   return {
-    ...base,
-    hasDeadline,
+    id,
+    title,
+    nextAction,
+    status,
+    completed,
+    project: item.project as string | null ?? null,
+    dueDate,
     canDoAnytime,
+    createdAt: item.createdAt as string ?? new Date().toISOString(),
+    completedAt: item.completedAt as string | null ?? null,
+    postponeCount: item.postponeCount as number ?? 0,
   };
 }
 
 /**
- * Ensure an item has all v3 fields
+ * Ensure an item has all v4 fields
  */
-export function ensureItemV3(item: Partial<TodoItem> & { id: string; title: string }): TodoItem {
-  const base = ensureItemV2(item);
-  return {
-    ...base,
-    hasDeadline: item.hasDeadline ?? (base.dueDate !== null),
-    canDoAnytime: item.canDoAnytime ?? false,
-  };
-}
-
-/**
- * Ensure an item has all v2 fields
- */
-export function ensureItemV2(item: Partial<TodoItem> & { id: string; title: string }): TodoItem {
+export function ensureItemV4(item: Partial<TodoItem> & { id: string; title: string }): TodoItem {
   return {
     id: item.id,
     title: item.title,
     nextAction: item.nextAction ?? item.title,
     status: item.status ?? (item.completed ? 'done' : 'active'),
     completed: item.completed ?? false,
-    priority: item.priority ?? 'medium',
     project: item.project ?? null,
     dueDate: item.dueDate ?? null,
-    hasDeadline: item.hasDeadline ?? false,
     canDoAnytime: item.canDoAnytime ?? false,
     createdAt: item.createdAt ?? new Date().toISOString(),
     completedAt: item.completedAt ?? null,
     postponeCount: item.postponeCount ?? 0,
-    tags: item.tags ?? [],
   };
 }

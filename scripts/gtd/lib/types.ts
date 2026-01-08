@@ -1,11 +1,10 @@
 /**
  * GTD CLI Type Definitions
  *
- * Version 3.0 - New task model with explicit hasDeadline/canDoAnytime
+ * Version 4.0 - Simplified model: deadline implicit from dueDate, no priorities/tags
  */
 
 export type ItemStatus = 'inbox' | 'active' | 'done' | 'someday';
-export type Priority = 'high' | 'medium' | 'low';
 export type ActivityAction = 'created' | 'postponed' | 'completed' | 'clarified' | 'deleted' | 'uncompleted';
 
 export interface TodoItem {
@@ -14,15 +13,12 @@ export interface TodoItem {
   nextAction: string | null;        // Clarified action (null = needs clarification)
   status: ItemStatus;               // GTD status
   completed: boolean;               // Legacy compat, derived from status === 'done'
-  priority: Priority;
   project: string | null;           // Project grouping
-  dueDate: string | null;           // ISO date string (tickler)
-  hasDeadline: boolean;             // Whether this task has a deadline
-  canDoAnytime: boolean;            // Whether this task can be done anytime (Might Do)
+  dueDate: string | null;           // ISO date string (deadline implicit from existence)
+  canDoAnytime: boolean;            // Whether this task can be done anytime (Optional tab)
   createdAt: string;
   completedAt: string | null;
   postponeCount: number;            // Track postponements
-  tags: string[];
 }
 
 export interface ActivityLogEntry {
@@ -48,7 +44,7 @@ export interface TodoData {
   activityLog: ActivityLogEntry[];
 }
 
-export type TabType = 'focus' | 'later' | 'cando' | 'inbox' | 'projects' | 'done';
+export type TabType = 'focus' | 'optional' | 'later' | 'inbox' | 'projects' | 'done';
 
 export interface CommandResult {
   success: boolean;
@@ -69,14 +65,11 @@ export function createDefaultItem(partial: Partial<TodoItem> & { id: string; tit
     nextAction: null,
     status: 'inbox',
     completed: false,
-    priority: 'medium',
     project: null,
     dueDate: null,
-    hasDeadline: false,
     canDoAnytime: false,
     completedAt: null,
     postponeCount: 0,
-    tags: [],
     ...partial,
   };
 }
@@ -86,7 +79,7 @@ export function createDefaultItem(partial: Partial<TodoItem> & { id: string; tit
  */
 export function createEmptyTodoData(): TodoData {
   return {
-    version: '3.0',
+    version: '4.0',
     lastModified: new Date().toISOString(),
     lastAutoReview: null,
     items: [],
