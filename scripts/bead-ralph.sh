@@ -337,9 +337,29 @@ AUTONOMY:
         result=$(claude --dangerously-skip-permissions --print "$CLAUDE_PROMPT")
         echo "$result"
     else
-        # Streaming mode (default): show output as it generates
-        claude --dangerously-skip-permissions --print "$CLAUDE_PROMPT" | tee "$TEMP_OUTPUT"
-        result=$(cat "$TEMP_OUTPUT")
+        # Streaming mode: use stream-json for real-time output
+        claude --dangerously-skip-permissions --print --output-format stream-json --verbose "$CLAUDE_PROMPT" 2>&1 | \
+            tee "$TEMP_OUTPUT" | \
+            while IFS= read -r line; do
+                # Extract text from assistant messages and print immediately
+                if [[ "$line" == *'"type":"assistant"'* ]]; then
+                    # Extract the text content - handle the nested JSON structure
+                    # The text is in: "content":[{"type":"text","text":"..."}]
+                    text=$(echo "$line" | sed -n 's/.*"text":"\([^"]*\)".*/\1/p' | head -1)
+                    if [ -n "$text" ]; then
+                        # Unescape JSON escapes using printf %b and echo -e
+                        echo -e "${text//\\n/$'\n'}"
+                    fi
+                fi
+            done
+        # Extract final result for signal checking
+        result=$(grep '"type":"result"' "$TEMP_OUTPUT" 2>/dev/null | sed -n 's/.*"result":"\([^"]*\)".*/\1/p')
+        if [ -z "$result" ]; then
+            # Fallback: get text from all assistant messages
+            result=$(grep '"type":"assistant"' "$TEMP_OUTPUT" 2>/dev/null | sed -n 's/.*"text":"\([^"]*\)".*/\1/p')
+        fi
+        # Unescape the result for signal checking
+        result=$(echo -e "${result//\\n/$'\n'}")
     fi
 
     echo ""
