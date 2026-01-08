@@ -81,7 +81,7 @@ export default function TodoList() {
   const [tabCounts, setTabCounts] = useState<Record<TabType, number>>({
     focus: 0,
     later: 0,
-    cando: 0,
+    optional: 0,
     inbox: 0,
     projects: 0,
     done: 0,
@@ -153,7 +153,7 @@ export default function TodoList() {
       const counts: Record<TabType, number> = {
         focus: 0,
         later: 0,
-        cando: 0,
+        optional: 0,
         inbox: 0,
         projects: 0,
         done: 0,
@@ -348,7 +348,7 @@ export default function TodoList() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-full text-gray-500">
+      <div className="flex items-center justify-center h-full text-theme-text-secondary">
         <svg className="animate-spin h-6 w-6 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -360,7 +360,7 @@ export default function TodoList() {
 
   if (error) {
     return (
-      <div className="p-4 text-red-600">
+      <div className="p-4 text-theme-error">
         <p className="font-medium">Error loading todos</p>
         <p className="text-sm mt-1">{error}</p>
       </div>
@@ -370,9 +370,9 @@ export default function TodoList() {
   return (
     <div className="h-full flex flex-col relative">
       {/* Header with Tabs */}
-      <div className="border-b border-gray-200 bg-white">
+      <div className="border-b border-theme-border-primary bg-theme-bg-primary">
         <div className="px-4 py-2">
-          <h2 className="text-lg font-semibold text-gray-800">Todo List</h2>
+          <h2 className="text-lg font-semibold text-theme-text-primary">Todo List</h2>
         </div>
         <div className="flex">
           {tabs.map((tab) => (
@@ -381,8 +381,8 @@ export default function TodoList() {
               onClick={() => setActiveTab(tab.id)}
               className={`flex-1 px-3 py-2 text-sm font-medium border-b-2 transition-colors ${
                 activeTab === tab.id
-                  ? 'border-blue-500 text-blue-600 bg-blue-50'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                  ? 'border-theme-accent-primary text-theme-accent-primary bg-theme-info-bg'
+                  : 'border-transparent text-theme-text-secondary hover:text-theme-text-primary hover:bg-theme-bg-hover'
               }`}
               title={tab.description}
             >
@@ -390,8 +390,8 @@ export default function TodoList() {
               {tabCounts[tab.id] > 0 && (
                 <span className={`ml-1.5 px-1.5 py-0.5 text-xs rounded-full ${
                   activeTab === tab.id
-                    ? 'bg-blue-100 text-blue-700'
-                    : 'bg-gray-100 text-gray-600'
+                    ? 'bg-theme-accent-primary/20 text-theme-accent-primary'
+                    : 'bg-theme-bg-tertiary text-theme-text-secondary'
                 }`}>
                   {tabCounts[tab.id]}
                 </span>
@@ -410,8 +410,8 @@ export default function TodoList() {
               onClick={handleBulkAction}
               className={`w-full py-2 px-4 rounded-lg font-medium shadow-md transition-colors ${
                 activeTab === 'done'
-                  ? 'bg-orange-500 hover:bg-orange-600 text-white'
-                  : 'bg-green-500 hover:bg-green-600 text-white'
+                  ? 'bg-theme-warning hover:opacity-90 text-theme-text-inverse'
+                  : 'bg-theme-success hover:opacity-90 text-theme-text-inverse'
               }`}
             >
               {activeTab === 'done' ? 'Undo' : 'Complete'} ({selectedIds.size} selected)
@@ -420,24 +420,24 @@ export default function TodoList() {
         )}
         {activeTab === 'howto' ? (
           <div className="prose prose-sm max-w-none">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Getting Started</h3>
+            <h3 className="text-lg font-semibold text-theme-text-primary mb-4">Getting Started</h3>
 
             <div className="space-y-4">
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <h4 className="font-medium text-blue-800 mb-2">Adding Tasks</h4>
-                <p className="text-blue-700 text-sm">
+              <div className="bg-theme-info-bg border border-theme-info rounded-lg p-4">
+                <h4 className="font-medium text-theme-info mb-2">Adding Tasks</h4>
+                <p className="text-theme-text-secondary text-sm">
                   Just type in the chat! Say things like:
                 </p>
-                <ul className="text-blue-700 text-sm mt-2 space-y-1">
+                <ul className="text-theme-text-secondary text-sm mt-2 space-y-1">
                   <li>&quot;buy groceries by Friday&quot; - Goes to Focus when deadline is due</li>
                   <li>&quot;think about vacation&quot; - Goes to Inbox (needs clarifying)</li>
                   <li>&quot;read that book sometime&quot; - Goes to Optional (anytime task)</li>
                 </ul>
               </div>
 
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                <h4 className="font-medium text-green-800 mb-2">The Five Tabs</h4>
-                <ul className="text-green-700 text-sm space-y-2">
+              <div className="bg-theme-success-bg border border-theme-success rounded-lg p-4">
+                <h4 className="font-medium text-theme-success mb-2">The Five Tabs</h4>
+                <ul className="text-theme-text-secondary text-sm space-y-2">
                   <li><strong>Focus</strong> - Tasks with deadlines due today. Use Postpone to push them out.</li>
                   <li><strong>Later</strong> - Tasks with future deadlines. They move to Focus when due.</li>
                   <li><strong>Optional</strong> - Tasks you can do anytime. Click &quot;Do Today&quot; to add a deadline.</li>
@@ -446,25 +446,25 @@ export default function TodoList() {
                 </ul>
               </div>
 
-              <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-                <h4 className="font-medium text-purple-800 mb-2">Completing Tasks</h4>
-                <p className="text-purple-700 text-sm">
+              <div className="bg-theme-info-bg border border-theme-info rounded-lg p-4">
+                <h4 className="font-medium text-theme-info mb-2">Completing Tasks</h4>
+                <p className="text-theme-text-secondary text-sm">
                   Select tasks using the checkboxes, then click the &quot;Complete&quot; button that appears.
                   On the Done tab, use &quot;Undo&quot; to restore completed tasks.
                 </p>
               </div>
 
-              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-                <h4 className="font-medium text-orange-800 mb-2">Postponing</h4>
-                <p className="text-orange-700 text-sm">
+              <div className="bg-theme-warning-bg border border-theme-warning rounded-lg p-4">
+                <h4 className="font-medium text-theme-warning mb-2">Postponing</h4>
+                <p className="text-theme-text-secondary text-sm">
                   On the Focus tab, click &quot;Postpone&quot; to push a task to a future date.
                   If you postpone something 3+ times, we&apos;ll ask if you want to remove it.
                 </p>
               </div>
 
-              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                <h4 className="font-medium text-gray-800 mb-2">Tips</h4>
-                <ul className="text-gray-700 text-sm space-y-1">
+              <div className="bg-theme-bg-tertiary border border-theme-border-primary rounded-lg p-4">
+                <h4 className="font-medium text-theme-text-primary mb-2">Tips</h4>
+                <ul className="text-theme-text-secondary text-sm space-y-1">
                   <li>Keep Focus tab small - only what you&apos;ll actually do today</li>
                   <li>Clear your Inbox regularly by clarifying vague tasks</li>
                   <li>Use &quot;Do Today&quot; to pull Optional tasks when ready</li>
@@ -475,7 +475,7 @@ export default function TodoList() {
         ) : activeTab === 'projects' && !selectedProject ? (
           // Projects list view
           projects.length === 0 ? (
-            <div className="text-center text-gray-400 mt-8">
+            <div className="text-center text-theme-text-tertiary mt-8">
               <p className="text-lg mb-2">No projects yet</p>
               <p className="text-sm">Assign tasks to projects to see them here</p>
             </div>
@@ -485,23 +485,23 @@ export default function TodoList() {
                 <li
                   key={project.name}
                   onClick={() => setSelectedProject(project.name)}
-                  className="border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow bg-white border-gray-200 cursor-pointer hover:bg-gray-50"
+                  className="border rounded-lg p-4 shadow-theme hover:shadow-theme-md transition-shadow bg-theme-bg-primary border-theme-border-primary cursor-pointer hover:bg-theme-bg-hover"
                 >
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium text-gray-800">{project.name}</p>
-                      <p className="text-sm text-gray-500 mt-1">
+                      <p className="font-medium text-theme-text-primary">{project.name}</p>
+                      <p className="text-sm text-theme-text-secondary mt-1">
                         {project.taskCount - project.completedCount} active
                         {project.completedCount > 0 && `, ${project.completedCount} done`}
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
                       {project.hasNextAction && (
-                        <span className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full">
+                        <span className="text-xs px-2 py-1 bg-theme-success-bg text-theme-success rounded-full">
                           Has next action
                         </span>
                       )}
-                      <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg className="w-5 h-5 text-theme-text-tertiary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>
                     </div>
@@ -515,16 +515,16 @@ export default function TodoList() {
           <div>
             <button
               onClick={() => setSelectedProject(null)}
-              className="flex items-center gap-1 text-blue-600 hover:text-blue-800 mb-4 text-sm font-medium"
+              className="flex items-center gap-1 text-theme-accent-primary hover:text-theme-accent-primary-hover mb-4 text-sm font-medium"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
               Back to Projects
             </button>
-            <h3 className="text-lg font-semibold text-gray-800 mb-3">{selectedProject}</h3>
+            <h3 className="text-lg font-semibold text-theme-text-primary mb-3">{selectedProject}</h3>
             {todos.length === 0 ? (
-              <div className="text-center text-gray-400 mt-8">
+              <div className="text-center text-theme-text-tertiary mt-8">
                 <p className="text-lg mb-2">No active tasks</p>
                 <p className="text-sm">All tasks in this project are complete</p>
               </div>
@@ -533,37 +533,37 @@ export default function TodoList() {
                 {todos.map((todo) => (
                   <li
                     key={todo.id}
-                    className="border rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow bg-white border-gray-200"
+                    className="border rounded-lg p-3 shadow-theme hover:shadow-theme-md transition-shadow bg-theme-bg-primary border-theme-border-primary"
                   >
                     <div className="flex items-start gap-3">
                       <button
                         onClick={() => toggleSelection(todo.id)}
                         className={`mt-0.5 w-5 h-5 rounded transition-colors cursor-pointer flex items-center justify-center ${
                           selectedIds.has(todo.id)
-                            ? 'bg-blue-500 hover:bg-blue-600'
-                            : 'border-2 border-gray-300 hover:border-blue-500 hover:bg-blue-50'
+                            ? 'bg-theme-accent-primary hover:bg-theme-accent-primary-hover'
+                            : 'border-2 border-theme-border-secondary hover:border-theme-accent-primary hover:bg-theme-info-bg'
                         }`}
                         title="Select"
                       >
                         {selectedIds.has(todo.id) && (
-                          <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <svg className="w-3 h-3 text-theme-text-inverse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                           </svg>
                         )}
                       </button>
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium text-gray-800">
+                        <p className="font-medium text-theme-text-primary">
                           {todo.nextAction || todo.title}
                         </p>
                         {todo.nextAction && todo.nextAction !== todo.title && (
-                          <p className="text-xs text-gray-400 mt-0.5">{todo.title}</p>
+                          <p className="text-xs text-theme-text-tertiary mt-0.5">{todo.title}</p>
                         )}
                         <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                           {todo.dueDate && (
                             <span className={`text-xs px-2 py-0.5 rounded-full ${
                               isOverdue(todo.dueDate)
-                                ? 'bg-red-50 text-red-600 font-medium'
-                                : 'bg-gray-100 text-gray-600'
+                                ? 'bg-theme-error-bg text-theme-error font-medium'
+                                : 'bg-theme-bg-tertiary text-theme-text-secondary'
                             }`}>
                               {isOverdue(todo.dueDate) && 'Overdue: '}
                               {formatDate(todo.dueDate)}
@@ -575,7 +575,7 @@ export default function TodoList() {
                       <div className="ml-2 flex-shrink-0">
                         <button
                           onClick={() => handleDoToday(todo.id)}
-                          className="text-xs px-2 py-1 rounded bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors"
+                          className="text-xs px-2 py-1 rounded bg-theme-info-bg text-theme-accent-primary hover:opacity-80 transition-colors"
                           title="Move to Today"
                         >
                           Do Today
@@ -588,7 +588,7 @@ export default function TodoList() {
             )}
           </div>
         ) : todos.length === 0 ? (
-          <div className="text-center text-gray-400 mt-8">
+          <div className="text-center text-theme-text-tertiary mt-8">
             <p className="text-lg mb-2">
               {activeTab === 'focus' && 'All caught up for today!'}
               {activeTab === 'later' && 'No upcoming deadlines'}
@@ -609,10 +609,10 @@ export default function TodoList() {
             {todos.map((todo) => (
               <li
                 key={todo.id}
-                className={`border rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow ${
+                className={`border rounded-lg p-3 shadow-theme hover:shadow-theme-md transition-shadow ${
                   todo.status === 'done'
-                    ? 'bg-gray-50 border-gray-200 opacity-70'
-                    : 'bg-white border-gray-200'
+                    ? 'bg-theme-bg-tertiary border-theme-border-primary opacity-70'
+                    : 'bg-theme-bg-primary border-theme-border-primary'
                 }`}
               >
                 <div className="flex items-start gap-3">
@@ -620,33 +620,33 @@ export default function TodoList() {
                     onClick={() => toggleSelection(todo.id)}
                     className={`mt-0.5 w-5 h-5 rounded transition-colors cursor-pointer flex items-center justify-center ${
                       selectedIds.has(todo.id)
-                        ? 'bg-blue-500 hover:bg-blue-600'
-                        : 'border-2 border-gray-300 hover:border-blue-500 hover:bg-blue-50'
+                        ? 'bg-theme-accent-primary hover:bg-theme-accent-primary-hover'
+                        : 'border-2 border-theme-border-secondary hover:border-theme-accent-primary hover:bg-theme-info-bg'
                     }`}
                     title="Select"
                   >
                     {selectedIds.has(todo.id) && (
-                      <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg className="w-3 h-3 text-theme-text-inverse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                       </svg>
                     )}
                   </button>
                   <div className="flex-1 min-w-0">
                     {/* Show nextAction for active items, title for inbox */}
-                    <p className={`font-medium ${todo.completed ? 'text-gray-500 line-through' : 'text-gray-800'}`}>
+                    <p className={`font-medium ${todo.completed ? 'text-theme-text-secondary line-through' : 'text-theme-text-primary'}`}>
                       {todo.status === 'inbox' || !todo.nextAction ? todo.title : todo.nextAction}
                     </p>
                     {/* Show original title if different from nextAction */}
                     {todo.nextAction && todo.nextAction !== todo.title && todo.status !== 'inbox' && (
-                      <p className="text-xs text-gray-400 mt-0.5">{todo.title}</p>
+                      <p className="text-xs text-theme-text-tertiary mt-0.5">{todo.title}</p>
                     )}
                     <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                       {todo.dueDate && (
                         <span
                           className={`text-xs px-2 py-0.5 rounded-full ${
                             isOverdue(todo.dueDate)
-                              ? 'bg-red-50 text-red-600 font-medium'
-                              : 'bg-gray-100 text-gray-600'
+                              ? 'bg-theme-error-bg text-theme-error font-medium'
+                              : 'bg-theme-bg-tertiary text-theme-text-secondary'
                           }`}
                         >
                           {isOverdue(todo.dueDate) && 'Overdue: '}
@@ -654,21 +654,21 @@ export default function TodoList() {
                         </span>
                       )}
                       {todo.project && (
-                        <span className="text-xs px-2 py-0.5 bg-purple-50 text-purple-600 rounded-full">
+                        <span className="text-xs px-2 py-0.5 bg-theme-info-bg text-theme-info rounded-full">
                           {todo.project}
                         </span>
                       )}
                       {todo.postponeCount > 0 && (
                         <span className={`text-xs px-2 py-0.5 rounded-full ${
                           todo.postponeCount >= 3
-                            ? 'bg-orange-100 text-orange-700'
-                            : 'bg-gray-100 text-gray-500'
+                            ? 'bg-theme-warning-bg text-theme-warning'
+                            : 'bg-theme-bg-tertiary text-theme-text-secondary'
                         }`}>
                           Postponed {todo.postponeCount}x
                         </span>
                       )}
                       {todo.completedAt && (
-                        <span className="text-xs text-gray-400">
+                        <span className="text-xs text-theme-text-tertiary">
                           Completed {new Date(todo.completedAt).toLocaleDateString()}
                         </span>
                       )}
@@ -681,7 +681,7 @@ export default function TodoList() {
                       {(activeTab === 'later' || activeTab === 'optional') && (
                         <button
                           onClick={() => handleDoToday(todo.id)}
-                          className="text-xs px-2 py-1 rounded bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors"
+                          className="text-xs px-2 py-1 rounded bg-theme-info-bg text-theme-accent-primary hover:opacity-80 transition-colors"
                           title="Move to Focus"
                         >
                           Do Today
@@ -711,7 +711,7 @@ export default function TodoList() {
           onClick={() => handleOpenAddModal(
             activeTab === 'projects' && !selectedProject ? 'project' : 'task'
           )}
-          className="absolute bottom-16 right-4 w-14 h-14 rounded-full bg-blue-500 hover:bg-blue-600 text-white shadow-lg hover:shadow-xl transition-all flex items-center justify-center"
+          className="absolute bottom-16 right-4 w-14 h-14 rounded-full bg-theme-accent-primary hover:bg-theme-accent-primary-hover text-theme-text-inverse shadow-theme-lg hover:shadow-theme-lg transition-all flex items-center justify-center"
           title={activeTab === 'projects' && !selectedProject ? 'Add Project' : 'Add Task'}
         >
           <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -721,8 +721,8 @@ export default function TodoList() {
       )}
 
       {/* Footer */}
-      <div className="px-4 py-2 border-t border-gray-200 bg-gray-50">
-        <p className="text-xs text-gray-400 text-center">
+      <div className="px-4 py-2 border-t border-theme-border-primary bg-theme-bg-secondary">
+        <p className="text-xs text-theme-text-tertiary text-center">
           Auto-refreshing every {POLL_INTERVAL / 1000}s
         </p>
       </div>

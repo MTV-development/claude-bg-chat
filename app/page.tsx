@@ -199,17 +199,17 @@ export default function Chat() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-theme-bg-secondary">
       {/* Left Panel - Chat */}
-      <div className="flex-1 flex flex-col border-r border-gray-200">
+      <div className="flex-1 flex flex-col border-r border-theme-border-primary">
         {/* Header */}
-        <header className="bg-white border-b border-gray-200 px-4 py-3 flex justify-between items-center">
+        <header className="bg-theme-bg-primary border-b border-theme-border-primary px-4 py-3 flex justify-between items-center">
           <div>
-            <h1 className="text-xl font-semibold text-gray-800">Claude Chat</h1>
-            <p className="text-sm text-gray-500">
+            <h1 className="text-xl font-semibold text-theme-text-primary">Claude Chat</h1>
+            <p className="text-sm text-theme-text-secondary">
               Chat interface for Claude Code
               {claudeSessionId && (
-                <span className="ml-2 text-green-600" title="Session active - faster responses">
+                <span className="ml-2 text-theme-success" title="Session active - faster responses">
                   (warm session)
                 </span>
               )}
@@ -217,7 +217,7 @@ export default function Chat() {
           </div>
           <button
             onClick={handleNewChat}
-            className="text-sm px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 transition-colors"
+            className="text-sm px-3 py-1 border border-theme-border-secondary rounded hover:bg-theme-bg-hover transition-colors text-theme-text-primary"
           >
             New Chat
           </button>
@@ -226,7 +226,7 @@ export default function Chat() {
         {/* Messages Container */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.length === 0 && (
-          <div className="text-center text-gray-400 mt-8">
+          <div className="text-center text-theme-text-tertiary mt-8">
             <p className="text-lg mb-2">No messages yet</p>
             <p className="text-sm mb-6">Start a conversation or try an example:</p>
             <div className="flex flex-wrap justify-center gap-2">
@@ -234,7 +234,7 @@ export default function Chat() {
                 <button
                   key={example}
                   onClick={() => handleExampleClick(example)}
-                  className="text-sm px-3 py-1.5 bg-white border border-gray-300 rounded-full hover:bg-gray-100 hover:border-gray-400 transition-colors text-gray-600"
+                  className="text-sm px-3 py-1.5 bg-theme-bg-primary border border-theme-border-secondary rounded-full hover:bg-theme-bg-hover hover:border-theme-border-secondary transition-colors text-theme-text-secondary"
                 >
                   {example}
                 </button>
@@ -251,8 +251,8 @@ export default function Chat() {
             <div
               className={`max-w-[80%] rounded-lg px-4 py-2 ${
                 message.role === 'user'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-white border border-gray-200 text-gray-800'
+                  ? 'bg-theme-accent-primary text-theme-text-inverse'
+                  : 'bg-theme-bg-primary border border-theme-border-primary text-theme-text-primary'
               }`}
             >
               <div className="text-xs font-medium mb-1 opacity-70">
@@ -262,7 +262,7 @@ export default function Chat() {
                 {stripInternalContent(message.content)}
                 {/* Show blinking cursor while streaming this message */}
                 {isStreaming && message.role === 'assistant' && messages[messages.length - 1]?.id === message.id && (
-                  <span className="inline-block w-2 h-4 bg-gray-400 ml-0.5 animate-pulse" />
+                  <span className="inline-block w-2 h-4 bg-theme-text-tertiary ml-0.5 animate-pulse" />
                 )}
               </div>
             </div>
@@ -272,9 +272,9 @@ export default function Chat() {
         {/* Loading indicator - only show when waiting for first chunk */}
         {isLoading && !isStreaming && (
           <div className="flex justify-start">
-            <div className="bg-white border border-gray-200 rounded-lg px-4 py-2">
-              <div className="text-xs font-medium mb-1 text-gray-500">Claude</div>
-              <div className="flex items-center space-x-2 text-gray-500">
+            <div className="bg-theme-bg-primary border border-theme-border-primary rounded-lg px-4 py-2">
+              <div className="text-xs font-medium mb-1 text-theme-text-secondary">Claude</div>
+              <div className="flex items-center space-x-2 text-theme-text-secondary">
                 <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -287,15 +287,15 @@ export default function Chat() {
 
         {/* Error display with retry */}
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3">
+          <div className="bg-theme-error-bg border border-theme-error rounded-lg px-4 py-3">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-red-700 font-medium">Something went wrong</p>
-                <p className="text-red-600 text-sm mt-1">{error.message}</p>
+                <p className="text-theme-error font-medium">Something went wrong</p>
+                <p className="text-theme-error text-sm mt-1 opacity-80">{error.message}</p>
               </div>
               <button
                 onClick={handleRetry}
-                className="text-sm px-3 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors"
+                className="text-sm px-3 py-1 bg-theme-error-bg text-theme-error rounded hover:opacity-80 transition-colors border border-theme-error"
               >
                 Retry
               </button>
@@ -307,7 +307,7 @@ export default function Chat() {
       </div>
 
         {/* Input Form */}
-        <div className="border-t border-gray-200 bg-white p-4">
+        <div className="border-t border-theme-border-primary bg-theme-bg-primary p-4">
           <form onSubmit={handleSubmit} className="flex space-x-2">
             <input
               ref={inputRef}
@@ -315,14 +315,14 @@ export default function Chat() {
               value={input}
               onChange={handleInputChange}
               placeholder={isLoading ? 'Waiting for response...' : 'Type your message...'}
-              className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50"
+              className="flex-1 border border-theme-border-secondary rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-theme-accent-primary focus:border-transparent disabled:bg-theme-bg-secondary bg-theme-bg-primary text-theme-text-primary placeholder:text-theme-text-tertiary"
               disabled={isLoading}
               autoFocus
             />
             <button
               type="submit"
               disabled={isLoading || !input.trim()}
-              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="bg-theme-accent-primary text-theme-text-inverse px-6 py-2 rounded-lg hover:bg-theme-accent-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {isLoading ? 'Sending...' : 'Send'}
             </button>
@@ -331,7 +331,7 @@ export default function Chat() {
       </div>
 
       {/* Right Panel - Todo List */}
-      <div className="flex-1 bg-gray-50">
+      <div className="flex-1 bg-theme-bg-secondary">
         <TodoList />
       </div>
     </div>

@@ -59,8 +59,8 @@ export default function PostponeDropdown({
         disabled={isLoading}
         className={`text-xs px-2 py-1 rounded transition-colors ${
           postponeCount >= 3
-            ? 'bg-orange-100 text-orange-700 hover:bg-orange-200'
-            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            ? 'bg-theme-warning-bg text-theme-warning hover:opacity-80'
+            : 'bg-theme-bg-tertiary text-theme-text-secondary hover:bg-theme-bg-hover'
         } ${isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
         title="Postpone task"
       >
@@ -76,7 +76,7 @@ export default function PostponeDropdown({
             ⏰ Postpone
             {postponeCount > 0 && (
               <span className={`ml-1 px-1 rounded text-xs ${
-                postponeCount >= 3 ? 'bg-orange-200' : 'bg-gray-200'
+                postponeCount >= 3 ? 'bg-theme-warning' : 'bg-theme-bg-hover'
               }`}>
                 {postponeCount}
               </span>
@@ -86,12 +86,12 @@ export default function PostponeDropdown({
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-1 w-32 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+        <div className="absolute right-0 mt-1 w-32 bg-theme-bg-primary border border-theme-border-primary rounded-lg shadow-theme-lg z-10">
           {postponeOptions.map((option) => (
             <button
               key={option.days}
               onClick={() => handlePostpone(option.days)}
-              className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg"
+              className="w-full px-3 py-2 text-left text-sm text-theme-text-primary hover:bg-theme-bg-hover first:rounded-t-lg last:rounded-b-lg"
             >
               {option.label}
             </button>

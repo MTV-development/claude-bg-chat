@@ -92,21 +92,21 @@ export default function AddItemModal({
         className="absolute inset-0 bg-black/50"
         onClick={onClose}
       />
-      <div className="relative bg-white rounded-lg shadow-xl w-full max-w-md mx-4 p-6">
-        <h2 className="text-lg font-semibold text-gray-800 mb-4">
+      <div className="relative bg-theme-bg-primary rounded-lg shadow-theme-lg w-full max-w-md mx-4 p-6">
+        <h2 className="text-lg font-semibold text-theme-text-primary mb-4">
           {mode === 'task' ? 'Add Task' : 'Add Project'}
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-theme-text-secondary mb-1">
               {mode === 'task' ? 'Task' : 'Project Name'}
             </label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+              className="w-full px-3 py-2 border border-theme-border-secondary rounded-lg focus:ring-2 focus:ring-theme-accent-primary focus:border-theme-accent-primary outline-none bg-theme-bg-primary text-theme-text-primary"
               placeholder={mode === 'task' ? 'What needs to be done?' : 'Project name'}
               autoFocus
             />
@@ -115,7 +115,7 @@ export default function AddItemModal({
           {mode === 'task' && (
             <>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-theme-text-secondary mb-2">
                   Does this have a deadline?
                 </label>
                 <div className="flex gap-2">
@@ -124,8 +124,8 @@ export default function AddItemModal({
                     onClick={() => setHasDeadline(true)}
                     className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
                       hasDeadline
-                        ? 'bg-blue-100 text-blue-700 border-2 border-blue-300'
-                        : 'bg-gray-100 text-gray-600 border-2 border-transparent hover:bg-gray-200'
+                        ? 'bg-theme-info-bg text-theme-accent-primary border-2 border-theme-accent-secondary'
+                        : 'bg-theme-bg-tertiary text-theme-text-secondary border-2 border-transparent hover:bg-theme-bg-hover'
                     }`}
                   >
                     Yes
@@ -135,8 +135,8 @@ export default function AddItemModal({
                     onClick={() => { setHasDeadline(false); setDueDate(''); }}
                     className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
                       !hasDeadline
-                        ? 'bg-blue-100 text-blue-700 border-2 border-blue-300'
-                        : 'bg-gray-100 text-gray-600 border-2 border-transparent hover:bg-gray-200'
+                        ? 'bg-theme-info-bg text-theme-accent-primary border-2 border-theme-accent-secondary'
+                        : 'bg-theme-bg-tertiary text-theme-text-secondary border-2 border-transparent hover:bg-theme-bg-hover'
                     }`}
                   >
                     No
@@ -146,21 +146,21 @@ export default function AddItemModal({
 
               {hasDeadline && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-theme-text-secondary mb-1">
                     Due Date
                   </label>
                   <input
                     type="date"
                     value={dueDate}
                     onChange={(e) => setDueDate(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className="w-full px-3 py-2 border border-theme-border-secondary rounded-lg focus:ring-2 focus:ring-theme-accent-primary focus:border-theme-accent-primary outline-none bg-theme-bg-primary text-theme-text-primary"
                   />
                 </div>
               )}
 
               {!hasDeadline && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-theme-text-secondary mb-2">
                     Can this be done anytime?
                   </label>
                   <div className="flex gap-2">
@@ -169,8 +169,8 @@ export default function AddItemModal({
                       onClick={() => setCanDoAnytime(true)}
                       className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
                         canDoAnytime
-                          ? 'bg-green-100 text-green-700 border-2 border-green-300'
-                          : 'bg-gray-100 text-gray-600 border-2 border-transparent hover:bg-gray-200'
+                          ? 'bg-theme-success-bg text-theme-success border-2 border-theme-success'
+                          : 'bg-theme-bg-tertiary text-theme-text-secondary border-2 border-transparent hover:bg-theme-bg-hover'
                       }`}
                     >
                       Yes (Optional)
@@ -180,14 +180,14 @@ export default function AddItemModal({
                       onClick={() => setCanDoAnytime(false)}
                       className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
                         !canDoAnytime
-                          ? 'bg-orange-100 text-orange-700 border-2 border-orange-300'
-                          : 'bg-gray-100 text-gray-600 border-2 border-transparent hover:bg-gray-200'
+                          ? 'bg-theme-warning-bg text-theme-warning border-2 border-theme-warning'
+                          : 'bg-theme-bg-tertiary text-theme-text-secondary border-2 border-transparent hover:bg-theme-bg-hover'
                       }`}
                     >
                       No (Inbox)
                     </button>
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-theme-text-tertiary mt-1">
                     {canDoAnytime
                       ? 'Task will go to Optional tab'
                       : 'Task will go to Inbox for clarification'}
@@ -196,14 +196,14 @@ export default function AddItemModal({
               )}
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-theme-text-secondary mb-1">
                   Project (optional)
                 </label>
                 <input
                   type="text"
                   value={project}
                   onChange={(e) => setProject(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  className="w-full px-3 py-2 border border-theme-border-secondary rounded-lg focus:ring-2 focus:ring-theme-accent-primary focus:border-theme-accent-primary outline-none bg-theme-bg-primary text-theme-text-primary"
                   placeholder="Assign to project"
                 />
               </div>
@@ -214,14 +214,14 @@ export default function AddItemModal({
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 py-2 px-4 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+              className="flex-1 py-2 px-4 rounded-lg border border-theme-border-secondary text-theme-text-secondary font-medium hover:bg-theme-bg-hover transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={!title.trim() || isSubmitting}
-              className="flex-1 py-2 px-4 rounded-lg bg-blue-500 text-white font-medium hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 py-2 px-4 rounded-lg bg-theme-accent-primary text-theme-text-inverse font-medium hover:bg-theme-accent-primary-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? 'Adding...' : 'Add'}
             </button>

@@ -33,16 +33,14 @@ export async function GET(req: Request) {
 
       log(`Found ${items.length} active items in project "${projectName}"`);
 
-      // Sort by due date, then priority
+      // Sort by due date (items with due dates first, then by date)
       items.sort((a, b) => {
         if (a.dueDate && !b.dueDate) return -1;
         if (!a.dueDate && b.dueDate) return 1;
         if (a.dueDate && b.dueDate) {
-          const cmp = a.dueDate.localeCompare(b.dueDate);
-          if (cmp !== 0) return cmp;
+          return a.dueDate.localeCompare(b.dueDate);
         }
-        const priorityOrder = { high: 0, medium: 1, low: 2 };
-        return priorityOrder[a.priority] - priorityOrder[b.priority];
+        return 0;
       });
 
       return Response.json({
