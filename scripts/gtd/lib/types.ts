@@ -1,7 +1,7 @@
 /**
  * GTD CLI Type Definitions
  *
- * Version 2.0 - Extended for GTD workflow
+ * Version 3.0 - New task model with explicit hasDeadline/canDoAnytime
  */
 
 export type ItemStatus = 'inbox' | 'active' | 'done' | 'someday';
@@ -17,6 +17,8 @@ export interface TodoItem {
   priority: Priority;
   project: string | null;           // Project grouping
   dueDate: string | null;           // ISO date string (tickler)
+  hasDeadline: boolean;             // Whether this task has a deadline
+  canDoAnytime: boolean;            // Whether this task can be done anytime (Might Do)
   createdAt: string;
   completedAt: string | null;
   postponeCount: number;            // Track postponements
@@ -46,7 +48,7 @@ export interface TodoData {
   activityLog: ActivityLogEntry[];
 }
 
-export type TabType = 'focus' | 'optional' | 'inbox' | 'projects' | 'done';
+export type TabType = 'focus' | 'mightdo' | 'inbox' | 'projects' | 'done';
 
 export interface CommandResult {
   success: boolean;
@@ -70,6 +72,8 @@ export function createDefaultItem(partial: Partial<TodoItem> & { id: string; tit
     priority: 'medium',
     project: null,
     dueDate: null,
+    hasDeadline: false,
+    canDoAnytime: false,
     completedAt: null,
     postponeCount: 0,
     tags: [],
@@ -82,7 +86,7 @@ export function createDefaultItem(partial: Partial<TodoItem> & { id: string; tit
  */
 export function createEmptyTodoData(): TodoData {
   return {
-    version: '2.0',
+    version: '3.0',
     lastModified: new Date().toISOString(),
     lastAutoReview: null,
     items: [],

@@ -5,7 +5,7 @@ import PostponeDropdown from './PostponeDropdown';
 import ConfirmationModal from './ConfirmationModal';
 import AddItemModal from './AddItemModal';
 
-type TabType = 'focus' | 'optional' | 'inbox' | 'projects' | 'done' | 'howto';
+type TabType = 'focus' | 'mightdo' | 'inbox' | 'projects' | 'done' | 'howto';
 
 interface TodoItem {
   id: string;
@@ -50,8 +50,8 @@ const priorityIcons = {
 };
 
 const tabs: { id: TabType; label: string; description: string }[] = [
-  { id: 'focus', label: 'Today', description: 'Due today or overdue' },
-  { id: 'optional', label: 'Optional', description: 'Future or no deadline' },
+  { id: 'focus', label: 'Focus', description: 'Tasks with deadlines due today' },
+  { id: 'mightdo', label: 'Might Do', description: 'Tasks you can do anytime' },
   { id: 'inbox', label: 'Inbox', description: 'Needs clarification' },
   { id: 'projects', label: 'Projects', description: 'Tasks by project' },
   { id: 'done', label: 'Done', description: 'Completed tasks' },
@@ -92,7 +92,7 @@ export default function TodoList() {
   const [todos, setTodos] = useState<TodoItem[]>([]);
   const [tabCounts, setTabCounts] = useState<Record<TabType, number>>({
     focus: 0,
-    optional: 0,
+    mightdo: 0,
     inbox: 0,
     projects: 0,
     done: 0,
@@ -163,7 +163,7 @@ export default function TodoList() {
     try {
       const counts: Record<TabType, number> = {
         focus: 0,
-        optional: 0,
+        mightdo: 0,
         inbox: 0,
         projects: 0,
         done: 0,
@@ -352,7 +352,7 @@ export default function TodoList() {
   };
 
   // Determine if we should show the floating add button
-  const showAddButton = activeTab === 'focus' || activeTab === 'optional' ||
+  const showAddButton = activeTab === 'focus' || activeTab === 'mightdo' ||
     (activeTab === 'projects' && !selectedProject) ||
     (activeTab === 'projects' && selectedProject);
 
@@ -439,17 +439,17 @@ export default function TodoList() {
                   Just type in the chat! Say things like:
                 </p>
                 <ul className="text-blue-700 text-sm mt-2 space-y-1">
-                  <li>&quot;buy groceries&quot; - Goes to Today</li>
+                  <li>&quot;buy groceries by Friday&quot; - Goes to Focus when deadline is due</li>
                   <li>&quot;think about vacation&quot; - Goes to Inbox (needs clarifying)</li>
-                  <li>&quot;call dentist tomorrow&quot; - Goes to Optional until tomorrow</li>
+                  <li>&quot;read that book sometime&quot; - Goes to Might Do (anytime task)</li>
                 </ul>
               </div>
 
               <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                 <h4 className="font-medium text-green-800 mb-2">The Four Tabs</h4>
                 <ul className="text-green-700 text-sm space-y-2">
-                  <li><strong>Today</strong> - Tasks due today or overdue. Use Postpone to push them out.</li>
-                  <li><strong>Optional</strong> - Future or no deadline. Click &quot;Do Today&quot; to move here.</li>
+                  <li><strong>Focus</strong> - Tasks with deadlines due today. Use Postpone to push them out.</li>
+                  <li><strong>Might Do</strong> - Tasks you can do anytime. Click &quot;Do Today&quot; to add a deadline.</li>
                   <li><strong>Inbox</strong> - Needs clarification. Chat to clarify what the next action is.</li>
                   <li><strong>Done</strong> - Completed tasks for reference.</li>
                 </ul>
@@ -466,7 +466,7 @@ export default function TodoList() {
               <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
                 <h4 className="font-medium text-orange-800 mb-2">Postponing</h4>
                 <p className="text-orange-700 text-sm">
-                  On the Today tab, click &quot;Postpone&quot; to push a task to a future date.
+                  On the Focus tab, click &quot;Postpone&quot; to push a task to a future date.
                   If you postpone something 3+ times, we&apos;ll ask if you want to remove it.
                 </p>
               </div>
@@ -474,9 +474,9 @@ export default function TodoList() {
               <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
                 <h4 className="font-medium text-gray-800 mb-2">Tips</h4>
                 <ul className="text-gray-700 text-sm space-y-1">
-                  <li>Keep Today tab small - only what you&apos;ll actually do today</li>
+                  <li>Keep Focus tab small - only what you&apos;ll actually do today</li>
                   <li>Clear your Inbox regularly by clarifying vague tasks</li>
-                  <li>Use &quot;Do Today&quot; to pull Optional tasks when ready</li>
+                  <li>Use &quot;Do Today&quot; to pull Might Do tasks when ready</li>
                 </ul>
               </div>
             </div>
@@ -603,13 +603,13 @@ export default function TodoList() {
           <div className="text-center text-gray-400 mt-8">
             <p className="text-lg mb-2">
               {activeTab === 'focus' && 'All caught up for today!'}
-              {activeTab === 'optional' && 'No optional tasks'}
+              {activeTab === 'mightdo' && 'No tasks to do anytime'}
               {activeTab === 'inbox' && 'Inbox is clear'}
               {activeTab === 'done' && 'No completed tasks'}
             </p>
             <p className="text-sm">
-              {activeTab === 'focus' && 'No tasks due today'}
-              {activeTab === 'optional' && 'Tasks without deadlines appear here'}
+              {activeTab === 'focus' && 'No tasks with deadlines due today'}
+              {activeTab === 'mightdo' && 'Tasks you can do anytime appear here'}
               {activeTab === 'inbox' && 'Tasks needing clarification appear here'}
               {activeTab === 'done' && 'Completed tasks will appear here'}
             </p>
@@ -700,17 +700,17 @@ export default function TodoList() {
                   {/* Action buttons based on tab */}
                   {todo.status !== 'done' && (
                     <div className="ml-2 flex-shrink-0 flex gap-1">
-                      {/* Do Today button - only on Optional tab */}
-                      {activeTab === 'optional' && (
+                      {/* Do Today button - only on Might Do tab */}
+                      {activeTab === 'mightdo' && (
                         <button
                           onClick={() => handleDoToday(todo.id)}
                           className="text-xs px-2 py-1 rounded bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors"
-                          title="Move to Today"
+                          title="Move to Focus"
                         >
                           Do Today
                         </button>
                       )}
-                      {/* Postpone button - only on Today tab */}
+                      {/* Postpone button - only on Focus tab */}
                       {activeTab === 'focus' && (
                         <PostponeDropdown
                           itemId={todo.id}

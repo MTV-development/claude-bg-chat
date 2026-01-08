@@ -7,7 +7,7 @@
  * Uses shared store module for data access.
  *
  * GET /api/todos - List all items
- * GET /api/todos?tab=focus|optional|inbox|done - Filter by tab
+ * GET /api/todos?tab=focus|mightdo|inbox|done - Filter by tab
  * PATCH /api/todos - Update item (complete/uncomplete)
  * DELETE /api/todos - Remove item
  */
@@ -25,9 +25,14 @@ export async function GET(req: Request) {
 
     // Filter by tab if specified
     if (tab) {
-      const validTabs: TabType[] = ['focus', 'optional', 'inbox', 'projects', 'done'];
-      if (validTabs.includes(tab)) {
-        items = filterByTab(items, tab);
+      // Support legacy 'optional' tab name as alias for 'mightdo'
+      let tabName = tab as string;
+      if (tabName === 'optional') {
+        tabName = 'mightdo';
+      }
+      const validTabs: TabType[] = ['focus', 'mightdo', 'inbox', 'projects', 'done'];
+      if (validTabs.includes(tabName as TabType)) {
+        items = filterByTab(items, tabName as TabType);
       }
     }
 
@@ -105,6 +110,10 @@ export async function PATCH(req: Request) {
     // Handle due date change
     if (dueDate !== undefined) {
       item.dueDate = dueDate;
+      // When setting a due date, also set hasDeadline to true
+      if (dueDate) {
+        item.hasDeadline = true;
+      }
     }
 
     await saveTodos(data);

@@ -10,7 +10,15 @@ import { TodoItem } from '../../../../scripts/gtd/lib/types';
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { title, priority = 'medium', dueDate, project, status = 'active' } = body;
+    const {
+      title,
+      priority = 'medium',
+      dueDate,
+      hasDeadline,
+      canDoAnytime,
+      project,
+      status = 'active'
+    } = body;
 
     if (!title) {
       return Response.json({ error: 'Title is required' }, { status: 400 });
@@ -27,6 +35,17 @@ export async function POST(req: Request) {
       resolvedDueDate = dueDate;
     }
 
+    // Validate: if hasDeadline is true, dueDate should be provided
+    const resolvedHasDeadline = hasDeadline === true;
+    if (resolvedHasDeadline && !resolvedDueDate) {
+      return Response.json(
+        { error: 'Due date is required when hasDeadline is true' },
+        { status: 400 }
+      );
+    }
+
+    const resolvedCanDoAnytime = canDoAnytime === true;
+
     const newItem: TodoItem = {
       id: generateId(),
       title: title.trim(),
@@ -36,6 +55,8 @@ export async function POST(req: Request) {
       priority: priority || 'medium',
       project: project || null,
       dueDate: resolvedDueDate,
+      hasDeadline: resolvedHasDeadline,
+      canDoAnytime: resolvedCanDoAnytime,
       createdAt: new Date().toISOString(),
       completedAt: null,
       postponeCount: 0,

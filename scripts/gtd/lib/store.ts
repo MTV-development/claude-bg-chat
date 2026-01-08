@@ -8,24 +8,24 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import { TodoData, TodoItem, ActivityLogEntry, TabType, createEmptyTodoData } from './types';
-import { ensureV2 } from './migrate';
+import { ensureV3 } from './migrate';
 
 const DATA_FILE = path.join(process.cwd(), 'data', 'todos.json');
 
 /**
- * Load todos from data file (auto-migrates to v2)
+ * Load todos from data file (auto-migrates to v3)
  */
 export async function loadTodos(filePath: string = DATA_FILE): Promise<TodoData> {
   try {
     const content = await fs.readFile(filePath, 'utf-8');
     const rawData = JSON.parse(content);
-    // Auto-migrate to v2 if needed
-    return ensureV2(rawData);
+    // Auto-migrate to v3 if needed
+    return ensureV3(rawData);
   } catch (error: unknown) {
     // Check for file not found error
     const nodeError = error as NodeJS.ErrnoException;
     if (nodeError.code === 'ENOENT') {
-      // File doesn't exist, return empty v2 structure
+      // File doesn't exist, return empty v3 structure
       return createEmptyTodoData();
     }
     throw error;
@@ -38,7 +38,7 @@ export async function loadTodos(filePath: string = DATA_FILE): Promise<TodoData>
 export async function saveTodos(data: TodoData, filePath: string = DATA_FILE): Promise<void> {
   const updated: TodoData = {
     ...data,
-    version: '2.0',
+    version: '3.0',
     lastModified: new Date().toISOString(),
   };
   await fs.writeFile(filePath, JSON.stringify(updated, null, 2), 'utf-8');
@@ -182,64 +182,93 @@ export function logActivity(
 
 /**
  * Determine which tab an item belongs to
+ *
+ * New logic based on hasDeadline/canDoAnytime:
+ * - Done: status === 'done'
+ * - Inbox: !hasDeadline && !canDoAnytime (or no nextAction)
+ * - Focus: hasDeadline && dueDate <= today
+ * - Might Do: canDoAnytime (unless deadline reached, then Focus)
  */
 export function getItemTab(item: TodoItem): TabType {
   const today = getLocalDateString();
 
+  // Done items go to Done tab
   if (item.status === 'done') {
     return 'done';
   }
 
-  if (item.status === 'inbox' || !item.nextAction) {
+  // Items without nextAction need clarification (Inbox)
+  if (!item.nextAction) {
     return 'inbox';
   }
 
-  if (item.status === 'someday') {
-    return 'optional';
-  }
-
-  // Active items: check due date for focus vs optional
-  if (item.dueDate && item.dueDate <= today) {
+  // Items with deadline that's due go to Focus
+  if (item.hasDeadline && item.dueDate && item.dueDate <= today) {
     return 'focus';
   }
 
-  return 'optional';
+  // Items that can be done anytime go to Might Do
+  if (item.canDoAnytime) {
+    return 'mightdo';
+  }
+
+  // Items without hasDeadline and without canDoAnytime go to Inbox
+  if (!item.hasDeadline && !item.canDoAnytime) {
+    return 'inbox';
+  }
+
+  // Items with deadline but not yet due go to Might Do
+  // (they have hasDeadline but dueDate > today)
+  return 'mightdo';
 }
 
 /**
  * Filter items by tab
+ *
+ * New logic based on hasDeadline/canDoAnytime:
+ * - Focus: hasDeadline && dueDate <= today
+ * - Might Do: canDoAnytime (unless deadline reached)
+ * - Inbox: !hasDeadline && !canDoAnytime (or no nextAction)
+ * - Done: status === 'done'
  */
 export function filterByTab(items: TodoItem[], tab: TabType): TodoItem[] {
   const today = getLocalDateString();
 
   switch (tab) {
     case 'focus':
-      // Due today or overdue, has nextAction, active
+      // Has deadline and due date is today or overdue
       return items.filter(i =>
-        i.status === 'active' &&
+        i.status !== 'done' &&
         i.nextAction &&
+        i.hasDeadline &&
         i.dueDate &&
         i.dueDate <= today
       );
 
-    case 'optional':
-      // Has nextAction, future or no deadline, or someday
-      return items.filter(i =>
-        (i.status === 'active' || i.status === 'someday') &&
-        i.nextAction &&
-        (!i.dueDate || i.dueDate > today)
-      );
+    case 'mightdo':
+      // Can do anytime, or has deadline but not yet due
+      return items.filter(i => {
+        if (i.status === 'done' || !i.nextAction) return false;
+        // If deadline reached, it goes to Focus instead
+        if (i.hasDeadline && i.dueDate && i.dueDate <= today) return false;
+        // Show if canDoAnytime or has future deadline
+        return i.canDoAnytime || (i.hasDeadline && i.dueDate && i.dueDate > today);
+      });
 
     case 'inbox':
-      // Needs clarification (no nextAction or inbox status)
-      return items.filter(i => i.status === 'inbox' || !i.nextAction);
+      // No nextAction OR (!hasDeadline && !canDoAnytime)
+      return items.filter(i => {
+        if (i.status === 'done') return false;
+        if (!i.nextAction) return true;
+        return !i.hasDeadline && !i.canDoAnytime;
+      });
 
     case 'done':
       return items.filter(i => i.status === 'done');
 
     case 'projects':
       // Return active items grouped by project (handled separately)
-      return items.filter(i => i.status === 'active' && i.project);
+      return items.filter(i => i.status !== 'done' && i.project);
 
     default:
       // Default: all non-done items
