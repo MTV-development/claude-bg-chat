@@ -250,17 +250,26 @@ fi
 EPIC_INDEX=0  # Track position in EPIC_LIST
 
 echo ""
-echo "Starting Ralph loop for Beads epic..."
-echo "Max iterations: $MAX_ITERATIONS"
+echo "╔════════════════════════════════════════════════════════════════════════════╗"
+echo "║  RALPH - Beads Epic Runner"
+echo "║  Started: $(date '+%Y-%m-%d %H:%M:%S')"
+echo "╠════════════════════════════════════════════════════════════════════════════╣"
+echo "║  Max iterations: $MAX_ITERATIONS"
 if [ ${#EPIC_LIST[@]} -gt 1 ]; then
-    echo "Epics to process: ${EPIC_LIST[*]}"
+    echo "║  Epics to process: ${EPIC_LIST[*]}"
 elif [ "$AUTO_MODE" = true ]; then
-    echo "Mode: Auto-select epics"
+    echo "║  Mode: Auto-select epics"
 fi
-echo "Current epic: $EPIC_ID"
+echo "║  Current epic: $EPIC_ID"
 if [ "$WORKTREE_MODE" = true ]; then
-    echo "Worktree: $WORKTREE_DIR"
+    echo "║  Worktree: $WORKTREE_DIR"
 fi
+if [ "$SILENT_MODE" = true ]; then
+    echo "║  Output: Silent (buffered)"
+else
+    echo "║  Output: Streaming"
+fi
+echo "╚════════════════════════════════════════════════════════════════════════════╝"
 echo ""
 
 TEMP_OUTPUT=$(mktemp)
@@ -273,7 +282,15 @@ else
 fi
 
 for ((i=1; i<=MAX_ITERATIONS; i++)); do
-    echo "=== Iteration $i of $MAX_ITERATIONS ==="
+    echo ""
+    echo "╔════════════════════════════════════════════════════════════════════════════╗"
+    echo "║  ITERATION $i of $MAX_ITERATIONS"
+    echo "║  Epic: $EPIC_ID"
+    echo "║  Time: $(date '+%Y-%m-%d %H:%M:%S')"
+    echo "╚════════════════════════════════════════════════════════════════════════════╝"
+    echo ""
+    echo "→ Invoking Claude..."
+    echo ""
 
     CLAUDE_PROMPT="
 BEADS EPIC RALPH - ITERATION $i of $MAX_ITERATIONS
@@ -325,7 +342,13 @@ AUTONOMY:
         result=$(cat "$TEMP_OUTPUT")
     fi
 
+    echo ""
+    echo "────────────────────────────────────────────────────────────────────────────────"
+    echo "→ Claude finished at $(date '+%H:%M:%S')"
+    echo "→ Checking result signals..."
+
     if [[ "$result" == *"<promise>COMPLETE</promise>"* ]]; then
+        echo "→ Signal detected: COMPLETE"
         echo ""
         echo "=== Epic $EPIC_ID completed ==="
 
@@ -357,21 +380,31 @@ AUTONOMY:
     fi
 
     if [[ "$result" == *"<promise>EJECT:"* ]]; then
+        echo "→ Signal detected: EJECT"
         echo ""
-        echo "=== Ejected - manual intervention required ==="
+        echo "╔════════════════════════════════════════════════════════════════════════════╗"
+        echo "║  EJECTED - Manual intervention required"
+        echo "╚════════════════════════════════════════════════════════════════════════════╝"
         exit 2
     fi
 
     if [[ "$result" == *"<promise>BLOCKED:"* ]]; then
+        echo "→ Signal detected: BLOCKED"
         echo ""
-        echo "=== Blocked - cannot proceed ==="
+        echo "╔════════════════════════════════════════════════════════════════════════════╗"
+        echo "║  BLOCKED - Cannot proceed"
+        echo "╚════════════════════════════════════════════════════════════════════════════╝"
         exit 3
     fi
 
-    echo ""
+    echo "→ No termination signal - continuing to next iteration"
+    echo "→ Sleeping 2 seconds..."
     sleep 2
 done
 
 echo ""
-echo "=== Max iterations ($MAX_ITERATIONS) reached ==="
+echo "╔════════════════════════════════════════════════════════════════════════════╗"
+echo "║  MAX ITERATIONS ($MAX_ITERATIONS) REACHED"
+echo "║  Ended: $(date '+%Y-%m-%d %H:%M:%S')"
+echo "╚════════════════════════════════════════════════════════════════════════════╝"
 exit 1
