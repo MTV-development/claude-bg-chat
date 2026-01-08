@@ -20,7 +20,10 @@ module.exports = {
       moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
       setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
       transform: {
-        '^.+\\.tsx?$': ['ts-jest', { tsconfig: { jsx: 'react-jsx' } }],
+        '^.+\.tsx?$': ['ts-jest', { tsconfig: { jsx: 'react-jsx' } }],
+      },
+      moduleNameMapper: {
+        '^@/(.*)$': '<rootDir>/$1',
       },
     },
   ],
