@@ -32,6 +32,11 @@ function getStoredTheme(): Theme | null {
   return null;
 }
 
+function getSystemPreference(): Theme {
+  if (typeof window === 'undefined') return 'light';
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
 function storeTheme(theme: Theme): void {
   if (typeof window === 'undefined') return;
   try {
@@ -50,14 +55,33 @@ export function ThemeProvider({ children, defaultTheme = 'light' }: ThemeProvide
     document.documentElement.setAttribute('data-theme', newTheme);
   }, []);
 
-  // Initialize on mount - load saved theme from localStorage
+  // Initialize on mount - load saved theme from localStorage or system preference
   useEffect(() => {
     const storedTheme = getStoredTheme();
-    if (storedTheme) {
-      setThemeState(storedTheme);
-      applyTheme(storedTheme);
-    }
+    const initialTheme = storedTheme ?? getSystemPreference();
+    setThemeState(initialTheme);
+    applyTheme(initialTheme);
     setMounted(true);
+  }, [applyTheme]);
+
+  // Listen for system preference changes
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+    const handleChange = (e: MediaQueryListEvent) => {
+      // Only auto-switch if user hasn't set an explicit preference
+      const storedTheme = getStoredTheme();
+      if (!storedTheme) {
+        const newTheme = e.matches ? 'dark' : 'light';
+        setThemeState(newTheme);
+        applyTheme(newTheme);
+      }
+    };
+
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
   }, [applyTheme]);
 
   // Set theme, apply to DOM, and persist to localStorage
