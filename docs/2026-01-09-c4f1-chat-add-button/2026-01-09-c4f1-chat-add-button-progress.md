@@ -60,15 +60,37 @@
 - `app/page.tsx`: Extracted `sendMessage()` helper, added `handleChatAddRequest` handler, wired prop to TodoList
 - `components/TodoList.tsx`: Added `onChatAddRequest` prop, `CHAT_ADD_PROMPTS` constant, `showChatAddButton` condition, twin button rendering
 
-### Post-Implementation Enhancement
+### Post-Implementation Enhancements
 
-**Later tab prompt improved** to ask about deadline flexibility:
-- Original: "Help me add a task with a future deadline"
-- Updated: "Help me add a task with a future deadline. Ask if this is a hard deadline or if I could do it anytime before then."
+#### Later Tab Prompt Simplified
 
-**Rationale:** Tasks with `canDoAnytime: true` go to Optional even with a deadline. The improved prompt guides Claude to ask about flexibility so:
-- Hard deadline → `--due YYYY-MM-DD` → Later tab
-- Flexible deadline → `--due YYYY-MM-DD --can-do-anytime` → Optional tab (with deadline preserved)
+- Original: "Help me add a task with a future deadline. Ask if this is a hard deadline..."
+- Updated: "Add to my todo list: something I can't do until a future date. Ask me what and when."
+
+**Rationale:** Realized that Later vs Optional distinction is about *when you can start*, not deadline flexibility. Later = can't do until a future date. Optional = can do anytime.
+
+#### Focus Tab Renamed to Today
+
+- Changed tab label from "Focus" to "Today" throughout the UI
+- Updated How To section with clearer explanations
+- Added tooltips with question marks to all tabs for discoverability
+
+#### Bulk Postpone Feature
+
+- Added `BulkPostponeDropdown` component for postponing multiple tasks at once
+- When tasks are selected on Today tab, a "Postpone" dropdown appears in the action bar
+- Supports same options as individual postpone (+1 day, +2 days, etc.)
+
+#### Tab Tooltips
+
+Added helpful tooltips to all tabs:
+- **Today**: "Tasks you need to do today or are overdue"
+- **Optional**: "Tasks you can do whenever you have time"
+- **Later**: "Tasks you can't start until a future date"
+- **Inbox**: "Vague ideas that need to be turned into clear tasks"
+- **Projects**: "See your tasks that are part of a project"
+- **Done**: "Tasks you have completed"
+- **How To**: "Learn how to use this todo list"
 
 ---
 
