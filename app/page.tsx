@@ -71,14 +71,12 @@ export default function Chat() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim() || isLoading) return;
-
+  // Core message sending logic - can be called directly or via form submit
+  const sendMessage = async (text: string) => {
     const userMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
-      content: input.trim(),
+      content: text,
     };
 
     setMessages(prev => [...prev, userMessage]);
@@ -96,7 +94,7 @@ export default function Chat() {
             role: m.role,
             content: m.content,
           })),
-          allowedTools: ['Read', 'Write', 'Skill'],
+          allowedTools: ['Read', 'Write', 'Skill', 'Bash'],
           claudeSessionId: claudeSessionId,
         }),
       });
@@ -163,6 +161,19 @@ export default function Chat() {
       // Focus input after response completes (small delay for DOM update)
       setTimeout(() => inputRef.current?.focus(), 100);
     }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input.trim() || isLoading) return;
+    await sendMessage(input.trim());
+  };
+
+  // Handler for auto-submitting chat prompts (from "+ Chat" button)
+  const handleChatAddRequest = (prompt: string) => {
+    if (isLoading) return; // Ignore if already sending
+    sendMessage(prompt);
+    // Focus is handled by sendMessage's finally block
   };
 
   const handleRetry = () => {
@@ -341,7 +352,7 @@ export default function Chat() {
 
       {/* Right Panel - Todo List */}
       <div className="flex-1 bg-theme-bg-secondary">
-        <TodoList onClarifyRequest={handleClarifyRequest} />
+        <TodoList onClarifyRequest={handleClarifyRequest} onChatAddRequest={handleChatAddRequest} />
       </div>
     </div>
   );

@@ -79,8 +79,10 @@ The "+ Chat" button is:
 |-----|--------|-----------|
 | Focus | "Help me add a task I need to do today" | Sets deadline expectation |
 | Optional | "Help me add a task I can do anytime" | Signals no deadline needed |
-| Later | "Help me add a task with a future deadline" | Prompts for future date |
+| Later | "Help me add a task with a future deadline. Ask if this is a hard deadline or if I could do it anytime before then." | Prompts for future date AND clarifies hard vs flexible deadline (flexible → Optional with deadline, hard → Later) |
 | Inbox | "Help me capture a vague idea or task" | Invites unclear thoughts |
+
+**Note on Later vs Optional:** Tasks with `canDoAnytime: true` appear in Optional even if they have a deadline. The Later prompt guides Claude to ask about deadline flexibility so the task is correctly categorized.
 
 ### Comparison with Existing Clarify Flow
 

@@ -38,7 +38,17 @@ const POLL_INTERVAL = 2000;
 
 interface TodoListProps {
   onClarifyRequest?: (text: string) => void;
+  onChatAddRequest?: (prompt: string) => void;
 }
+
+// Tab-specific prompts for the "+ Chat" button
+// These prompts explicitly reference "todo list" to trigger the todo-manager skill
+const CHAT_ADD_PROMPTS: Record<string, string> = {
+  focus: "Add to my todo list: I need to do something today. Ask me what.",
+  optional: "Add to my todo list: something I can do anytime. Ask me what.",
+  later: "Add to my todo list: something with a future deadline. Ask me what it is, when, and if it's a hard deadline or if I could do it anytime before then.",
+  inbox: "Add to my todo list: I have a vague idea I want to capture. Ask me what.",
+};
 
 const tabs: { id: TabType; label: string; description: string }[] = [
   { id: 'focus', label: 'Focus', description: 'Tasks on or past deadline' },
@@ -79,7 +89,7 @@ function isOverdue(dateStr: string | null): boolean {
   return date < today;
 }
 
-export default function TodoList({ onClarifyRequest }: TodoListProps) {
+export default function TodoList({ onClarifyRequest, onChatAddRequest }: TodoListProps) {
   const [activeTab, setActiveTab] = useState<TabType>('focus');
   const [todos, setTodos] = useState<TodoItem[]>([]);
   const [tabCounts, setTabCounts] = useState<Record<TabType, number>>({
@@ -364,6 +374,9 @@ export default function TodoList({ onClarifyRequest }: TodoListProps) {
   const showAddButton = activeTab === 'focus' || activeTab === 'later' || activeTab === 'optional' ||
     (activeTab === 'projects' && !selectedProject) ||
     (activeTab === 'projects' && selectedProject);
+
+  // Determine if we should show the "+ Chat" button (only on tabs with prompts, not projects)
+  const showChatAddButton = ['focus', 'optional', 'later', 'inbox'].includes(activeTab) && onChatAddRequest;
 
   if (isLoading) {
     return (
@@ -754,19 +767,37 @@ export default function TodoList({ onClarifyRequest }: TodoListProps) {
         )}
       </div>
 
-      {/* Floating Add Button */}
-      {showAddButton && (
-        <button
-          onClick={() => handleOpenAddModal(
-            activeTab === 'projects' && !selectedProject ? 'project' : 'task'
+      {/* Floating Add Buttons Container */}
+      {(showAddButton || showChatAddButton) && (
+        <div className="absolute bottom-16 right-4 flex items-center gap-2">
+          {/* "+ Chat" button - auto-submits to chat */}
+          {showChatAddButton && (
+            <button
+              onClick={() => onChatAddRequest!(CHAT_ADD_PROMPTS[activeTab])}
+              className="w-10 h-10 rounded-full bg-theme-bg-tertiary hover:bg-theme-accent-primary hover:text-theme-text-inverse text-theme-text-primary shadow-theme-md hover:shadow-theme-lg transition-all flex items-center justify-center"
+              title="Add via Chat"
+            >
+              {/* Chat bubble with plus icon */}
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              </svg>
+            </button>
           )}
-          className="absolute bottom-16 right-4 w-14 h-14 rounded-full bg-theme-accent-primary hover:bg-theme-accent-primary-hover text-theme-text-inverse shadow-theme-lg hover:shadow-theme-lg transition-all flex items-center justify-center"
-          title={activeTab === 'projects' && !selectedProject ? 'Add Project' : 'Add Task'}
-        >
-          <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-        </button>
+          {/* "+" button - opens modal */}
+          {showAddButton && (
+            <button
+              onClick={() => handleOpenAddModal(
+                activeTab === 'projects' && !selectedProject ? 'project' : 'task'
+              )}
+              className="w-14 h-14 rounded-full bg-theme-accent-primary hover:bg-theme-accent-primary-hover text-theme-text-inverse shadow-theme-lg hover:shadow-theme-lg transition-all flex items-center justify-center"
+              title={activeTab === 'projects' && !selectedProject ? 'Add Project' : 'Add Task'}
+            >
+              <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+            </button>
+          )}
+        </div>
       )}
 
       {/* Footer */}
