@@ -36,6 +36,10 @@ interface Project {
 
 const POLL_INTERVAL = 2000;
 
+interface TodoListProps {
+  onClarifyRequest?: (text: string) => void;
+}
+
 const tabs: { id: TabType; label: string; description: string }[] = [
   { id: 'focus', label: 'Focus', description: 'Tasks on or past deadline' },
   { id: 'optional', label: 'Optional', description: 'Tasks you can do anytime' },
@@ -75,7 +79,7 @@ function isOverdue(dateStr: string | null): boolean {
   return date < today;
 }
 
-export default function TodoList() {
+export default function TodoList({ onClarifyRequest }: TodoListProps) {
   const [activeTab, setActiveTab] = useState<TabType>('focus');
   const [todos, setTodos] = useState<TodoItem[]>([]);
   const [tabCounts, setTabCounts] = useState<Record<TabType, number>>({
@@ -247,6 +251,21 @@ export default function TodoList() {
     }
   };
 
+  const handleBulkClarify = () => {
+    if (selectedIds.size === 0 || !onClarifyRequest) return;
+
+    const selectedTasks = todos.filter(t => selectedIds.has(t.id));
+
+    if (selectedTasks.length === 1) {
+      onClarifyRequest(`I want to clarify the task "${selectedTasks[0].title}"`);
+    } else {
+      const taskList = selectedTasks.map(t => `- ${t.title}`).join('\n');
+      onClarifyRequest(`I want to clarify these tasks:\n${taskList}`);
+    }
+
+    setSelectedIds(new Set()); // Clear selection after triggering
+  };
+
   // Clear selections and selected project when tab changes
   useEffect(() => {
     setSelectedIds(new Set());
@@ -403,19 +422,39 @@ export default function TodoList() {
 
       {/* Todo List */}
       <div className="flex-1 overflow-y-auto p-4 relative">
-        {/* Floating action button for selected items */}
-        {selectedIds.size > 0 && activeTab !== 'howto' && !(activeTab === 'projects' && !selectedProject) && (
-          <div className="sticky top-0 z-10 mb-3">
-            <button
-              onClick={handleBulkAction}
-              className={`w-full py-2 px-4 rounded-lg font-medium shadow-md transition-colors ${
-                activeTab === 'done'
-                  ? 'bg-theme-warning hover:opacity-90 text-theme-text-inverse'
-                  : 'bg-theme-success hover:opacity-90 text-theme-text-inverse'
-              }`}
-            >
-              {activeTab === 'done' ? 'Undo' : 'Complete'} ({selectedIds.size} selected)
-            </button>
+        {/* Always-visible action button bar */}
+        {activeTab !== 'howto' && !(activeTab === 'projects' && !selectedProject) && (
+          <div className="sticky top-0 z-10 mb-3 flex">
+            {(() => {
+              const isDisabled = selectedIds.size === 0;
+              let buttonLabel: string;
+              let buttonColorClasses: string;
+
+              if (activeTab === 'inbox') {
+                buttonLabel = isDisabled ? 'Clarify' : `Clarify (${selectedIds.size})`;
+                buttonColorClasses = 'bg-theme-accent-primary';
+              } else if (activeTab === 'done') {
+                buttonLabel = isDisabled ? 'Undo' : `Undo (${selectedIds.size})`;
+                buttonColorClasses = 'bg-theme-warning';
+              } else {
+                buttonLabel = isDisabled ? 'Complete' : `Complete (${selectedIds.size})`;
+                buttonColorClasses = 'bg-theme-success';
+              }
+
+              return (
+                <button
+                  onClick={activeTab === 'inbox' ? handleBulkClarify : handleBulkAction}
+                  disabled={isDisabled}
+                  className={`text-xs py-1 px-3 rounded font-medium transition-colors text-theme-text-inverse ${buttonColorClasses} ${
+                    isDisabled
+                      ? 'opacity-50 cursor-not-allowed'
+                      : 'hover:opacity-90'
+                  }`}
+                >
+                  {buttonLabel}
+                </button>
+              );
+            })()}
           </div>
         )}
         {activeTab === 'howto' ? (
@@ -677,6 +716,16 @@ export default function TodoList() {
                   {/* Action buttons based on tab */}
                   {todo.status !== 'done' && (
                     <div className="ml-2 flex-shrink-0 flex gap-1">
+                      {/* Clarify button - on Inbox tab */}
+                      {activeTab === 'inbox' && onClarifyRequest && (
+                        <button
+                          onClick={() => onClarifyRequest(`I want to clarify the task "${todo.title}"`)}
+                          className="text-xs px-2 py-1 rounded bg-theme-info-bg text-theme-accent-primary hover:opacity-80 transition-colors"
+                          title="Clarify this task"
+                        >
+                          Clarify
+                        </button>
+                      )}
                       {/* Do Today button - on Later and Can Do tabs */}
                       {(activeTab === 'later' || activeTab === 'optional') && (
                         <button

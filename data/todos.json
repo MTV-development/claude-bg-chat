@@ -1,6 +1,6 @@
 {
   "version": "4.0",
-  "lastModified": "2026-01-08T10:30:00.000Z",
+  "lastModified": "2026-01-09T05:23:22.761Z",
   "lastAutoReview": null,
   "items": [
     {
@@ -96,13 +96,13 @@
     },
     {
       "id": "inbox001",
-      "title": "Think about vacation plans",
-      "nextAction": null,
+      "title": "Vacation planning",
+      "nextAction": "Talk to Anne Mette about where we want to go and when",
       "status": "inbox",
       "completed": false,
-      "project": null,
+      "project": "Vacation",
       "dueDate": null,
-      "canDoAnytime": false,
+      "canDoAnytime": true,
       "createdAt": "2026-01-06T16:00:00.000Z",
       "completedAt": null,
       "postponeCount": 0
@@ -110,12 +110,12 @@
     {
       "id": "inbox002",
       "title": "Research new laptop options",
-      "nextAction": null,
+      "nextAction": "Research new laptop options",
       "status": "inbox",
       "completed": false,
       "project": null,
       "dueDate": null,
-      "canDoAnytime": false,
+      "canDoAnytime": true,
       "createdAt": "2026-01-07T12:00:00.000Z",
       "completedAt": null,
       "postponeCount": 0
@@ -124,28 +124,85 @@
       "id": "done001",
       "title": "Set up project repository",
       "nextAction": "Initialize git repo and push to GitHub",
-      "status": "done",
-      "completed": true,
+      "status": "active",
+      "completed": false,
       "project": "Work",
       "dueDate": "2026-01-05",
       "canDoAnytime": false,
       "createdAt": "2026-01-03T09:00:00.000Z",
-      "completedAt": "2026-01-05T14:30:00.000Z",
+      "completedAt": null,
       "postponeCount": 0
     },
     {
       "id": "done002",
       "title": "Buy birthday gift",
       "nextAction": "Order gift from Amazon",
-      "status": "done",
-      "completed": true,
+      "status": "active",
+      "completed": false,
       "project": null,
       "dueDate": "2026-01-06",
       "canDoAnytime": false,
       "createdAt": "2026-01-02T10:00:00.000Z",
-      "completedAt": "2026-01-06T11:00:00.000Z",
+      "completedAt": null,
       "postponeCount": 1
     }
   ],
-  "activityLog": []
+  "activityLog": [
+    {
+      "id": "767fa48d",
+      "itemId": "focus002",
+      "action": "completed",
+      "timestamp": "2026-01-09T05:17:27.300Z",
+      "details": {}
+    },
+    {
+      "id": "97ed1661",
+      "itemId": "focus001",
+      "action": "completed",
+      "timestamp": "2026-01-09T05:17:27.314Z",
+      "details": {}
+    },
+    {
+      "id": "26bb5eb4",
+      "itemId": "later001",
+      "action": "completed",
+      "timestamp": "2026-01-09T05:20:06.798Z",
+      "details": {}
+    },
+    {
+      "id": "f9176b86",
+      "itemId": "done001",
+      "action": "uncompleted",
+      "timestamp": "2026-01-09T05:20:12.099Z",
+      "details": {}
+    },
+    {
+      "id": "96f0f292",
+      "itemId": "focus002",
+      "action": "uncompleted",
+      "timestamp": "2026-01-09T05:20:12.112Z",
+      "details": {}
+    },
+    {
+      "id": "e8e1eb0e",
+      "itemId": "done002",
+      "action": "uncompleted",
+      "timestamp": "2026-01-09T05:20:17.317Z",
+      "details": {}
+    },
+    {
+      "id": "9864ddcc",
+      "itemId": "focus001",
+      "action": "uncompleted",
+      "timestamp": "2026-01-09T05:20:17.329Z",
+      "details": {}
+    },
+    {
+      "id": "675ac22f",
+      "itemId": "later001",
+      "action": "uncompleted",
+      "timestamp": "2026-01-09T05:20:17.342Z",
+      "details": {}
+    }
+  ]
 }

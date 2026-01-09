@@ -24,9 +24,10 @@ This project has evolved through several iterations:
 ### GTD Tab System
 | Tab | Purpose |
 |-----|---------|
-| **Today** | Tasks with clarified next actions due today or overdue |
-| **Optional** | Clarified tasks without urgent due dates |
-| **Inbox** | New captures needing clarification |
+| **Focus** | Tasks with deadlines on or past due |
+| **Optional** | Tasks that can be done anytime |
+| **Later** | Tasks with future deadlines |
+| **Inbox** | New captures needing clarification (use Clarify to process) |
 | **Projects** | Grouped view of multi-task initiatives |
 | **Done** | Completed tasks with undo capability |
 

@@ -42,6 +42,7 @@ Read the spec thoroughly and explore the codebase to understand:
 2. **Dependencies**: What order must changes happen in?
 3. **Risk Areas**: Which changes are most likely to cause issues?
 4. **Test Points**: Where can we verify correctness automatically?
+5. **Testing Infrastructure**: Check README and `/docs/current/` for existing test setup and conventions
 
 ### Step 4: Design the Phase Structure
 
@@ -75,24 +76,36 @@ Use this structure:
 
 [1-2 sentence summary of what will be implemented]
 
+## Environment Validation
+
+[REQUIRED SECTION - Document how to verify the environment is healthy before implementation]
+
+Check `/docs/current/` for codebase-specific validation commands. If no documentation exists, research:
+1. README.md for build/test commands
+2. `package.json` scripts section
+3. Existing config files (tsconfig, jest.config, etc.)
+
+Include:
+- **Pre-flight commands** (what to run before starting work)
+- **Expected results** (what "healthy" looks like)
+- **Known issues** (any pre-existing failures to ignore)
+
+**⚠️ WARNING CONDITION:** If `/docs/current/` contains NO environment validation guidance, add this warning:
+
+```markdown
+> **⚠️ Missing Environment Validation Docs**
+>
+> No environment validation documentation found in `/docs/current/`.
+>
+> Before implementing:
+> 1. Run build, type check, and tests to establish baseline
+> 2. Document any pre-existing failures
+> 3. Consider adding validation docs to `/docs/current/` for future work
+```
+
 ## Test Strategy
 
-[How will each phase be verified? What test commands to run?]
-
-**Verification Commands:**
-```bash
-# Build check
-npm run build
-
-# Type check
-npm run typecheck
-
-# Unit tests
-npm test
-
-# E2E tests (if applicable)
-npm run test:e2e
-```
+[How will each phase be verified? Reference `/docs/current/` for codebase-specific test commands]
 
 ---
 
@@ -248,9 +261,10 @@ After creating both documents, present a summary:
 
 Before beginning implementation:
 1. Review the plan for completeness
-2. Ensure all tests currently pass (`npm test`)
-3. Create a feature branch if using git
-4. Update progress log "Started" date
+2. Run environment validation (see Environment Validation section above)
+3. Verify all checks pass - if not, document known issues
+4. Create a feature branch if using git
+5. Update progress log "Started" date
 ```
 
 ### Step 8: Offer Next Steps

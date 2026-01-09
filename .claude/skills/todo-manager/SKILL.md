@@ -200,6 +200,43 @@ When adding tasks, route based on clarity:
 - Before showing the user their tasks: Always fetch fresh data
 - Use conversation context only to understand *intent*, not as a source of truth for *data*
 
+## Handling Clarification Requests (from UI)
+
+When the user's message starts with `I want to clarify the task "..."`, this comes from the UI's Clarify button. Handle it as follows:
+
+1. **Single task**: The message will be `I want to clarify the task "[title]"`
+2. **Multiple tasks**: The message will be:
+   ```
+   I want to clarify these tasks:
+   - [title1]
+   - [title2]
+   ```
+
+**The Clarification Workflow:**
+
+For each task, have a brief conversation to determine:
+1. **What's the next action?** - A concrete, actionable step
+2. **When should it be done?**
+   - Has a specific deadline? Use `--due YYYY-MM-DD`
+   - Can be done anytime? Use `--can-do-anytime true`
+
+**Update the task using:**
+```bash
+# If task has a deadline:
+node scripts/gtd/dist/cli.js update "<task title>" --next-action "Concrete step" --due YYYY-MM-DD
+
+# If task can be done anytime:
+node scripts/gtd/dist/cli.js update "<task title>" --next-action "Concrete step" --can-do-anytime true
+```
+
+**Important:** A task leaves the Inbox only when it has BOTH:
+- A `nextAction` set
+- Either a `dueDate` OR `canDoAnytime: true`
+
+Setting just `--next-action` without `--due` or `--can-do-anytime` will leave the task in Inbox.
+
+**Note:** This is different from the simpler `clarify` command, which only sets `nextAction` and `project`. For UI-triggered clarification, always use `update` with the timing options.
+
 ## Response Guidelines
 
 - Keep confirmations brief (one line when possible)

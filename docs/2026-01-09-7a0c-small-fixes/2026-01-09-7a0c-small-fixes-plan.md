@@ -2,7 +2,7 @@
 
 **Spec:** [2026-01-09-7a0c-small-fixes-spec.md](./2026-01-09-7a0c-small-fixes-spec.md)
 **Created:** 2026-01-09
-**Status:** Not Started
+**Status:** Complete
 
 ## Overview
 
@@ -23,6 +23,51 @@ npx tsc --noEmit
 # Dev server for manual testing
 npm run dev
 ```
+
+## How We Test in This Codebase
+
+This project uses a multi-layer testing approach:
+
+### Unit Tests (Jest)
+- **Framework:** Jest with TypeScript support
+- **Location:** Test files alongside source files or in `__tests__` directories
+- **Commands:**
+  ```bash
+  npm test              # Run all unit tests
+  npm run test:watch    # Watch mode for development
+  npm run test:coverage # Generate coverage report
+  ```
+- **When to use:** Testing pure functions, utilities, CLI commands, data transformations
+
+### E2E Tests (Playwright)
+- **Framework:** Playwright
+- **Location:** `e2e/` directory
+- **Existing tests:**
+  - `accessibility-dark-mode.spec.ts` - Accessibility checks for dark mode
+  - `theme-switching.spec.ts` - Theme toggle functionality
+  - `visual-regression.spec.ts` - Visual regression testing
+- **Commands:**
+  ```bash
+  npm run test:e2e      # Run E2E tests headless
+  npm run test:e2e:ui   # Run with Playwright UI (interactive)
+  ```
+- **When to use:** Testing UI flows, user interactions, visual regressions
+
+### Build & Type Checks
+- **TypeScript:** Strict mode enabled
+- **Commands:**
+  ```bash
+  npm run build         # Full production build (catches most issues)
+  npx tsc --noEmit      # Type check only (faster)
+  npm run lint          # ESLint checks
+  ```
+
+### Testing Strategy for This Implementation
+
+Since this spec is UI-focused (button bar, clarify button):
+1. **Primary:** Manual testing in browser (`npm run dev`)
+2. **Secondary:** Build passes, no TypeScript errors
+3. **Optional:** Add E2E tests if time permits for new Clarify workflow
 
 ---
 
