@@ -45,6 +45,10 @@ Create the spec file with this template:
 **Created:** <today's date>
 **Status:** Draft
 
+## Braindump / introductory thoughts
+
+[To be defined]
+
 ## Overview
 
 [To be defined]
@@ -57,7 +61,14 @@ Create the spec file with this template:
 [To be defined]
 
 ```
-
 ### Step 3: Start the Dialogue
 
-After creating the file, begin a dialogue on the spec.
+After creating the file, begin a dialogue on the spec and continue until the spec is ready.
+
+### Step 4: Iterate until satisfactory
+
+Continue the dialogue until the spec is good.
+
+### Step 5: Remove braindump
+
+Upon spec ready, remove the Braindump section, making sure that everything important from there is now recorded elsewhere in the spec.
