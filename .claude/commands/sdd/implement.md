@@ -31,11 +31,7 @@ Before starting implementation:
 1. **Read the plan** - Understand the full scope, phases, and verification commands
 2. **Read the progress file** - Check what's already been done (if any)
 3. **Read the spec** - Understand the requirements being implemented
-4. **Verify test baseline** - Run the test commands to ensure a clean starting state:
-   ```bash
-   npm run build      # or equivalent
-   npm test           # or equivalent
-   ```
+4. **Verify test baseline** - Run tests 
 5. **Check git state** - Ensure you're on the correct feature branch
 
 If tests are failing before you start, inform the user:
@@ -182,22 +178,6 @@ Keep the tracker table current:
 2. **Don't proceed with failing tests** - Fix issues before moving on
 3. **Add tests when needed** - If the plan specifies new tests, write them
 4. **Verify at boundaries** - Always run full test suite at phase checkpoints
-
-**Test Commands to Run:**
-
-```bash
-# Quick check (after each change)
-npm run typecheck    # or tsc --noEmit
-npm run lint         # if available
-
-# Medium check (after each subtask)
-npm test -- --related  # or equivalent for changed files
-
-# Full check (at phase checkpoints)
-npm run build
-npm test
-npm run test:e2e     # if applicable
-```
 
 **If Tests Fail:**
 
