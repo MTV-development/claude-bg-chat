@@ -76,56 +76,36 @@ Use this structure:
 
 [1-2 sentence summary of what will be implemented]
 
-## Test Strategy
+## Environment Validation
 
-[How will each phase be verified? What test commands to run?]
+[REQUIRED SECTION - Document how to verify the environment is healthy before implementation]
 
-**Verification Commands:**
-```bash
-# Build check
-npm run build
-
-# Type check
-npm run typecheck
-
-# Unit tests
-npm test
-
-# E2E tests (if applicable)
-npm run test:e2e
-```
-
-## How We Test in This Codebase
-
-[REQUIRED SECTION - Research and document the testing setup for this codebase]
-
-Check these sources (in order):
-1. README.md (usually has test commands in "Available Scripts" or similar)
-2. `/docs/current/` documentation
-3. `package.json` scripts section
-4. Existing test files (patterns: `*.test.ts`, `*.spec.ts`, `__tests__/`)
-5. Config files: `jest.config.*`, `vitest.config.*`, `playwright.config.*`, etc.
+Check `/docs/current/` for codebase-specific validation commands. If no documentation exists, research:
+1. README.md for build/test commands
+2. `package.json` scripts section
+3. Existing config files (tsconfig, jest.config, etc.)
 
 Include:
-- **Test frameworks used** (Jest, Vitest, Playwright, Cypress, etc.)
-- **Test file locations** (where to put new tests)
-- **Key commands** (how to run tests)
-- **Testing strategy for this implementation** (which test types are appropriate for this spec)
+- **Pre-flight commands** (what to run before starting work)
+- **Expected results** (what "healthy" looks like)
+- **Known issues** (any pre-existing failures to ignore)
 
-**⚠️ WARNING CONDITION:** If README.md and `/docs/current/` files contain NO information about testing (no test commands, no testing section, no test framework mentions), you MUST add this warning to the plan:
+**⚠️ WARNING CONDITION:** If `/docs/current/` contains NO environment validation guidance, add this warning:
 
 ```markdown
-> **⚠️ Testing Documentation Gap**
+> **⚠️ Missing Environment Validation Docs**
 >
-> No testing documentation was found in README.md or `/docs/current/`. The testing approach for this codebase is unclear.
+> No environment validation documentation found in `/docs/current/`.
 >
-> Before implementing, consider:
-> 1. Ask the project owner about testing expectations
-> 2. Check if tests exist but are undocumented (look for test files, config files)
-> 3. Document the testing approach once clarified
->
-> Proceeding with build/type checks only until testing is clarified.
+> Before implementing:
+> 1. Run build, type check, and tests to establish baseline
+> 2. Document any pre-existing failures
+> 3. Consider adding validation docs to `/docs/current/` for future work
 ```
+
+## Test Strategy
+
+[How will each phase be verified? Reference `/docs/current/` for codebase-specific test commands]
 
 ---
 
@@ -281,9 +261,10 @@ After creating both documents, present a summary:
 
 Before beginning implementation:
 1. Review the plan for completeness
-2. Ensure all tests currently pass (`npm test`)
-3. Create a feature branch if using git
-4. Update progress log "Started" date
+2. Run environment validation (see Environment Validation section above)
+3. Verify all checks pass - if not, document known issues
+4. Create a feature branch if using git
+5. Update progress log "Started" date
 ```
 
 ### Step 8: Offer Next Steps

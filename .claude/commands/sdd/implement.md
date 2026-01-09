@@ -31,11 +31,17 @@ Before starting implementation:
 1. **Read the plan** - Understand the full scope, phases, and verification commands
 2. **Read the progress file** - Check what's already been done (if any)
 3. **Read the spec** - Understand the requirements being implemented
-4. **Verify test baseline** - Run tests 
+4. **Run environment validation** - Check `/docs/current/` for codebase-specific validation commands (build, type check, tests). Run ALL validation steps to establish a healthy baseline.
 5. **Check git state** - Ensure you're on the correct feature branch
 
-If tests are failing before you start, inform the user:
-> The test suite is failing before implementation begins. Would you like me to fix existing failures first, or proceed anyway?
+If any validation step fails before you start, inform the user:
+> Environment validation failed before implementation begins:
+> - [List which checks failed]
+>
+> Would you like me to:
+> 1. Fix these issues first?
+> 2. Proceed and treat them as known issues?
+> 3. Document them and continue with unaffected checks only?
 
 ### Step 3: Implementation Loop
 
@@ -190,12 +196,7 @@ Keep the tracker table current:
 
 When all phases are complete:
 
-1. **Run final verification**:
-   ```bash
-   npm run build
-   npm test
-   npm run lint
-   ```
+1. **Run final verification** - Use the same validation commands from `/docs/current/` that you ran in Step 2. All checks that passed before should still pass.
 
 2. **Update progress document**:
    - Set overall status to "Complete"

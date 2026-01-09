@@ -51,15 +51,26 @@ Explore the relevant parts of the codebase to check for:
 - Are there existing utilities or components that should be reused?
 - Does it follow established patterns in the codebase?
 
-### Step 4: Gap Analysis
+### Step 4: Environment Health Check
+
+Before marking a spec as ready, verify the codebase is in a healthy state:
+
+1. Check `/docs/current/` for environment validation commands
+2. If validation docs exist, note them in the report
+3. If validation docs are missing, flag this as a gap
+
+This ensures implementation won't be blocked by pre-existing issues.
+
+### Step 5: Gap Analysis
 
 Identify any gaps that could cause implementation uncertainty:
 - Undefined edge cases or error handling
 - Missing details about data flow or state management
 - Unclear integration points with existing code
 - Ambiguous requirements that need clarification
+- Missing environment validation documentation in `/docs/current/`
 
-### Step 5: Report Findings
+### Step 6: Report Findings
 
 Present a structured validation report:
 
@@ -82,6 +93,10 @@ Present a structured validation report:
 - [ ] No conflicts with current choices
 - [ ] Follows established patterns
 
+### Environment Validation
+- [ ] `/docs/current/` contains validation commands
+- [ ] Validation commands documented in this report (or flagged as missing)
+
 ### Issues Found
 
 #### Critical (Must Fix)
@@ -100,7 +115,7 @@ Present a structured validation report:
 [Specific next steps to make the spec implementation-ready]
 ```
 
-### Step 6: Offer Next Steps
+### Step 7: Offer Next Steps
 
 After presenting the report, ask:
 > Would you like me to:
