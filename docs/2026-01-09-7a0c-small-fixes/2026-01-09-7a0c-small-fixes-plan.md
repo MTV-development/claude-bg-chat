@@ -2,7 +2,7 @@
 
 **Spec:** [2026-01-09-7a0c-small-fixes-spec.md](./2026-01-09-7a0c-small-fixes-spec.md)
 **Created:** 2026-01-09
-**Status:** Not Started
+**Status:** Complete
 
 ## Overview
 

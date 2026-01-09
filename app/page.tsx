@@ -199,6 +199,11 @@ export default function Chat() {
     inputRef.current?.focus();
   };
 
+  const handleClarifyRequest = (text: string) => {
+    setInput(text);
+    inputRef.current?.focus();
+  };
+
   return (
     <div className="flex h-screen bg-theme-bg-secondary">
       {/* Left Panel - Chat */}
@@ -336,7 +341,7 @@ export default function Chat() {
 
       {/* Right Panel - Todo List */}
       <div className="flex-1 bg-theme-bg-secondary">
-        <TodoList />
+        <TodoList onClarifyRequest={handleClarifyRequest} />
       </div>
     </div>
   );
