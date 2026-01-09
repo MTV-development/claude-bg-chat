@@ -38,6 +38,7 @@ const POLL_INTERVAL = 2000;
 
 interface TodoListProps {
   onClarifyRequest?: (text: string) => void;
+  onClose?: () => void;
 }
 
 const tabs: { id: TabType; label: string; description: string }[] = [
@@ -79,7 +80,7 @@ function isOverdue(dateStr: string | null): boolean {
   return date < today;
 }
 
-export default function TodoList({ onClarifyRequest }: TodoListProps) {
+export default function TodoList({ onClarifyRequest, onClose }: TodoListProps) {
   const [activeTab, setActiveTab] = useState<TabType>('focus');
   const [todos, setTodos] = useState<TodoItem[]>([]);
   const [tabCounts, setTabCounts] = useState<Record<TabType, number>>({
