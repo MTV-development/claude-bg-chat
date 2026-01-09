@@ -42,6 +42,7 @@ Read the spec thoroughly and explore the codebase to understand:
 2. **Dependencies**: What order must changes happen in?
 3. **Risk Areas**: Which changes are most likely to cause issues?
 4. **Test Points**: Where can we verify correctness automatically?
+5. **Testing Infrastructure**: Check README and `/docs/current/` for existing test setup and conventions
 
 ### Step 4: Design the Phase Structure
 
@@ -92,6 +93,38 @@ npm test
 
 # E2E tests (if applicable)
 npm run test:e2e
+```
+
+## How We Test in This Codebase
+
+[REQUIRED SECTION - Research and document the testing setup for this codebase]
+
+Check these sources (in order):
+1. README.md (usually has test commands in "Available Scripts" or similar)
+2. `/docs/current/` documentation
+3. `package.json` scripts section
+4. Existing test files (patterns: `*.test.ts`, `*.spec.ts`, `__tests__/`)
+5. Config files: `jest.config.*`, `vitest.config.*`, `playwright.config.*`, etc.
+
+Include:
+- **Test frameworks used** (Jest, Vitest, Playwright, Cypress, etc.)
+- **Test file locations** (where to put new tests)
+- **Key commands** (how to run tests)
+- **Testing strategy for this implementation** (which test types are appropriate for this spec)
+
+**⚠️ WARNING CONDITION:** If README.md and `/docs/current/` files contain NO information about testing (no test commands, no testing section, no test framework mentions), you MUST add this warning to the plan:
+
+```markdown
+> **⚠️ Testing Documentation Gap**
+>
+> No testing documentation was found in README.md or `/docs/current/`. The testing approach for this codebase is unclear.
+>
+> Before implementing, consider:
+> 1. Ask the project owner about testing expectations
+> 2. Check if tests exist but are undocumented (look for test files, config files)
+> 3. Document the testing approach once clarified
+>
+> Proceeding with build/type checks only until testing is clarified.
 ```
 
 ---
