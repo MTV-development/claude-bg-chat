@@ -134,6 +134,7 @@ npm run test:e2e
 - [ ] All tests passing
 - [ ] No TypeScript errors
 - [ ] Manual smoke test completed
+- [ ] Update `/docs/current` documentation (if relevant)
 - [ ] Ready for review
 ```
 
