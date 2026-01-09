@@ -109,6 +109,28 @@ Include:
 
 ---
 
+## Phase 0: Environment Validation
+
+**Goal:** Establish a healthy baseline before making any code changes
+**Verification:** All validation commands pass (or known issues are documented)
+
+### P0.1: Run Pre-flight Commands
+
+Run all validation commands from the Environment Validation section above.
+
+### P0.2: Document Baseline
+
+Record which checks passed/failed and note any known issues per `/docs/current/`.
+
+### P0 Checkpoint
+
+- [ ] All validation commands run
+- [ ] Results documented in progress log
+- [ ] Known issues identified and noted
+- [ ] Ready to proceed with implementation
+
+---
+
 ## Phase 1: <Phase Title>
 
 **Goal:** [What this phase accomplishes]

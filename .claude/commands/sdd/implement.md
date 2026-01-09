@@ -24,37 +24,47 @@ If no plan file path was provided (`$ARGUMENTS` is empty):
 3. Ask the user which plan to implement:
    > Which implementation plan would you like me to execute? [list the available plans]
 
-### Step 2: Verify Prerequisites
+### Step 2: Read Project Documents
 
 Before starting implementation:
 
 1. **Read the plan** - Understand the full scope, phases, and verification commands
 2. **Read the progress file** - Check what's already been done (if any)
 3. **Read the spec** - Understand the requirements being implemented
-4. **Run environment validation** - Check `/docs/current/` for codebase-specific validation commands (build, type check, tests). Run ALL validation steps to establish a healthy baseline.
-5. **Check git state** - Ensure you're on the correct feature branch
+4. **Check git state** - Ensure you're on the correct feature branch
 
-If any validation step fails before you start, inform the user:
-> Environment validation failed before implementation begins:
+### Step 3: Execute Phase 0 (Environment Validation)
+
+Every plan should have a Phase 0 that validates the environment before any code changes. This phase:
+
+1. **Run all validation commands** from `/docs/current/` (build, type check, tests)
+2. **Document baseline state** - Record which checks pass/fail BEFORE making changes
+3. **Identify known issues** - Note any pre-existing failures from `/docs/current/`
+
+If any validation step fails:
+> Environment validation failed (Phase 0):
 > - [List which checks failed]
+> - [Note if these are known issues per /docs/current/]
 >
 > Would you like me to:
 > 1. Fix these issues first?
 > 2. Proceed and treat them as known issues?
 > 3. Document them and continue with unaffected checks only?
 
-### Step 3: Implementation Loop
+Mark P0 complete in the progress document before proceeding to P1.
 
-For each phase (P1, P2, P3...), execute this loop:
+### Step 4: Implementation Loop
 
-#### 3a. Update Progress - Phase Start
+For each implementation phase (P1, P2, P3...), execute this loop:
+
+#### 4a. Update Progress - Phase Start
 
 Update the progress document:
 - Set the phase status to "In Progress"
 - Record the start timestamp
 - Add a session log entry
 
-#### 3b. Execute Subtasks
+#### 4b. Execute Subtasks
 
 For each subtask (P1.1, P1.2, etc.):
 
@@ -65,7 +75,7 @@ For each subtask (P1.1, P1.2, etc.):
    - Run relevant unit tests
 4. **Log progress** in the session log
 
-#### 3c. Phase Checkpoint
+#### 4c. Phase Checkpoint
 
 After completing all subtasks in a phase:
 
@@ -76,13 +86,13 @@ After completing all subtasks in a phase:
    - Record completion timestamp
    - Document any issues encountered and how they were resolved
 
-#### 3d. Continue or Report
+#### 4d. Continue or Report
 
 - If phase passed: Continue to next phase
 - If phase failed: Document the issue and attempt to fix it
 - If stuck: Stop and report to user (see Blocking Issues below)
 
-### Step 4: Blocking Issues - STOP CONDITIONS
+### Step 5: Blocking Issues - STOP CONDITIONS
 
 **STOP IMMEDIATELY and inform the user if you encounter:**
 
@@ -128,7 +138,7 @@ When stopping, report clearly:
 [Summary of what was completed before the blocker]
 ```
 
-### Step 5: Progress Document Updates
+### Step 6: Progress Document Updates
 
 Throughout implementation, keep the progress document updated in real-time:
 
@@ -176,7 +186,7 @@ Keep the tracker table current:
 | P3    | -           | -          | -          |                |
 ```
 
-### Step 6: Test-Driven Robustness
+### Step 7: Test-Driven Robustness
 
 **Testing Philosophy:**
 
@@ -192,11 +202,11 @@ Keep the tracker table current:
 3. If your change broke it: Fix immediately before proceeding
 4. If pre-existing: Note in progress log and continue (unless blocking)
 
-### Step 7: Completion
+### Step 8: Completion
 
 When all phases are complete:
 
-1. **Run final verification** - Use the same validation commands from `/docs/current/` that you ran in Step 2. All checks that passed before should still pass.
+1. **Run final verification** - Use the same validation commands from `/docs/current/` that you ran in Phase 0. All checks that passed before should still pass.
 
 2. **Update progress document**:
    - Set overall status to "Complete"
@@ -240,7 +250,7 @@ When all phases are complete:
 - [ ] Update documentation if needed
 ```
 
-### Step 8: Offer Follow-up
+### Step 9: Offer Follow-up
 
 After completion (or if stopped), ask:
 > Would you like me to:
