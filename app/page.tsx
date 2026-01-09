@@ -56,6 +56,8 @@ function extractSessionId(text: string): { cleanText: string; sessionId: string 
   }
 }
 
+const PANEL_STATE_KEY = 'claude-chat-panel-open';
+
 export default function Chat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -63,8 +65,22 @@ export default function Chat() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const [claudeSessionId, setClaudeSessionId] = useState<string | null>(null);
+  const [isPanelOpen, setIsPanelOpen] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Load panel state from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem(PANEL_STATE_KEY);
+    if (saved !== null) {
+      setIsPanelOpen(saved === 'true');
+    }
+  }, []);
+
+  // Persist panel state to localStorage
+  useEffect(() => {
+    localStorage.setItem(PANEL_STATE_KEY, String(isPanelOpen));
+  }, [isPanelOpen]);
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
@@ -350,9 +366,35 @@ export default function Chat() {
         </div>
       </div>
 
+      {/* Panel Toggle - fixed position at boundary */}
+      <button
+        onClick={() => setIsPanelOpen(!isPanelOpen)}
+        className="w-6 flex flex-col items-center bg-theme-bg-secondary border-l border-theme-border-primary hover:bg-theme-bg-hover cursor-pointer transition-colors"
+        aria-label={isPanelOpen ? "Close todo panel" : "Open todo panel"}
+        aria-expanded={isPanelOpen}
+      >
+        <svg
+          className={`w-4 h-4 mt-2 text-theme-text-secondary transition-transform duration-200 ${isPanelOpen ? '' : 'rotate-180'}`}
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
+
       {/* Right Panel - Todo List */}
-      <div className="flex-1 bg-theme-bg-secondary">
-        <TodoList onClarifyRequest={handleClarifyRequest} onChatAddRequest={handleChatAddRequest} />
+      <div
+        className={`bg-theme-bg-secondary overflow-hidden transition-all ${
+          isPanelOpen
+            ? 'w-[50vw] ease-out duration-250'
+            : 'w-0 ease-in duration-200'
+        }`}
+        style={{ transitionProperty: 'width' }}
+      >
+        <div className="w-[50vw] h-full">
+          <TodoList onClarifyRequest={handleClarifyRequest} onChatAddRequest={handleChatAddRequest} />
+        </div>
       </div>
     </div>
   );
