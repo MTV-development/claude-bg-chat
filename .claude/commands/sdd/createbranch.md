@@ -31,46 +31,81 @@ If `$ARGUMENTS` is empty or doesn't match a spec:
 2. Ask the user which spec to create a branch for:
    > Which spec would you like to create a feature branch for?
    > [list available specs]
-   >
-   > Or provide a new project name to create a fresh branch.
 
-**Option C: Create a new branch name**
+**Option C: No matching spec found**
 
-If the user provides a project name (not matching an existing spec):
+If the user provides a project name that doesn't match an existing spec:
 
-1. Generate a random 4-digit hex code
-2. Construct: `feature/<today's-date>-<hex>-<project-name>`
-3. Convert project name to kebab-case if needed
+> No spec found for "<project-name>".
+>
+> In the SDD workflow, a spec should exist before creating a feature branch.
+> Run `/sdd:startspec <project-name>` first to create the spec, then run this command again.
+>
+> The branch will use the same `<date>-<hex>-<project-name>` pattern as the spec.
 
-### Step 2: Verify Git State
+### Step 2: Verify Git State is Clean
 
-Before creating the branch, check:
+Before creating the branch, the working directory must be clean:
 
 ```bash
 git status
 ```
 
-- If there are uncommitted changes, warn the user:
-  > You have uncommitted changes. Would you like to:
-  > 1. Stash changes and continue
-  > 2. Commit changes first
-  > 3. Cancel branch creation
+**Requirements:**
+1. **No uncommitted changes** - All work must be committed
+2. **No untracked files** that should be committed
 
-- If already on the target branch, inform the user:
-  > Already on branch `feature/...`. No action needed.
+If there are uncommitted changes, **do not proceed**. Inform the user:
+> Cannot create feature branch: uncommitted changes detected.
+>
+> Please commit or stash your changes first:
+> - `git add . && git commit -m "..."` to commit
+> - `git stash` to stash temporarily
+>
+> Then run this command again.
 
-### Step 3: Create and Switch to Branch
+If already on the target branch, inform the user:
+> Already on branch `feature/...`. No action needed.
 
+### Step 3: Push Current Branch to Remote
+
+Before creating the new branch, ensure the current branch is pushed:
+
+```bash
+git push -u origin <current-branch>
+```
+
+This ensures:
+- The base branch exists on remote
+- PRs will compare against a pushed state
+- No local-only commits are lost
+
+If push fails due to auth or remote issues, warn and ask whether to proceed.
+
+### Step 4: Create and Switch to Branch
+
+First, check if the branch already exists:
+
+```bash
+git branch --list "feature/<naming-pattern>"
+```
+
+If the branch already exists, **do not proceed**. Inform the user:
+> Branch `feature/<naming-pattern>` already exists.
+>
+> If you want to continue work on this branch:
+> - `git checkout feature/<naming-pattern>`
+>
+> If you want to start fresh:
+> - `git branch -D feature/<naming-pattern>` (delete local)
+> - Then run this command again
+
+If the branch doesn't exist, create it:
 ```bash
 git checkout -b feature/<naming-pattern>
 ```
 
-If the branch already exists:
-```bash
-git checkout feature/<naming-pattern>
-```
-
-### Step 4: Confirm Success
+### Step 5: Confirm Success
 
 After switching, confirm:
 
@@ -78,7 +113,8 @@ After switching, confirm:
 ## Branch Created
 
 **Branch:** `feature/<naming-pattern>`
-**Based on:** `<previous-branch>`
+**Base branch:** `<previous-branch>` (pushed to remote)
+**PR target:** `<previous-branch>`
 
 ### SDD Workflow
 
@@ -97,7 +133,7 @@ You're now ready to implement. The typical flow is:
 - Progress: `docs/<naming-pattern>/<naming-pattern>-progress.md` (if exists)
 ```
 
-### Step 5: Offer Next Steps
+### Step 6: Offer Next Steps
 
 Ask:
 > Would you like me to:
