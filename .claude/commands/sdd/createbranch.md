@@ -90,17 +90,12 @@ First, check if the branch already exists:
 git branch --list "feature/<naming-pattern>"
 ```
 
-If the branch already exists, **do not proceed**. Inform the user:
-> Branch `feature/<naming-pattern>` already exists.
->
-> If you want to continue work on this branch:
-> - `git checkout feature/<naming-pattern>`
->
-> If you want to start fresh:
-> - `git branch -D feature/<naming-pattern>` (delete local)
-> - Then run this command again
+If the branch already exists, check it out:
+```bash
+git checkout feature/<naming-pattern>
+```
 
-If the branch doesn't exist, create it:
+If the branch doesn't exist, create and switch to it:
 ```bash
 git checkout -b feature/<naming-pattern>
 ```
