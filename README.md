@@ -18,6 +18,18 @@ A full-stack task management application implementing Getting Things Done (GTD) 
 - **CLI**: Standalone TypeScript CLI for programmatic access
 - **Storage**: JSON file-based persistence
 - **AI**: Claude integration via CLI adapter
+- **Skill**: Claude Code skill (`.claude/skills/todo-manager/`) - see below
+
+## Important: The Skill is Part of the System
+
+The `todo-manager` skill in `.claude/skills/todo-manager/SKILL.md` is **not just documentation** - it's a critical part of the implementation. The skill provides Claude with:
+
+- Instructions for interpreting natural language task requests
+- Knowledge of CLI commands and when to use them
+- GTD workflow logic (routing tasks to correct tabs)
+- Clarification conversation patterns
+
+When modifying system behavior (e.g., how clarification works, what tabs exist), the skill instructions often need updating alongside code changes. The skill is effectively the "brain" that connects conversational input to the CLI/API layer.
 
 ## Prerequisites
 
