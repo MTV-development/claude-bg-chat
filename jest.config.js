@@ -18,7 +18,7 @@ module.exports = {
       roots: ['<rootDir>/lib', '<rootDir>/components'],
       testMatch: ['**/__tests__/**/*.test.ts', '**/__tests__/**/*.test.tsx'],
       moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
-      setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+      setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
       transform: {
         '^.+\.tsx?$': ['ts-jest', { tsconfig: { jsx: 'react-jsx' } }],
       },
