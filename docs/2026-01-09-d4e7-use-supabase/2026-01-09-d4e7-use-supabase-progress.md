@@ -12,7 +12,6 @@
 | P1 - Database Infrastructure | Done | 2026-01-10 | 2026-01-10 | Schema pushed, test passed |
 | P2 - Authentication | Done | 2026-01-10 | 2026-01-10 | Magic link, user sync, AuthUI |
 | P3 - API Migration | Done | 2026-01-10 | 2026-01-10 | All routes migrated |
-| P4 - Testing Infrastructure | - | - | - | 6 subtasks |
 
 ## Session Log
 
@@ -73,12 +72,14 @@
 - **Decision:** Use root-level db/ and lib/ folders instead of src/
   - **Rationale:** Match existing project structure and tsconfig path aliases
 
-### Next Steps
-- [ ] Create todo service layer (list, create, update, delete, postpone)
-- [ ] Create project service layer (list, get-or-create)
-- [ ] Migrate all API routes to use database
-- [ ] Update frontend components if needed
-- [ ] Remove old JSON storage
+### Summary
+
+All P0-P3 phases complete. The app now uses Supabase for:
+- **Database**: Drizzle ORM with PostgreSQL
+- **Authentication**: Magic link via Supabase Auth
+- **API**: All routes migrated to use database with user isolation
+
+The CLI tools continue to use JSON storage for local development.
 
 ---
 
