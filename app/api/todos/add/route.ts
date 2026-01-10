@@ -4,20 +4,32 @@
  * POST /api/todos/add - Add a new task
  */
 
-import { loadTodos, saveTodos, generateId, logActivity, getLocalDateString, getItemTab } from '../../../../scripts/gtd/lib/store';
-import { TodoItem } from '../../../../scripts/gtd/lib/types';
+import { getCurrentUser } from '@/lib/services/auth/get-current-user';
+import { createTodo } from '@/lib/services/todos/create-todo';
+import { getOrCreateProject } from '@/lib/services/projects/get-or-create-project';
+import { getItemTab } from '@/lib/services/todos/list-todos';
 
 function log(message: string, data?: unknown) {
   const timestamp = new Date().toISOString().slice(11, 23);
   if (data !== undefined) {
-    console.log(`[${timestamp}] [add] ${message}`, data);
+    console.log('[' + timestamp + '] [add] ' + message, data);
   } else {
-    console.log(`[${timestamp}] [add] ${message}`);
+    console.log('[' + timestamp + '] [add] ' + message);
   }
+}
+
+function getLocalDateString(): string {
+  const now = new Date();
+  return now.toISOString().split('T')[0];
 }
 
 export async function POST(req: Request) {
   try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const body = await req.json();
     const {
       title,
@@ -28,62 +40,68 @@ export async function POST(req: Request) {
       status = 'active'
     } = body;
 
-    log(`POST request - title: "${title}", hasDeadline: ${hasDeadline}, canDoAnytime: ${canDoAnytime}, dueDate: ${dueDate}`);
+    log('POST request - title: "' + title + '", hasDeadline: ' + hasDeadline + ', canDoAnytime: ' + canDoAnytime + ', dueDate: ' + dueDate);
 
     if (!title) {
-      log(`Failed: no title provided`);
+      log('Failed: no title provided');
       return Response.json({ error: 'Title is required' }, { status: 400 });
     }
 
-    const data = await loadTodos();
     const today = getLocalDateString();
 
     // Resolve due date
     let resolvedDueDate: string | null = null;
     if (dueDate === 'today') {
       resolvedDueDate = today;
-      log(`Resolved dueDate 'today' -> ${today}`);
+      log('Resolved dueDate "today" -> ' + today);
     } else if (dueDate) {
       resolvedDueDate = dueDate;
     }
 
     // If hasDeadline is true but no dueDate, that's an error
     if (hasDeadline && !resolvedDueDate) {
-      log(`Failed: hasDeadline=true but no dueDate provided`);
+      log('Failed: hasDeadline=true but no dueDate provided');
       return Response.json(
         { error: 'Due date is required when hasDeadline is true' },
         { status: 400 }
       );
     }
 
-    const resolvedCanDoAnytime = canDoAnytime === true;
+    // Handle project - create if needed
+    let projectId: string | null = null;
+    if (project) {
+      projectId = await getOrCreateProject(user.userId, project);
+    }
 
-    const newItem: TodoItem = {
-      id: generateId(),
+    const newItem = await createTodo(user.userId, {
       title: title.trim(),
-      nextAction: title.trim(),
-      status: status === 'inbox' ? 'inbox' : 'active',
-      completed: false,
-      project: project || null,
       dueDate: resolvedDueDate,
-      canDoAnytime: resolvedCanDoAnytime,
-      createdAt: new Date().toISOString(),
-      completedAt: null,
-      postponeCount: 0,
-    };
+      canDoAnytime: canDoAnytime === true,
+      projectId,
+      status: status === 'inbox' ? 'inbox' : 'active',
+    });
 
     const tab = getItemTab(newItem);
-    log(`Created item "${newItem.title}" (id: ${newItem.id}) -> tab: ${tab}`);
+    log('Created item "' + newItem.title + '" (id: ' + newItem.id + ') -> tab: ' + tab);
 
-    data.items.push(newItem);
-    logActivity(data, newItem.id, 'created');
+    // Map to frontend-compatible format
+    const item = {
+      id: newItem.id,
+      title: newItem.title,
+      nextAction: newItem.nextAction,
+      status: newItem.status,
+      completed: newItem.completed,
+      project: project || null,
+      dueDate: newItem.dueDate,
+      canDoAnytime: newItem.canDoAnytime,
+      createdAt: newItem.createdAt,
+      completedAt: newItem.completedAt,
+      postponeCount: newItem.postponeCount,
+    };
 
-    await saveTodos(data);
-    log(`Item saved. Total items: ${data.items.length}`);
-
-    return Response.json({ success: true, item: newItem });
+    return Response.json({ success: true, item });
   } catch (error) {
-    log(`ERROR:`, error);
+    log('ERROR:', error);
     return Response.json({ error: 'Failed to add task' }, { status: 500 });
   }
 }

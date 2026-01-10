@@ -2,9 +2,7 @@
  * Todos API Route
  *
  * Returns the current todo list for display in the UI.
- * Used by the TodoList component for auto-refresh.
- *
- * Uses shared store module for data access.
+ * Uses Supabase database via Drizzle ORM.
  *
  * GET /api/todos - List all items
  * GET /api/todos?tab=focus|optional|later|inbox|done - Filter by tab
@@ -12,71 +10,69 @@
  * DELETE /api/todos - Remove item
  */
 
-import { loadTodos, saveTodos, filterByTab, logActivity, getItemTab } from '../../../scripts/gtd/lib/store';
-import { TabType } from '../../../scripts/gtd/lib/types';
+import { getCurrentUser } from '@/lib/services/auth/get-current-user';
+import { listTodos } from '@/lib/services/todos/list-todos';
+import { updateTodo } from '@/lib/services/todos/update-todo';
+import { deleteTodo } from '@/lib/services/todos/delete-todo';
+import { TabType } from '@/scripts/gtd/lib/types';
 
 function log(message: string, data?: unknown) {
   const timestamp = new Date().toISOString().slice(11, 23);
   if (data !== undefined) {
-    console.log(`[${timestamp}] [todos] ${message}`, data);
+    console.log('[' + timestamp + '] [todos] ' + message, data);
   } else {
-    console.log(`[${timestamp}] [todos] ${message}`);
+    console.log('[' + timestamp + '] [todos] ' + message);
   }
 }
 
 export async function GET(req: Request) {
   try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { searchParams } = new URL(req.url);
     const tab = searchParams.get('tab') as TabType | null;
 
-    log(`GET request - tab: ${tab || 'all'}`);
+    log('GET request - user: ' + user.email + ', tab: ' + (tab || 'all'));
 
-    const data = await loadTodos();
-    let items = data.items;
-
-    log(`Loaded ${data.items.length} total items from store`);
-
-    // Filter by tab if specified
-    if (tab) {
-      // Support legacy tab names as aliases
-      let tabName = tab as string;
-      if (tabName === 'cando' || tabName === 'mightdo') {
-        log(`Legacy tab name '${tabName}' -> 'optional'`);
-        tabName = 'optional';
-      }
-      const validTabs: TabType[] = ['focus', 'optional', 'later', 'inbox', 'projects', 'done'];
-      if (validTabs.includes(tabName as TabType)) {
-        items = filterByTab(items, tabName as TabType);
-        log(`Filtered to ${items.length} items for tab '${tabName}'`);
-      }
+    // Support legacy tab names as aliases
+    let tabName = tab as string | null;
+    if (tabName === 'cando' || tabName === 'mightdo') {
+      log('Legacy tab name "' + tabName + '" -> "optional"');
+      tabName = 'optional';
     }
 
-    // Sort items: overdue first, then by due date
-    items.sort((a, b) => {
-      // Done items last (unless on done tab)
-      if (a.status === 'done' && b.status !== 'done') return 1;
-      if (a.status !== 'done' && b.status === 'done') return -1;
+    const validTabs: TabType[] = ['focus', 'optional', 'later', 'inbox', 'projects', 'done'];
+    const filterTab = tabName && validTabs.includes(tabName as TabType) ? (tabName as TabType) : undefined;
 
-      // Due date sorting
-      if (a.dueDate && !b.dueDate) return -1;
-      if (!a.dueDate && b.dueDate) return 1;
-      if (a.dueDate && b.dueDate) {
-        return a.dueDate.localeCompare(b.dueDate);
-      }
+    const items = await listTodos(user.userId, filterTab);
 
-      return 0;
-    });
+    log('Returning ' + items.length + ' items');
 
-    log(`Returning ${items.length} items`);
+    // Map to frontend-compatible format
+    const mappedItems = items.map((item) => ({
+      id: item.id,
+      title: item.title,
+      nextAction: item.nextAction,
+      status: item.status,
+      completed: item.completed,
+      project: item.project,
+      dueDate: item.dueDate,
+      canDoAnytime: item.canDoAnytime,
+      createdAt: item.createdAt,
+      completedAt: item.completedAt,
+      postponeCount: item.postponeCount,
+    }));
 
     return Response.json({
-      items,
-      lastModified: data.lastModified,
-      count: items.length,
+      items: mappedItems,
+      lastModified: new Date().toISOString(),
+      count: mappedItems.length,
     });
   } catch (error) {
-    log(`ERROR in GET:`, error);
-    // If file doesn't exist or is invalid, return empty list
+    log('ERROR in GET:', error);
     return Response.json({
       items: [],
       lastModified: new Date().toISOString(),
@@ -87,102 +83,85 @@ export async function GET(req: Request) {
 
 export async function PATCH(req: Request) {
   try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const body = await req.json();
     const { id, completed, status, dueDate } = body;
 
-    log(`PATCH request - id: ${id}, completed: ${completed}, status: ${status}, dueDate: ${dueDate}`);
+    log('PATCH request - id: ' + id + ', completed: ' + completed + ', status: ' + status + ', dueDate: ' + dueDate);
 
     if (!id) {
-      log(`PATCH failed: no ID provided`);
+      log('PATCH failed: no ID provided');
       return Response.json({ error: 'Item ID is required' }, { status: 400 });
     }
 
-    const data = await loadTodos();
+    const updated = await updateTodo(user.userId, id, {
+      completed,
+      status,
+      dueDate,
+    });
 
-    const todoIndex = data.items.findIndex((t) => t.id === id);
-    if (todoIndex === -1) {
-      log(`PATCH failed: item ${id} not found`);
+    if (!updated) {
+      log('PATCH failed: item ' + id + ' not found');
       return Response.json({ error: 'Todo not found' }, { status: 404 });
     }
 
-    const item = data.items[todoIndex];
-    const oldTab = getItemTab(item);
-    log(`Found item: "${item.nextAction || item.title}" (current tab: ${oldTab})`);
+    log('Item updated successfully');
 
-    // Handle completion toggle
-    if (typeof completed === 'boolean') {
-      log(`Toggling completion: ${item.completed} -> ${completed}`);
-      item.completed = completed;
-      item.status = completed ? 'done' : 'active';
-      item.completedAt = completed ? new Date().toISOString() : null;
-      logActivity(data, item.id, completed ? 'completed' : 'uncompleted');
-    }
-
-    // Handle status change
-    if (status && ['inbox', 'active', 'someday', 'done'].includes(status)) {
-      log(`Changing status: ${item.status} -> ${status}`);
-      item.status = status;
-      item.completed = status === 'done';
-      if (status === 'done' && !item.completedAt) {
-        item.completedAt = new Date().toISOString();
-      } else if (status !== 'done') {
-        item.completedAt = null;
-      }
-    }
-
-    // Handle due date change
-    if (dueDate !== undefined) {
-      log(`Changing due date: ${item.dueDate} -> ${dueDate}`);
-      item.dueDate = dueDate;
-    }
-
-    const newTab = getItemTab(item);
-    if (oldTab !== newTab) {
-      log(`Item moved: ${oldTab} -> ${newTab}`);
-    }
-
-    await saveTodos(data);
-    log(`Item updated and saved successfully`);
+    // Map to frontend-compatible format
+    const item = {
+      id: updated.id,
+      title: updated.title,
+      nextAction: updated.nextAction,
+      status: updated.status,
+      completed: updated.completed,
+      project: null,
+      dueDate: updated.dueDate,
+      canDoAnytime: updated.canDoAnytime,
+      createdAt: updated.createdAt,
+      completedAt: updated.completedAt,
+      postponeCount: updated.postponeCount,
+    };
 
     return Response.json({ success: true, item });
   } catch (error) {
-    log(`ERROR in PATCH:`, error);
+    log('ERROR in PATCH:', error);
     return Response.json({ error: 'Failed to update todo' }, { status: 500 });
   }
 }
 
 export async function DELETE(req: Request) {
   try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const body = await req.json();
     const { id } = body;
 
-    log(`DELETE request - id: ${id}`);
+    log('DELETE request - id: ' + id);
 
     if (!id) {
-      log(`DELETE failed: no ID provided`);
+      log('DELETE failed: no ID provided');
       return Response.json({ error: 'Item ID is required' }, { status: 400 });
     }
 
-    const data = await loadTodos();
+    const deleted = await deleteTodo(user.userId, id);
 
-    const todoIndex = data.items.findIndex((t) => t.id === id);
-    if (todoIndex === -1) {
-      log(`DELETE failed: item ${id} not found`);
+    if (!deleted) {
+      log('DELETE failed: item ' + id + ' not found');
       return Response.json({ error: 'Todo not found' }, { status: 404 });
     }
 
-    const item = data.items[todoIndex];
-    log(`Deleting item: "${item.nextAction || item.title}"`);
-    data.items.splice(todoIndex, 1);
-
-    logActivity(data, item.id, 'deleted');
-
-    await saveTodos(data);
-    log(`Item deleted successfully. ${data.items.length} items remaining`);
+    log('Item deleted successfully');
 
     return Response.json({ success: true });
   } catch (error) {
-    log(`ERROR in DELETE:`, error);
+    log('ERROR in DELETE:', error);
     return Response.json({ error: 'Failed to delete todo' }, { status: 500 });
   }
 }

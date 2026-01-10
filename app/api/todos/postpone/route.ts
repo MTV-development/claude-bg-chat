@@ -7,77 +7,77 @@
  * Postpones a task by moving its due date forward.
  */
 
-import { loadTodos, saveTodos, findItem, logActivity, getLocalDateString, getItemTab } from '../../../../scripts/gtd/lib/store';
+import { getCurrentUser } from '@/lib/services/auth/get-current-user';
+import { postponeTodo } from '@/lib/services/todos/postpone-todo';
 
 function log(message: string, data?: unknown) {
   const timestamp = new Date().toISOString().slice(11, 23);
   if (data !== undefined) {
-    console.log(`[${timestamp}] [postpone] ${message}`, data);
+    console.log('[' + timestamp + '] [postpone] ' + message, data);
   } else {
-    console.log(`[${timestamp}] [postpone] ${message}`);
+    console.log('[' + timestamp + '] [postpone] ' + message);
   }
 }
 
 export async function POST(req: Request) {
   try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { id, days } = await req.json();
 
-    log(`POST request - id: ${id}, days: ${days}`);
+    log('POST request - id: ' + id + ', days: ' + days);
 
     if (!id) {
-      log(`Failed: no ID provided`);
+      log('Failed: no ID provided');
       return Response.json({ error: 'Item ID is required' }, { status: 400 });
     }
 
     if (!days || typeof days !== 'number' || days < 1) {
-      log(`Failed: invalid days value: ${days}`);
+      log('Failed: invalid days value: ' + days);
       return Response.json({ error: 'Days must be a positive number' }, { status: 400 });
     }
 
-    const data = await loadTodos();
-    const item = findItem(data.items, id);
+    const result = await postponeTodo(user.userId, id, days);
 
-    if (!item) {
-      log(`Failed: item ${id} not found`);
+    if (!result) {
+      log('Failed: item ' + id + ' not found');
       return Response.json({ error: 'Item not found' }, { status: 404 });
     }
 
-    log(`Found item: "${item.nextAction || item.title}"`);
+    const { todo, needsConfirmation } = result;
 
-    // Calculate new due date
-    const oldDate = item.dueDate;
-    const newDate = new Date();
-    newDate.setDate(newDate.getDate() + days);
-    item.dueDate = getLocalDateString(newDate);
+    log('Postponed to ' + todo.dueDate + ', count: ' + todo.postponeCount);
 
-    // Increment postpone count
-    item.postponeCount++;
-
-    const oldTab = getItemTab({ ...item, dueDate: oldDate });
-    const newTab = getItemTab(item);
-    log(`Postponed: ${oldDate} -> ${item.dueDate} (${days} days), count: ${item.postponeCount}, tab: ${oldTab} -> ${newTab}`);
-
-    if (item.postponeCount >= 3) {
-      log(`Item has been postponed ${item.postponeCount} times - suggesting removal`);
+    if (needsConfirmation) {
+      log('Item has been postponed ' + todo.postponeCount + ' times - suggesting removal');
     }
 
-    // Log activity
-    logActivity(data, item.id, 'postponed', {
-      fromDate: oldDate || 'none',
-      toDate: item.dueDate,
-    });
-
-    await saveTodos(data);
-    log(`Item saved successfully`);
+    // Map to frontend-compatible format
+    const item = {
+      id: todo.id,
+      title: todo.title,
+      nextAction: todo.nextAction,
+      status: todo.status,
+      completed: todo.completed,
+      project: null,
+      dueDate: todo.dueDate,
+      canDoAnytime: todo.canDoAnytime,
+      createdAt: todo.createdAt,
+      completedAt: todo.completedAt,
+      postponeCount: todo.postponeCount,
+    };
 
     return Response.json({
       success: true,
       item,
-      postponeCount: item.postponeCount,
-      needsConfirmation: item.postponeCount >= 3,
+      postponeCount: todo.postponeCount,
+      needsConfirmation,
     });
   } catch (error) {
-    log(`ERROR:`, error);
+    log('ERROR:', error);
     return Response.json({ error: 'Failed to postpone task' }, { status: 500 });
   }
 }

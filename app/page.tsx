@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import TodoList from '@/components/TodoList';
 import ThemeToggle from '@/components/ThemeToggle';
+import AuthUI from '@/components/AuthUI';
 
 // Session marker format from API
 const SESSION_MARKER = '\n<!--CLAUDE_SESSION:';
@@ -249,6 +250,7 @@ export default function Chat() {
             </p>
           </div>
           <div className="flex items-center gap-4">
+            <AuthUI />
             <ThemeToggle />
             <button
               onClick={handleNewChat}
