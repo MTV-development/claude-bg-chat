@@ -26,11 +26,13 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
-  // Start each test with empty data
+  // Start each test with empty v4 data
   const emptyData: TodoData = {
-    version: '1.0',
+    version: '4.0',
     lastModified: new Date().toISOString(),
+    lastAutoReview: null,
     items: [],
+    activityLog: [],
   };
   await fs.writeFile(REAL_FILE, JSON.stringify(emptyData, null, 2));
 });
@@ -46,15 +48,8 @@ describe('add command', () => {
 
     expect(result.success).toBe(true);
     expect(result.item?.title).toBe('Buy groceries');
-    expect(result.item?.priority).toBe('medium');
     expect(result.item?.completed).toBe(false);
-  });
-
-  it('adds item with priority', async () => {
-    const result = await add(['Urgent task', '--priority', 'high']);
-
-    expect(result.success).toBe(true);
-    expect(result.item?.priority).toBe('high');
+    expect(result.item?.status).toBe('active');
   });
 
   it('adds item with due date (ISO format)', async () => {
@@ -75,11 +70,26 @@ describe('add command', () => {
     expect(result.item?.dueDate).toBe(expected);
   });
 
-  it('adds item with tags', async () => {
-    const result = await add(['Task', '--tags', 'work,urgent']);
+  it('adds item with can-do-anytime flag', async () => {
+    const result = await add(['Task', '--can-do-anytime']);
 
     expect(result.success).toBe(true);
-    expect(result.item?.tags).toEqual(['work', 'urgent']);
+    expect(result.item?.canDoAnytime).toBe(true);
+  });
+
+  it('adds item with project', async () => {
+    const result = await add(['Task', '--project', 'Home Renovation']);
+
+    expect(result.success).toBe(true);
+    expect(result.item?.project).toBe('Home Renovation');
+  });
+
+  it('adds item with inbox status', async () => {
+    const result = await add(['Vague task', '--status', 'inbox']);
+
+    expect(result.success).toBe(true);
+    expect(result.item?.status).toBe('inbox');
+    expect(result.item?.nextAction).toBeNull();
   });
 
   it('fails on missing title', async () => {
@@ -89,26 +99,26 @@ describe('add command', () => {
     expect(result.error).toContain('Title is required');
   });
 
-  it('fails on invalid priority', async () => {
-    const result = await add(['Task', '--priority', 'invalid']);
-
-    expect(result.success).toBe(false);
-    expect(result.error).toContain('Priority must be');
-  });
-
   it('fails on invalid due date', async () => {
     const result = await add(['Task', '--due', 'invalid-date']);
 
     expect(result.success).toBe(false);
     expect(result.error).toContain('Invalid due date');
   });
+
+  it('fails on invalid status', async () => {
+    const result = await add(['Task', '--status', 'invalid']);
+
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('Status must be');
+  });
 });
 
 describe('list command', () => {
   beforeEach(async () => {
     // Add test items
-    await add(['Task 1', '--priority', 'high']);
-    await add(['Task 2', '--priority', 'low']);
+    await add(['Task 1', '--due', 'today']);
+    await add(['Task 2', '--can-do-anytime']);
     await add(['Task 3']);
     // Complete one
     await complete(['Task 2']);
@@ -134,14 +144,6 @@ describe('list command', () => {
 
     expect(result.success).toBe(true);
     expect(result.count).toBe(2);
-  });
-
-  it('filters by priority', async () => {
-    const result = await list(['--priority', 'high']);
-
-    expect(result.success).toBe(true);
-    expect(result.count).toBe(1);
-    expect(result.items?.[0].title).toBe('Task 1');
   });
 
   it('returns empty array when no items', async () => {
@@ -261,7 +263,7 @@ describe('update command', () => {
   let itemId: string;
 
   beforeEach(async () => {
-    const addResult = await add(['Original title', '--priority', 'low']);
+    const addResult = await add(['Original title']);
     itemId = addResult.item!.id;
   });
 
@@ -272,13 +274,6 @@ describe('update command', () => {
     expect(result.item?.title).toBe('New title');
   });
 
-  it('updates priority', async () => {
-    const result = await update([itemId, '--priority', 'high']);
-
-    expect(result.success).toBe(true);
-    expect(result.item?.priority).toBe('high');
-  });
-
   it('updates due date', async () => {
     const result = await update([itemId, '--due', '2026-01-20']);
 
@@ -286,12 +281,26 @@ describe('update command', () => {
     expect(result.item?.dueDate).toBe('2026-01-20');
   });
 
+  it('updates canDoAnytime flag', async () => {
+    const result = await update([itemId, '--can-do-anytime', 'true']);
+
+    expect(result.success).toBe(true);
+    expect(result.item?.canDoAnytime).toBe(true);
+  });
+
+  it('updates status', async () => {
+    const result = await update([itemId, '--status', 'someday']);
+
+    expect(result.success).toBe(true);
+    expect(result.item?.status).toBe('someday');
+  });
+
   it('updates multiple fields', async () => {
-    const result = await update([itemId, '--title', 'Updated', '--priority', 'high']);
+    const result = await update([itemId, '--title', 'Updated', '--due', '2026-02-01']);
 
     expect(result.success).toBe(true);
     expect(result.item?.title).toBe('Updated');
-    expect(result.item?.priority).toBe('high');
+    expect(result.item?.dueDate).toBe('2026-02-01');
   });
 
   it('fails if item not found', async () => {
@@ -300,8 +309,8 @@ describe('update command', () => {
     expect(result.success).toBe(false);
   });
 
-  it('fails on invalid priority', async () => {
-    const result = await update([itemId, '--priority', 'invalid']);
+  it('fails on invalid status', async () => {
+    const result = await update([itemId, '--status', 'invalid']);
 
     expect(result.success).toBe(false);
   });
@@ -310,7 +319,7 @@ describe('update command', () => {
 describe('integration', () => {
   it('full workflow: add → list → complete → list', async () => {
     // Add
-    const addResult = await add(['Test workflow', '--priority', 'high']);
+    const addResult = await add(['Test workflow', '--due', 'today']);
     expect(addResult.success).toBe(true);
 
     // List (should show 1 pending)

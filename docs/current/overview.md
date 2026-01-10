@@ -64,3 +64,4 @@ claude-bg-chat/
 - [High-Level Concept](./high-level-concept.md) - GTD principles and workflow design
 - [Data Model](./data-model.md) - Data structures and storage
 - [Technical Architecture](./technical-architecture.md) - System components and interactions
+- [Environment Validation](./environment-validation.md) - Testing and environment health checks

@@ -15,7 +15,7 @@ import { TodoData, TodoItem, createEmptyTodoData } from '../lib/types';
 
 const TEST_FILE = path.join(__dirname, 'test-todos.json');
 
-// Helper to create a test item with all v2 fields
+// Helper to create a test item with all v4 fields
 function createTestItem(partial: Partial<TodoItem>): TodoItem {
   return {
     id: 'test123',
@@ -23,13 +23,12 @@ function createTestItem(partial: Partial<TodoItem>): TodoItem {
     nextAction: 'Test item',
     status: 'active',
     completed: false,
-    priority: 'medium',
     project: null,
     dueDate: null,
+    canDoAnytime: false,
     createdAt: '2026-01-01T00:00:00.000Z',
     completedAt: null,
     postponeCount: 0,
-    tags: [],
     ...partial,
   };
 }
@@ -45,7 +44,7 @@ describe('store', () => {
   });
 
   describe('loadTodos', () => {
-    it('returns data when file exists (migrates v1 to v2)', async () => {
+    it('returns data when file exists (migrates v1 to v4)', async () => {
       // Write v1 format data
       const v1Data = {
         version: '1.0',
@@ -55,11 +54,9 @@ describe('store', () => {
             id: 'test123',
             title: 'Test item',
             completed: false,
-            priority: 'medium',
             dueDate: null,
             createdAt: '2026-01-01T00:00:00.000Z',
             completedAt: null,
-            tags: [],
           },
         ],
       };
@@ -67,21 +64,22 @@ describe('store', () => {
 
       const result = await loadTodos(TEST_FILE);
 
-      // Should be migrated to v2
-      expect(result.version).toBe('2.0');
+      // Should be migrated to v4
+      expect(result.version).toBe('4.0');
       expect(result.items).toHaveLength(1);
       expect(result.items[0].title).toBe('Test item');
-      // v2 fields should be populated
+      // v4 fields should be populated
       expect(result.items[0].nextAction).toBe('Test item');
       expect(result.items[0].status).toBe('active');
       expect(result.items[0].postponeCount).toBe(0);
+      expect(result.items[0].canDoAnytime).toBe(false);
       expect(result.activityLog).toBeDefined();
     });
 
-    it('returns empty v2 structure when file does not exist', async () => {
+    it('returns empty v4 structure when file does not exist', async () => {
       const result = await loadTodos(TEST_FILE);
 
-      expect(result.version).toBe('2.0');
+      expect(result.version).toBe('4.0');
       expect(result.items).toHaveLength(0);
       expect(result.lastModified).toBeDefined();
       expect(result.activityLog).toEqual([]);
@@ -90,20 +88,20 @@ describe('store', () => {
   });
 
   describe('saveTodos', () => {
-    it('writes valid JSON to file with v2 format', async () => {
+    it('writes valid JSON to file with v4 format', async () => {
       const testData = createEmptyTodoData();
 
       await saveTodos(testData, TEST_FILE);
 
       const content = await fs.readFile(TEST_FILE, 'utf-8');
       const parsed = JSON.parse(content);
-      expect(parsed.version).toBe('2.0');
+      expect(parsed.version).toBe('4.0');
       expect(parsed.activityLog).toEqual([]);
     });
 
     it('updates lastModified on save', async () => {
       const testData: TodoData = {
-        version: '2.0',
+        version: '4.0',
         lastModified: '2020-01-01T00:00:00.000Z',
         lastAutoReview: null,
         items: [],
@@ -139,7 +137,7 @@ describe('store', () => {
   describe('findItem', () => {
     const items: TodoItem[] = [
       createTestItem({ id: 'abc123', title: 'Buy groceries', nextAction: 'Buy groceries' }),
-      createTestItem({ id: 'def456', title: 'Call dentist', nextAction: 'Call dentist office', priority: 'high' }),
+      createTestItem({ id: 'def456', title: 'Call dentist', nextAction: 'Call dentist office' }),
     ];
 
     it('finds by exact ID', () => {
@@ -255,9 +253,24 @@ describe('store', () => {
       expect(getItemTab(item)).toBe('focus');
     });
 
-    it('returns optional for items with future or no due date', () => {
-      const item = createTestItem({ status: 'active', dueDate: null });
+    it('returns optional for items with canDoAnytime flag', () => {
+      const item = createTestItem({ status: 'active', dueDate: null, canDoAnytime: true });
       expect(getItemTab(item)).toBe('optional');
+    });
+
+    it('returns inbox for items without dueDate and not canDoAnytime', () => {
+      const item = createTestItem({ status: 'active', dueDate: null, canDoAnytime: false });
+      expect(getItemTab(item)).toBe('inbox');
+    });
+
+    it('returns later for items with future dueDate and not canDoAnytime', () => {
+      const tomorrow = (() => {
+        const d = new Date();
+        d.setDate(d.getDate() + 1);
+        return getLocalDateString(d);
+      })();
+      const item = createTestItem({ status: 'active', dueDate: tomorrow, canDoAnytime: false });
+      expect(getItemTab(item)).toBe('later');
     });
   });
 
@@ -277,10 +290,11 @@ describe('store', () => {
     const items: TodoItem[] = [
       createTestItem({ id: '1', title: 'Focus item', status: 'active', dueDate: today }),
       createTestItem({ id: '2', title: 'Overdue item', status: 'active', dueDate: yesterday }),
-      createTestItem({ id: '3', title: 'Optional item', status: 'active', dueDate: tomorrow }),
-      createTestItem({ id: '4', title: 'No date item', status: 'active', dueDate: null }),
+      createTestItem({ id: '3', title: 'Later item', status: 'active', dueDate: tomorrow, canDoAnytime: false }),
+      createTestItem({ id: '4', title: 'Optional item', status: 'active', dueDate: null, canDoAnytime: true }),
       createTestItem({ id: '5', title: 'Inbox item', status: 'inbox', nextAction: null }),
       createTestItem({ id: '6', title: 'Done item', status: 'done', completed: true }),
+      createTestItem({ id: '7', title: 'No date inbox', status: 'active', dueDate: null, canDoAnytime: false }),
     ];
 
     it('filters focus items (due today or overdue)', () => {
@@ -288,14 +302,19 @@ describe('store', () => {
       expect(result.map(i => i.id)).toEqual(['1', '2']);
     });
 
-    it('filters optional items (future or no due date)', () => {
+    it('filters optional items (canDoAnytime)', () => {
       const result = filterByTab(items, 'optional');
-      expect(result.map(i => i.id)).toEqual(['3', '4']);
+      expect(result.map(i => i.id)).toEqual(['4']);
     });
 
-    it('filters inbox items', () => {
+    it('filters later items (future dueDate, not canDoAnytime)', () => {
+      const result = filterByTab(items, 'later');
+      expect(result.map(i => i.id)).toEqual(['3']);
+    });
+
+    it('filters inbox items (no nextAction or no dueDate without canDoAnytime)', () => {
       const result = filterByTab(items, 'inbox');
-      expect(result.map(i => i.id)).toEqual(['5']);
+      expect(result.map(i => i.id)).toEqual(['5', '7']);
     });
 
     it('filters done items', () => {

@@ -362,70 +362,12 @@ try {
 }
 ```
 
-## Testing
+## Testing & Environment Validation
 
-### Test Structure
-
-```
-scripts/gtd/__tests__/
-├── store.test.ts         # Data layer tests
-├── commands.test.ts      # CLI command tests
-└── migration.test.ts     # Schema migration tests
-
-components/__tests__/
-├── ThemeToggle.test.tsx  # Component tests (React Testing Library)
-```
-
-### Running Tests
-
-```bash
-npm test                  # Run all tests
-npm run test:watch        # Watch mode
-npm run test:coverage     # Coverage report
-```
-
-### Important: Jest vs TypeScript
-
-Jest uses Babel for transpilation, which means **TypeScript errors in test files won't cause test failures**. A test file can have type errors but still pass all tests. Always run the full type check (see Environment Validation below) to catch these issues.
-
-## Environment Validation
-
-Before starting implementation work, verify the codebase is healthy by running these checks.
-
-### Pre-flight Commands
-
-```bash
-# 1. Build check - ensures production build works
-npm run build
-
-# 2. Full type check - catches ALL TypeScript errors including test files
-npx tsc --noEmit
-
-# 3. Test suite - ensures tests pass
-npm test
-```
-
-### Expected Results
-
-| Check | Healthy State |
-|-------|---------------|
-| `npm run build` | Completes with no errors |
-| `npx tsc --noEmit` | No output (no type errors) |
-| `npm test` | All tests pass |
-
-### Known Issues
-
-Pre-existing failures that implementers should be aware of:
-
-| Check | Issue | Status | Notes |
-|-------|-------|--------|-------|
-| `npx tsc --noEmit` | `@testing-library/jest-dom` matcher types not recognized | Known | Errors like `toBeInTheDocument`, `toHaveClass` not found. Tests still run - Jest uses Babel. |
-
-### What To Do If Validation Fails
-
-1. **Pre-existing issue (listed above)**: Note it in your progress log and proceed
-2. **New failure**: Investigate before proceeding - don't start work on an unhealthy codebase
-3. **Unclear**: Ask before proceeding
+See [Environment Validation](./environment-validation.md) for:
+- Pre-flight commands to verify codebase health
+- Test structure and running tests
+- Known issues and how to handle validation failures
 
 ## Security Considerations
 
