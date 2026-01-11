@@ -65,3 +65,4 @@ claude-bg-chat/
 - [Data Model](./data-model.md) - Data structures and storage
 - [Technical Architecture](./technical-architecture.md) - System components and interactions
 - [Environment Validation](./environment-validation.md) - Testing and environment health checks
+- [E2E Testing](./e2e-testing.md) - Playwright E2E testing playbook and auth bypass setup

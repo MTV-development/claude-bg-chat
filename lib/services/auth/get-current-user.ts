@@ -4,6 +4,10 @@ import { db } from '@/db';
 import { users, type User } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 
+// E2E test mode - bypass auth when test user ID is set
+const E2E_TEST_USER_ID = process.env.NEXT_PUBLIC_E2E_TEST_USER_ID;
+const isE2ETestMode = process.env.NODE_ENV === 'development' && E2E_TEST_USER_ID;
+
 export type CurrentUser = {
   /** Supabase auth.users id */
   authId: string;
@@ -22,6 +26,23 @@ export type CurrentUser = {
  * @returns The current user data, or null if not authenticated
  */
 export async function getCurrentUser(): Promise<CurrentUser | null> {
+  // E2E test mode - return mock user
+  if (isE2ETestMode && E2E_TEST_USER_ID) {
+    console.log('[getCurrentUser] E2E test mode - using mock user:', E2E_TEST_USER_ID);
+    const [user] = await db.select().from(users).where(eq(users.id, E2E_TEST_USER_ID));
+    if (user) {
+      return {
+        authId: E2E_TEST_USER_ID,
+        userId: E2E_TEST_USER_ID,
+        email: 'test@example.com',
+        user,
+      };
+    }
+    // If user not found in DB, return null (need valid user for E2E)
+    console.log('[getCurrentUser] E2E test mode - user not found in database');
+    return null;
+  }
+
   const supabase = await createClient();
 
   const {

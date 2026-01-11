@@ -2,6 +2,7 @@
 
 import { ReactNode } from 'react';
 import { ThemeProvider } from '@/lib/contexts';
+import { TodoSyncProvider } from '@/app/providers/TodoSyncProvider';
 
 interface ProvidersProps {
   children: ReactNode;
@@ -10,7 +11,9 @@ interface ProvidersProps {
 export function Providers({ children }: ProvidersProps) {
   return (
     <ThemeProvider>
-      {children}
+      <TodoSyncProvider>
+        {children}
+      </TodoSyncProvider>
     </ThemeProvider>
   );
 }
