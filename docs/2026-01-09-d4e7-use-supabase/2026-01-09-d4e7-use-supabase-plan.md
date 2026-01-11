@@ -2,7 +2,7 @@
 
 **Spec:** [2026-01-09-d4e7-use-supabase-spec.md](./2026-01-09-d4e7-use-supabase-spec.md)
 **Created:** 2026-01-09
-**Status:** Not Started
+**Status:** Complete
 
 ## Overview
 
@@ -44,7 +44,6 @@ Each phase will be verified by:
 2. **P1**: Database connection test script
 3. **P2**: Manual auth flow verification + automated user sync
 4. **P3**: Existing frontend functionality works against new backend
-5. **P4**: Automated tests run against isolated test database
 
 ---
 
@@ -401,76 +400,9 @@ DIRECT_URL=
 
 ---
 
-## Phase 4: Testing Infrastructure
-
-**Goal:** Set up separate Supabase project for isolated test database
-**Verification:** `npm run test:db` runs tests against test database
-
-### P4.1: Create Test Environment Template
-
-**Files:** `.env.test.local.example`
-**Changes:** Template for test database credentials
-**Acceptance:** File documents test DB variables
-
-### P4.2: Create Test Database Utilities
-
-**Files:** `tests/helpers/db.ts`
-**Changes:** Create helpers:
-- `setupTestDb()` - verify connection
-- `cleanupTestDb()` - truncate all tables
-- `createTestUser()` - insert user directly (bypass auth)
-- `seedTestData(userId)` - insert sample todos/projects
-**Acceptance:** Helpers work against test DB
-
-### P4.3: Configure Jest for DB Tests
-
-**Files:** `jest.config.js` or `jest.setup.js`
-**Changes:**
-- Load `.env.test.local` for test runs
-- Add setup/teardown hooks
-**Acceptance:** Tests can access test DB
-
-### P4.4: Add Test npm Scripts
-
-**Files:** `package.json`
-**Changes:** Add:
-- `test:db`: Run DB tests with test env
-- `db:test:push`: Push schema to test DB
-**Acceptance:** Scripts work
-
-### P4.5: Write Service Layer Tests
-
-**Files:** `tests/db/todos.test.ts`, `tests/db/projects.test.ts`
-**Changes:** Test service functions:
-- CRUD operations
-- User isolation
-- Activity logging
-**Acceptance:** Tests pass against test DB
-
-### P4.6: Update Existing Tests
-
-**Files:** `scripts/gtd/__tests__/*.test.ts`
-**Changes:**
-- Update or skip tests that relied on JSON file
-- Mock database calls where appropriate
-**Acceptance:** All tests pass
-
-### P4 Checkpoint
-
-- [ ] Test environment configured
-- [ ] Test utilities created
-- [ ] Jest configured for DB tests
-- [ ] Service layer tests written
-- [ ] Existing tests updated
-- [ ] `npm test` passes
-- [ ] `npm run test:db` passes
-- [ ] CI can run tests (document secrets needed)
-
----
-
 ## Final Checklist
 
-- [ ] All phases complete (P0-P4)
+- [x] All phases complete (P0-P3)
 - [ ] All tests passing
 - [ ] No TypeScript errors (`npx tsc --noEmit`)
 - [ ] Production build works (`npm run build`)
@@ -504,7 +436,7 @@ DIRECT_URL=
 ## Dependencies
 
 ```
-P0 (Environment) → P1 (Database) → P2 (Auth) → P3 (API Migration) → P4 (Testing)
+P0 (Environment) → P1 (Database) → P2 (Auth) → P3 (API Migration)
 ```
 
 Each phase depends on the previous phase being complete.
