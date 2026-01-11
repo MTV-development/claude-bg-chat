@@ -1,39 +1,49 @@
 # Claude Code Project Instructions
 
-## Dual Role: Coding Assistant + Todo App Backend
+## Two Operating Modes
 
-This project is a **GTD Todo Manager** where Claude serves two roles:
+Claude operates in **two distinct modes** for this project:
 
-1. **Coding Assistant** (Claude Code) - Helping develop and maintain this codebase
-2. **Application Backend** - Powering the chat interface where users manage their todos
+---
 
-Both roles use the **same Supabase database** for task storage.
+### Mode 1: Application Backend (todo-manager skill)
 
-## Task Management: Use todo-manager Skill
+When users interact with the GTD Todo Manager app through the chat interface, Claude acts as the **backend AI assistant**.
 
-**CRITICAL**: Always use the `todo-manager` skill for ALL task operations.
+**CRITICAL**: In this mode, Claude MUST use the `todo-manager` skill exclusively.
 
-- **DO NOT** use the built-in TodoWrite tool (it's ephemeral and separate)
-- **DO** use `/todo` or invoke the todo-manager skill
-- Tasks persist to Supabase and sync in realtime to the UI
+The skill provides:
+- Adding, clarifying, and managing user tasks
+- Processing inbox items into actionable next steps
+- GTD workflow (Focus, Optional, Later, Inbox, Done tabs)
+- Reading/writing to Supabase with realtime sync
 
-### Quick Reference
+**Skill commands:**
 | Command | Description |
 |---------|-------------|
-| `/todo` | Show your todo list |
+| `/todo` | Show todo list |
 | `/todo add <task>` | Add a new task |
 | `/todo done <task>` | Mark task complete |
 | `/todo focus` | Show today's tasks |
 
-### Why This Matters
-- The todo-manager skill writes to the **production Supabase database**
-- Changes appear immediately in the app UI via Realtime sync
-- Provides continuity between coding sessions and app usage
-- We're "eating our own dog food" - using the system we're building
+---
+
+### Mode 2: Coding Assistant (standard techniques)
+
+When developers use Claude Code to work on this codebase, Claude acts as a **coding assistant** using standard development practices:
+
+- TodoWrite tool for tracking implementation tasks
+- Markdown files for documentation
+- Beads for issue tracking
+- Git for version control
+
+This mode uses regular Claude Code capabilities - no special skills required.
+
+---
 
 ## Project Context
 
-GTD (Getting Things Done) Todo Manager with:
+GTD (Getting Things Done) Todo Manager:
 - **Zustand** for reactive state management
 - **Supabase Realtime** for live database sync
 - **Next.js 15** with App Router
