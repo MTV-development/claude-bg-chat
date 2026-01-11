@@ -9,7 +9,7 @@
  *   postpone <id|title> --days 7    # Next week
  */
 
-import { loadTodos, saveTodos, findItem, parseArgs, logActivity, getLocalDateString, getItemTab } from '../lib/store';
+import { findTodo, postponeTodo, parseArgs, getItemTab } from '../lib/store';
 import { CommandResult } from '../lib/types';
 
 export async function postpone(args: string[]): Promise<CommandResult> {
@@ -39,42 +39,35 @@ export async function postpone(args: string[]): Promise<CommandResult> {
     };
   }
 
-  const data = await loadTodos();
-  const item = findItem(data.items, query);
+  try {
+    // Find the item first
+    const found = await findTodo(query);
+    if (!found) {
+      return {
+        success: false,
+        error: `Item not found: "${query}"`,
+      };
+    }
 
-  if (!item) {
+    // Postpone it using its ID
+    const result = await postponeTodo(found.id, days);
+    if (!result) {
+      return {
+        success: false,
+        error: `Failed to postpone item: "${query}"`,
+      };
+    }
+
+    return {
+      success: true,
+      item: result.item,
+      tab: getItemTab(result.item),
+      warning: result.warning,
+    };
+  } catch (error) {
     return {
       success: false,
-      error: `Item not found: "${query}"`,
+      error: error instanceof Error ? error.message : 'Failed to postpone todo',
     };
   }
-
-  // Calculate new due date
-  const oldDate = item.dueDate;
-  const newDate = new Date();
-  newDate.setDate(newDate.getDate() + days);
-  item.dueDate = getLocalDateString(newDate);
-
-  // Increment postpone count
-  item.postponeCount++;
-
-  logActivity(data, item.id, 'postponed', {
-    fromDate: oldDate || 'none',
-    toDate: item.dueDate,
-  });
-
-  await saveTodos(data);
-
-  // Build response with warning if postponed too many times
-  const result: CommandResult = {
-    success: true,
-    item,
-    tab: getItemTab(item),
-  };
-
-  if (item.postponeCount >= 3) {
-    result.warning = `This task has been postponed ${item.postponeCount} times. Consider removing it or breaking it down.`;
-  }
-
-  return result;
 }

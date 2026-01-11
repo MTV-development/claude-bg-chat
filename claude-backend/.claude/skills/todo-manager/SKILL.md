@@ -21,18 +21,19 @@ I manage your personal todo list using GTD (Getting Things Done) methodology. Ta
 
 **ONLY use the CLI tools via Bash - NEVER edit data files directly:**
 ```bash
-node scripts/gtd/dist/cli.js <command> [args]
+npx tsx ../scripts/gtd/cli.ts <command> [args]
 ```
 
 All commands output JSON to stdout for easy parsing.
 
 **CRITICAL:**
 - The CLI handles ALL operations (add, remove, update, complete, etc.)
-- NEVER try to read or edit `todos.json` directly
+- The CLI uses Supabase for storage - data syncs across all devices
+- NEVER try to read or edit data files directly
 - NEVER ask for file permissions - you don't need them
 - If an operation fails, report the error simply without technical details
 
-**Note:** The CLI is pre-compiled for fast execution (~100ms). If you get "Cannot find module" errors, run `npm run gtd:build` to recompile.
+**Environment:** The `GTD_USER_ID` environment variable is automatically set by the chat API to identify the authenticated user. All operations use this to interact with the correct user's data in Supabase.
 
 ## When to Activate
 
@@ -50,7 +51,7 @@ Activate this skill when the user mentions:
 ### Add a Task
 
 ```bash
-node scripts/gtd/dist/cli.js add "Task title" [options]
+npx tsx ../scripts/gtd/cli.ts add "Task title" [options]
 ```
 
 **Options:**
@@ -61,16 +62,16 @@ node scripts/gtd/dist/cli.js add "Task title" [options]
 
 **Examples:**
 ```bash
-node scripts/gtd/dist/cli.js add "Buy groceries" --due tomorrow
-node scripts/gtd/dist/cli.js add "Plan vacation" --status inbox
-node scripts/gtd/dist/cli.js add "Read that book" --can-do-anytime
-node scripts/gtd/dist/cli.js add "Review PR" --project "Work"
+npx tsx ../scripts/gtd/cli.ts add "Buy groceries" --due tomorrow
+npx tsx ../scripts/gtd/cli.ts add "Plan vacation" --status inbox
+npx tsx ../scripts/gtd/cli.ts add "Read that book" --can-do-anytime
+npx tsx ../scripts/gtd/cli.ts add "Review PR" --project "Work"
 ```
 
 ### List Tasks
 
 ```bash
-node scripts/gtd/dist/cli.js list [options]
+npx tsx ../scripts/gtd/cli.ts list [options]
 ```
 
 **Options:**
@@ -81,15 +82,15 @@ node scripts/gtd/dist/cli.js list [options]
 
 **Examples:**
 ```bash
-node scripts/gtd/dist/cli.js list --tab focus      # On/past deadline
-node scripts/gtd/dist/cli.js list --tab optional   # Can do anytime
-node scripts/gtd/dist/cli.js list --tab inbox      # Needs clarification
+npx tsx ../scripts/gtd/cli.ts list --tab focus      # On/past deadline
+npx tsx ../scripts/gtd/cli.ts list --tab optional   # Can do anytime
+npx tsx ../scripts/gtd/cli.ts list --tab inbox      # Needs clarification
 ```
 
 ### List Projects
 
 ```bash
-node scripts/gtd/dist/cli.js projects
+npx tsx ../scripts/gtd/cli.ts projects
 ```
 
 Returns all projects with task counts.
@@ -97,13 +98,13 @@ Returns all projects with task counts.
 ### Complete a Task
 
 ```bash
-node scripts/gtd/dist/cli.js complete "<id or title>"
+npx tsx ../scripts/gtd/cli.ts complete "<id or title>"
 ```
 
 ### Uncomplete a Task
 
 ```bash
-node scripts/gtd/dist/cli.js uncomplete "<id or title>"
+npx tsx ../scripts/gtd/cli.ts uncomplete "<id or title>"
 ```
 
 ### Clarify an Inbox Item
@@ -111,24 +112,24 @@ node scripts/gtd/dist/cli.js uncomplete "<id or title>"
 Move an item from inbox to active with a concrete next action.
 
 ```bash
-node scripts/gtd/dist/cli.js clarify "<id or title>" --next-action "Concrete step" [--project "Name"]
+npx tsx ../scripts/gtd/cli.ts clarify "<id or title>" --next-action "Concrete step" [--project "Name"]
 ```
 
 **Example:**
 ```bash
-node scripts/gtd/dist/cli.js clarify "Plan vacation" --next-action "Research destinations" --project "Vacation"
+npx tsx ../scripts/gtd/cli.ts clarify "Plan vacation" --next-action "Research destinations" --project "Vacation"
 ```
 
 ### Postpone a Task
 
 ```bash
-node scripts/gtd/dist/cli.js postpone "<id or title>" --days N
+npx tsx ../scripts/gtd/cli.ts postpone "<id or title>" --days N
 ```
 
 **Examples:**
 ```bash
-node scripts/gtd/dist/cli.js postpone "Buy groceries" --days 1    # Tomorrow
-node scripts/gtd/dist/cli.js postpone "Review report" --days 7    # Next week
+npx tsx ../scripts/gtd/cli.ts postpone "Buy groceries" --days 1    # Tomorrow
+npx tsx ../scripts/gtd/cli.ts postpone "Review report" --days 7    # Next week
 ```
 
 Returns a warning if postponed 3+ times.
@@ -136,7 +137,7 @@ Returns a warning if postponed 3+ times.
 ### Update a Task
 
 ```bash
-node scripts/gtd/dist/cli.js update "<id or title>" [options]
+npx tsx ../scripts/gtd/cli.ts update "<id or title>" [options]
 ```
 
 **Options:**
@@ -150,19 +151,19 @@ node scripts/gtd/dist/cli.js update "<id or title>" [options]
 ### Remove a Task
 
 ```bash
-node scripts/gtd/dist/cli.js remove "<id or title>"
+npx tsx ../scripts/gtd/cli.ts remove "<id or title>"
 ```
 
 ### Remove a Project (all tasks in it)
 
 ```bash
-node scripts/gtd/dist/cli.js remove --project "Project Name"
+npx tsx ../scripts/gtd/cli.ts remove --project "Project Name"
 ```
 
 ### Help
 
 ```bash
-node scripts/gtd/dist/cli.js help
+npx tsx ../scripts/gtd/cli.ts help
 ```
 
 ## Smart Routing
@@ -223,10 +224,10 @@ For each task, have a brief conversation to determine:
 **Update the task using:**
 ```bash
 # If task has a deadline:
-node scripts/gtd/dist/cli.js update "<task title>" --next-action "Concrete step" --due YYYY-MM-DD
+npx tsx ../scripts/gtd/cli.ts update "<task title>" --next-action "Concrete step" --due YYYY-MM-DD
 
 # If task can be done anytime:
-node scripts/gtd/dist/cli.js update "<task title>" --next-action "Concrete step" --can-do-anytime true
+npx tsx ../scripts/gtd/cli.ts update "<task title>" --next-action "Concrete step" --can-do-anytime true
 ```
 
 **Important:** A task leaves the Inbox only when it has BOTH:
@@ -269,28 +270,30 @@ The CLI accepts:
 
 For natural language dates like "next Friday" or "Jan 15", convert them to YYYY-MM-DD format before calling the CLI.
 
-## JSON Schema (v4.0)
+## CLI Output Format
+
+All CLI commands return JSON with this structure:
 
 ```json
 {
-  "version": "4.0",
-  "lastModified": "2026-01-08T10:30:00.000Z",
-  "lastAutoReview": null,
-  "items": [
-    {
-      "id": "a1b2c3d4",
-      "title": "Plan vacation",
-      "nextAction": "Research destinations",
-      "status": "active",
-      "completed": false,
-      "project": "Vacation",
-      "dueDate": "2026-01-15",
-      "canDoAnytime": false,
-      "createdAt": "2026-01-07T10:30:00.000Z",
-      "completedAt": null,
-      "postponeCount": 0
-    }
-  ],
-  "activityLog": []
+  "success": true,
+  "item": {
+    "id": "a1b2c3d4",
+    "title": "Plan vacation",
+    "nextAction": "Research destinations",
+    "status": "active",
+    "completed": false,
+    "project": "Vacation",
+    "dueDate": "2026-01-15",
+    "canDoAnytime": false,
+    "createdAt": "2026-01-07T10:30:00.000Z",
+    "completedAt": null,
+    "postponeCount": 0
+  },
+  "tab": "focus",
+  "warning": "optional warning message"
 }
 ```
+
+For list commands, `items` array is returned instead of `item`.
+For error cases, `success: false` and `error` message is returned.

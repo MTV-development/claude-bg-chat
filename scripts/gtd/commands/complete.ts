@@ -7,7 +7,7 @@
  *   complete <id|title>
  */
 
-import { loadTodos, saveTodos, findItem, parseArgs, logActivity, getItemTab } from '../lib/store';
+import { findTodo, completeTodo, parseArgs, getItemTab } from '../lib/store';
 import { CommandResult } from '../lib/types';
 
 export async function complete(args: string[]): Promise<CommandResult> {
@@ -21,27 +21,34 @@ export async function complete(args: string[]): Promise<CommandResult> {
     };
   }
 
-  const data = await loadTodos();
-  const item = findItem(data.items, query);
+  try {
+    // Find the item first
+    const found = await findTodo(query);
+    if (!found) {
+      return {
+        success: false,
+        error: `Item not found: "${query}"`,
+      };
+    }
 
-  if (!item) {
+    // Complete it using its ID
+    const item = await completeTodo(found.id);
+    if (!item) {
+      return {
+        success: false,
+        error: `Failed to complete item: "${query}"`,
+      };
+    }
+
+    return {
+      success: true,
+      item,
+      tab: getItemTab(item),
+    };
+  } catch (error) {
     return {
       success: false,
-      error: `Item not found: "${query}"`,
+      error: error instanceof Error ? error.message : 'Failed to complete todo',
     };
   }
-
-  // Update status and completed fields
-  item.completed = true;
-  item.status = 'done';
-  item.completedAt = new Date().toISOString();
-
-  logActivity(data, item.id, 'completed');
-  await saveTodos(data);
-
-  return {
-    success: true,
-    item,
-    tab: getItemTab(item),
-  };
 }

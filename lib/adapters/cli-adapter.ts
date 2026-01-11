@@ -49,6 +49,9 @@ export class CLIAdapter implements ClaudeAdapter {
 
     const cwd = options.workingDirectory || process.cwd();
 
+    // Merge custom env with process env (custom takes precedence)
+    const env = { ...process.env, ...options.env };
+
     const startTime = Date.now();
     console.log(`[CLI] Starting claude command at ${new Date().toISOString()}`);
 
@@ -59,6 +62,7 @@ export class CLIAdapter implements ClaudeAdapter {
           try {
             const spawnResult = spawnSync('claude', args, {
               cwd,
+              env,
               encoding: 'utf8',
               timeout: options.timeout || 300000,
               maxBuffer: 50 * 1024 * 1024,

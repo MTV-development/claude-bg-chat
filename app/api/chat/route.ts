@@ -7,9 +7,15 @@
  * Supports warm CLI via --resume to reuse Claude sessions for better performance.
  */
 
+import path from 'path';
 import { CLIAdapter } from '@/lib/adapters/cli-adapter';
 import { ClaudeMessage } from '@/lib/adapters/types';
 import { SessionLogger, generateSessionId } from '@/lib/services/logger';
+import { getCurrentUser } from '@/lib/services/auth/get-current-user';
+
+// The chat API runs Claude from the claude-backend directory
+// This directory has its own CLAUDE.md focused on the todo-manager skill
+const CLAUDE_BACKEND_DIR = path.join(process.cwd(), 'claude-backend');
 
 // Session ID marker for frontend to parse
 const SESSION_MARKER = '\n<!--CLAUDE_SESSION:';
@@ -20,6 +26,12 @@ export const maxDuration = 300;
 
 export async function POST(req: Request) {
   const { messages, sessionId: existingSessionId, claudeSessionId } = await req.json();
+
+  // Get the current authenticated user
+  const currentUser = await getCurrentUser();
+  if (!currentUser) {
+    return new Response('Unauthorized', { status: 401 });
+  }
 
   // Use existing session ID or generate new one
   const sessionId = existingSessionId || generateSessionId();
@@ -62,11 +74,15 @@ export async function POST(req: Request) {
         let fullResponse = '';
 
         // Stream events from Claude
+        // Pass GTD_USER_ID so the CLI can interact with Supabase on behalf of the user
         for await (const event of adapter.chat(claudeMessages, {
           sessionId,
-          workingDirectory: process.cwd(),
+          workingDirectory: CLAUDE_BACKEND_DIR,
           allowedTools: ['Read', 'Write', 'Bash', 'Skill', 'Glob', 'Grep'],
           claudeSessionId: currentClaudeSessionId,
+          env: {
+            GTD_USER_ID: currentUser.userId,
+          },
         })) {
           switch (event.type) {
             case 'session_init':

@@ -26,6 +26,7 @@ export interface ClaudeAdapterOptions {
   allowedTools?: string[];
   timeout?: number;
   claudeSessionId?: string; // Claude's session ID to resume (from previous session_init event)
+  env?: Record<string, string>; // Additional environment variables to pass to the CLI
 }
 
 export interface ClaudeAdapter {

@@ -9,6 +9,10 @@ module.exports = {
       roots: ['<rootDir>/scripts/gtd'],
       testMatch: ['**/__tests__/**/*.test.ts'],
       moduleFileExtensions: ['ts', 'js', 'json'],
+      moduleNameMapper: {
+        '^@/(.*)$': '<rootDir>/$1',
+      },
+      setupFilesAfterEnv: ['<rootDir>/scripts/gtd/__tests__/setup.ts'],
     },
     // React components - jsdom environment
     {

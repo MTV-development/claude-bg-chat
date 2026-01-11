@@ -2,7 +2,7 @@
 
 **Spec:** [2026-01-11-3a5d-zustand-and-reactive-db-spec.md](./2026-01-11-3a5d-zustand-and-reactive-db-spec.md)
 **Created:** 2026-01-11
-**Status:** Complete
+**Status:** In Progress (P0-P6 Complete, P7 Pending)
 
 ## Overview
 
@@ -393,17 +393,83 @@ npm install zustand
 
 ---
 
+## Phase 7: Unify Chat and UI on Supabase (TODO)
+
+**Goal:** Make chat/skill actions and UI actions both operate on the same Supabase database
+**Verification:** E2E tests prove both pathways update Supabase and trigger realtime UI updates
+
+**Current Problem:**
+- UI actions use Supabase (via API routes and Zustand/Realtime)
+- Chat/skill actions use JSON file (`data/todos.json`) via CLI
+- These are **disconnected data stores** - changes in one don't appear in the other
+
+### P7.1: Migrate CLI to Supabase
+
+**Files:** `scripts/gtd/lib/store.ts`, `scripts/gtd/commands/*.ts`
+**Changes:**
+- Replace JSON file read/write with Supabase client calls
+- Use existing Supabase service functions from `lib/services/todos/`
+- Or create new Supabase-based store functions
+- Ensure CLI can authenticate (may need service role key for backend use)
+
+**Acceptance:** CLI commands read/write to Supabase instead of JSON.
+
+### P7.2: Update Chat API Working Directory
+
+**Files:** `app/api/chat/route.ts`
+**Changes:**
+- Change `workingDirectory` from `process.cwd()` to `path.join(process.cwd(), 'claude-backend')`
+- Ensure Claude loads from `claude-backend/` context with its own CLAUDE.md and skill
+
+**Acceptance:** Chat invokes Claude from `claude-backend/` directory.
+
+### P7.3: Update Skill Paths (if needed)
+
+**Files:** `claude-backend/.claude/skills/todo-manager/SKILL.md`
+**Changes:**
+- Verify CLI paths still work after P7.1 changes
+- Update any paths that reference old JSON-based operations
+- Ensure skill instructions reflect Supabase-based operations
+
+**Acceptance:** Skill correctly instructs Claude to use Supabase-backed CLI.
+
+### P7.4: E2E Test Chat + UI Integration
+
+**Files:** `e2e/chat-realtime.spec.ts` (new)
+**Changes:**
+- Test: Add todo via chat, verify it appears in UI via realtime
+- Test: Complete todo via chat, verify UI updates
+- Test: Add todo via UI, verify it could be listed via chat (if applicable)
+
+**Acceptance:** Both chat and UI pathways proven to work with same Supabase data.
+
+### P7 Checkpoint
+
+- [ ] CLI reads/writes to Supabase (not JSON)
+- [ ] Chat API uses `claude-backend/` directory
+- [ ] Skill loads correctly from backend context
+- [ ] E2E tests pass for chat + UI integration
+- [ ] `npm run build` passes
+- [ ] `npx tsc --noEmit` passes
+
+---
+
 ## Final Checklist
 
-- [ ] All phases complete (P0-P6)
+- [ ] All phases complete (P0-P7)
 - [ ] All tests passing
 - [ ] No TypeScript errors
 - [ ] Manual smoke test completed:
   - [ ] Login shows todos from database
-  - [ ] Adding todo via chat appears in list immediately
-  - [ ] Completing todo updates list and counts
+  - [ ] Adding todo via UI appears in list immediately (realtime)
+  - [ ] Adding todo via chat appears in list immediately (realtime)
+  - [ ] Completing todo via UI updates list and counts
+  - [ ] Completing todo via chat updates list and counts
   - [ ] Opening in second browser tab shows synced state
   - [ ] Logout clears list
 - [ ] No polling code remaining
-- [ ] E2E tests pass (`npx playwright test e2e/realtime-sync.spec.ts`)
+- [ ] E2E tests pass for UI actions (`npx playwright test e2e/realtime-sync.spec.ts`)
+- [ ] E2E tests pass for chat + UI integration (`npx playwright test e2e/chat-realtime.spec.ts`)
+- [ ] CLI uses Supabase (not JSON file)
+- [ ] Chat API uses `claude-backend/` context
 - [ ] Ready for review

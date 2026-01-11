@@ -8,7 +8,7 @@
  *   clarify <id|title> --next-action "..." [--project "Project Name"]
  */
 
-import { loadTodos, saveTodos, findItem, parseArgs, logActivity, getItemTab } from '../lib/store';
+import { findTodo, updateTodo, parseArgs, getItemTab } from '../lib/store';
 import { CommandResult } from '../lib/types';
 
 export async function clarify(args: string[]): Promise<CommandResult> {
@@ -30,36 +30,48 @@ export async function clarify(args: string[]): Promise<CommandResult> {
     };
   }
 
-  const data = await loadTodos();
-  const item = findItem(data.items, query);
+  try {
+    // Find the item first
+    const found = await findTodo(query);
+    if (!found) {
+      return {
+        success: false,
+        error: `Item not found: "${query}"`,
+      };
+    }
 
-  if (!item) {
+    // Build update input
+    const updateInput: {
+      nextAction: string;
+      status: 'active';
+      project?: string;
+    } = {
+      nextAction,
+      status: 'active',
+    };
+
+    // Optionally set project
+    if (flags.project) {
+      updateInput.project = flags.project;
+    }
+
+    const item = await updateTodo(found.id, updateInput);
+    if (!item) {
+      return {
+        success: false,
+        error: `Failed to clarify item: "${query}"`,
+      };
+    }
+
+    return {
+      success: true,
+      item,
+      tab: getItemTab(item),
+    };
+  } catch (error) {
     return {
       success: false,
-      error: `Item not found: "${query}"`,
+      error: error instanceof Error ? error.message : 'Failed to clarify todo',
     };
   }
-
-  // Set the next action and move to active
-  const oldStatus = item.status;
-  item.nextAction = nextAction;
-  item.status = 'active';
-
-  // Optionally set project
-  if (flags.project) {
-    item.project = flags.project;
-  }
-
-  logActivity(data, item.id, 'clarified', {
-    oldValue: oldStatus,
-    newValue: 'active',
-  });
-
-  await saveTodos(data);
-
-  return {
-    success: true,
-    item,
-    tab: getItemTab(item),
-  };
 }

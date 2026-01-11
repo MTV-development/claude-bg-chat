@@ -8,8 +8,8 @@
  *               [--status inbox|active] [--can-do-anytime]
  */
 
-import { loadTodos, saveTodos, generateId, parseDate, parseArgs, logActivity, getItemTab } from '../lib/store';
-import { CommandResult, TodoItem, ItemStatus } from '../lib/types';
+import { addTodo, parseDate, parseArgs, getItemTab } from '../lib/store';
+import { CommandResult, ItemStatus } from '../lib/types';
 
 export async function add(args: string[]): Promise<CommandResult> {
   const { flags, positional } = parseArgs(args);
@@ -39,41 +39,35 @@ export async function add(args: string[]): Promise<CommandResult> {
   const canDoAnytime = flags['can-do-anytime'] === 'true';
 
   // Parse status (default: active if clear action, inbox if vague)
-  let status: ItemStatus = 'active';
+  let status: 'inbox' | 'active' = 'active';
   if (flags.status) {
-    if (!['inbox', 'active', 'someday'].includes(flags.status)) {
+    if (!['inbox', 'active'].includes(flags.status)) {
       return {
         success: false,
-        error: 'Status must be inbox, active, or someday',
+        error: 'Status must be inbox or active',
       };
     }
-    status = flags.status as ItemStatus;
+    status = flags.status as 'inbox' | 'active';
   }
 
-  // Create new item
-  const item: TodoItem = {
-    id: generateId(),
-    title,
-    nextAction: status === 'inbox' ? null : title,
-    status,
-    completed: false,
-    project,
-    dueDate,
-    canDoAnytime,
-    createdAt: new Date().toISOString(),
-    completedAt: null,
-    postponeCount: 0,
-  };
+  try {
+    const item = await addTodo({
+      title,
+      dueDate,
+      canDoAnytime,
+      project,
+      status,
+    });
 
-  // Load, add, save
-  const data = await loadTodos();
-  data.items.push(item);
-  logActivity(data, item.id, 'created');
-  await saveTodos(data);
-
-  return {
-    success: true,
-    item,
-    tab: getItemTab(item),
-  };
+    return {
+      success: true,
+      item,
+      tab: getItemTab(item),
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to add todo',
+    };
+  }
 }
