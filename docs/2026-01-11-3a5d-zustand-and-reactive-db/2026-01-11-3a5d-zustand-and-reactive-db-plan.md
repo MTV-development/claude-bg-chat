@@ -346,9 +346,56 @@ npm install zustand
 
 ---
 
+## Phase 6: E2E Testing
+
+**Goal:** Create automated end-to-end tests verifying realtime sync functionality
+**Verification:** Playwright tests pass, demonstrating realtime updates work without polling
+
+### P6.1: Set Up E2E Test Bypass
+
+**Files:** `middleware.ts`, `lib/hooks/useUser.ts`, `lib/services/auth/get-current-user.ts`
+**Changes:**
+- Add `NEXT_PUBLIC_E2E_TEST_USER_ID` environment variable support
+- Middleware bypasses auth when E2E user ID is set (development only)
+- Client-side `useUser` hook returns mock user in E2E mode
+- Server-side `getCurrentUser` returns E2E user for API calls
+
+**Acceptance:** Tests can run without requiring real authentication.
+
+### P6.2: Create Realtime Sync E2E Tests
+
+**Files:** `e2e/realtime-sync.spec.ts` (new)
+**Changes:**
+- Test: Initial load shows todos from Supabase
+- Test: Adding a todo shows up immediately via realtime (not page refresh)
+- Test: Completing a todo updates via realtime
+
+**Acceptance:** All three tests pass with `npx playwright test`.
+
+### P6.3: Create E2E Testing Documentation
+
+**Files:** `docs/current/e2e-testing.md` (new), `docs/current/overview.md`
+**Changes:**
+- Document E2E test bypass setup
+- Document how to run E2E tests
+- Document troubleshooting common issues
+- Add reference to E2E testing doc in overview
+
+**Acceptance:** Documentation is complete and accurate.
+
+### P6 Checkpoint
+
+- [ ] E2E bypass working in middleware, client hooks, and server API
+- [ ] All 3 realtime sync tests pass
+- [ ] E2E testing playbook documented
+- [ ] `npm run build` passes
+- [ ] `npx tsc --noEmit` passes
+
+---
+
 ## Final Checklist
 
-- [ ] All phases complete (P0-P5)
+- [ ] All phases complete (P0-P6)
 - [ ] All tests passing
 - [ ] No TypeScript errors
 - [ ] Manual smoke test completed:
@@ -358,4 +405,5 @@ npm install zustand
   - [ ] Opening in second browser tab shows synced state
   - [ ] Logout clears list
 - [ ] No polling code remaining
+- [ ] E2E tests pass (`npx playwright test e2e/realtime-sync.spec.ts`)
 - [ ] Ready for review

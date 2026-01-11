@@ -14,6 +14,7 @@
 | P3    | Complete | 2026-01-11 | 2026-01-11 | Provider integration |
 | P4    | Complete | 2026-01-11 | 2026-01-11 | Migrate TodoList component |
 | P5    | Complete | 2026-01-11 | 2026-01-11 | Cleanup and polish |
+| P6    | Complete | 2026-01-11 | 2026-01-11 | E2E testing with Playwright |
 
 ## Session Log
 
@@ -21,8 +22,8 @@ Record each implementation session here.
 
 ## Session: 2026-01-11
 
-**Phases Covered:** P0, P1, P2, P3, P4, P5
-**Status:** In Progress
+**Phases Covered:** P0, P1, P2, P3, P4, P5, P6
+**Status:** Complete
 
 ### Completed
 - [x] P0.1: Ran pre-flight commands (build, tsc, tests) - all pass
@@ -43,6 +44,9 @@ Record each implementation session here.
 - [x] P5.2: Shows "Connecting..." vs "Synced in realtime"
 - [x] P5.3: Logout cleanup in TodoSyncProvider
 - [x] P5.4: Cleaned up unused imports
+- [x] P6.1: Added E2E test bypass to middleware, useUser hook, and getCurrentUser
+- [x] P6.2: Created e2e/realtime-sync.spec.ts with 3 tests (initial load, add todo, complete todo)
+- [x] P6.3: Created docs/current/e2e-testing.md playbook and updated overview.md
 
 ### Issues Encountered
 - **Issue:** Build failed due to missing DATABASE_URL
@@ -51,11 +55,18 @@ Record each implementation session here.
 - **Issue:** RealtimePostgresChangesPayload generic constraint error
   - **Cause:** TypeScript generic constraint `{ [key: string]: unknown }` incompatible with interface types
   - **Solution:** Created simpler RealtimePayload interface with explicit fields
+- **Issue:** E2E test "add todo" not receiving realtime updates
+  - **Cause:** Server-side getCurrentUser() wasn't bypassing auth in E2E mode
+  - **Solution:** Added E2E bypass to lib/services/auth/get-current-user.ts
+- **Issue:** E2E test clicking wrong "Add" button
+  - **Cause:** Multiple buttons with text "Add" on page (modal + chat example)
+  - **Solution:** Used more specific locator targeting the modal context
 
 ### Test Results
 - Build: PASS
 - Type Check: PASS
-- Tests: PASS (101/101)
+- Unit Tests: PASS (101/101)
+- E2E Tests: PASS (3/3)
 
 ---
 
