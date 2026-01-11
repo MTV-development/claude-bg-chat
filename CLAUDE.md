@@ -1,30 +1,39 @@
 # Claude Code Project Instructions
 
+## Dual Role: Coding Assistant + Todo App Backend
+
+This project is a **GTD Todo Manager** where Claude serves two roles:
+
+1. **Coding Assistant** (Claude Code) - Helping develop and maintain this codebase
+2. **Application Backend** - Powering the chat interface where users manage their todos
+
+Both roles use the **same Supabase database** for task storage.
+
 ## Task Management: Use todo-manager Skill
 
-**IMPORTANT**: This project uses the `todo-manager` skill for all task tracking and planning.
+**CRITICAL**: Always use the `todo-manager` skill for ALL task operations.
 
-When working on this codebase:
+- **DO NOT** use the built-in TodoWrite tool (it's ephemeral and separate)
+- **DO** use `/todo` or invoke the todo-manager skill
+- Tasks persist to Supabase and sync in realtime to the UI
 
-1. **Use `/todo` or the todo-manager skill** for tracking work items, not the built-in TodoWrite tool
-2. **Add tasks** with natural language: "add task: implement feature X"
-3. **View tasks** by tab: Focus, Optional, Later, Inbox, Done
-4. **Complete tasks** when done: "mark done: task description"
+### Quick Reference
+| Command | Description |
+|---------|-------------|
+| `/todo` | Show your todo list |
+| `/todo add <task>` | Add a new task |
+| `/todo done <task>` | Mark task complete |
+| `/todo focus` | Show today's tasks |
 
-### Quick Commands
-- `/todo` - Show your todo list
-- `/todo add <task>` - Add a new task
-- `/todo done <task>` - Mark task complete
-- `/todo focus` - Show today's tasks
-
-### Why todo-manager?
-- Persists across sessions (stored in Supabase)
-- Integrates with the GTD workflow this app implements
-- Provides visibility into task history and patterns
+### Why This Matters
+- The todo-manager skill writes to the **production Supabase database**
+- Changes appear immediately in the app UI via Realtime sync
+- Provides continuity between coding sessions and app usage
+- We're "eating our own dog food" - using the system we're building
 
 ## Project Context
 
-This is a GTD (Getting Things Done) Todo Manager with:
+GTD (Getting Things Done) Todo Manager with:
 - **Zustand** for reactive state management
 - **Supabase Realtime** for live database sync
 - **Next.js 15** with App Router
