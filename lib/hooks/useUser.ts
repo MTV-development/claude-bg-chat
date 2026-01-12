@@ -3,27 +3,59 @@
 /**
  * useUser Hook
  *
- * Provides the current authenticated user from Supabase.
- * Subscribes to auth state changes for automatic updates.
+ * Provides the current authenticated user with their APP user ID.
+ * This is important because:
+ * - Supabase auth returns auth.users.id
+ * - Our database uses users.id (app user ID)
+ * - Realtime filters need the app user ID to work correctly
  *
  * Supports E2E test mode with NEXT_PUBLIC_E2E_TEST_USER_ID env var.
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import type { User } from '@supabase/supabase-js';
 
 // E2E test mode - uses a mock user ID for testing
 const E2E_TEST_USER_ID = process.env.NEXT_PUBLIC_E2E_TEST_USER_ID;
 
+interface AppUser {
+  id: string;        // App user ID (users.id) - USE THIS for database queries
+  authId: string;    // Supabase auth ID (auth.users.id)
+  email: string | null;
+}
+
 interface UseUserReturn {
-  user: User | null;
+  user: AppUser | null;
   isLoading: boolean;
 }
 
 export function useUser(): UseUserReturn {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AppUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Fetch app user ID from our API
+  const fetchAppUser = useCallback(async () => {
+    try {
+      const response = await fetch('/api/auth/me');
+      if (response.ok) {
+        const data = await response.json();
+        console.log('[useUser] Got app user:', data.userId);
+        setUser({
+          id: data.userId,
+          authId: data.authId,
+          email: data.email,
+        });
+      } else {
+        console.log('[useUser] Not authenticated');
+        setUser(null);
+      }
+    } catch (error) {
+      console.error('[useUser] Error fetching app user:', error);
+      setUser(null);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     // E2E test mode - return mock user immediately
@@ -31,35 +63,37 @@ export function useUser(): UseUserReturn {
       console.log('[useUser] E2E test mode - using mock user:', E2E_TEST_USER_ID);
       setUser({
         id: E2E_TEST_USER_ID,
+        authId: E2E_TEST_USER_ID,
         email: 'test@example.com',
-        app_metadata: {},
-        user_metadata: {},
-        aud: 'authenticated',
-        created_at: new Date().toISOString(),
-      } as User);
+      });
       setIsLoading(false);
       return;
     }
 
     const supabase = createClient();
 
-    // Get initial user
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setUser(user);
-      setIsLoading(false);
-    });
+    // Initial fetch of app user
+    fetchAppUser();
 
     // Subscribe to auth state changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('[useUser] Auth state change:', event, session?.user?.id);
+      if (session?.user) {
+        // User logged in - fetch their app user ID
+        fetchAppUser();
+      } else {
+        // User logged out
+        setUser(null);
+        setIsLoading(false);
+      }
     });
 
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
+  }, [fetchAppUser]);
 
   return { user, isLoading };
 }
