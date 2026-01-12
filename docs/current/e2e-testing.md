@@ -9,39 +9,45 @@ This document describes how to run end-to-end tests for the GTD Todo Manager app
 - Playwright browsers installed (`npx playwright install`)
 - Supabase project configured with `todos` and `projects` tables in the realtime publication
 
-## E2E Test Bypass Mode
+## E2E Test Architecture
 
-The application supports an E2E test mode that bypasses authentication to enable automated testing without requiring real user login.
+E2E tests run on a **separate port (3001)** with mock authentication enabled. This ensures:
+- Normal development on port 3000 uses real authentication
+- E2E tests have consistent, repeatable test data
+- No manual toggling of test mode required
 
 ### How It Works
 
-When `NEXT_PUBLIC_E2E_TEST_USER_ID` is set in `.env.local`:
+Playwright automatically handles everything:
+
+1. **Playwright config** (`playwright.config.ts`) sets `NEXT_PUBLIC_E2E_TEST_USER_ID` via `webServer.env`
+2. **Separate port** - Tests run on port 3001, dev server runs on port 3000
+3. **Fresh server** - Playwright always starts a fresh server for tests (`reuseExistingServer: false`)
+
+When the test server starts with `NEXT_PUBLIC_E2E_TEST_USER_ID`:
 
 1. **Middleware** (`middleware.ts`) - Skips auth checks and allows all routes
 2. **Client-side useUser hook** (`lib/hooks/useUser.ts`) - Returns a mock user immediately
 3. **Server-side getCurrentUser** (`lib/services/auth/get-current-user.ts`) - Uses the E2E user ID for API calls
 
-This ensures the entire auth flow is bypassed consistently across client and server.
+### E2E Test User
 
-### Setting Up E2E Test Mode
+The test user ID is configured in `playwright.config.ts`:
 
-1. Find a valid user ID from your database:
-   ```bash
-   # Using node with Supabase client
-   node -e "
-   const { createClient } = require('@supabase/supabase-js');
-   const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
-   supabase.from('todos').select('user_id').limit(1).then(r => console.log(r.data));
-   "
-   ```
+```typescript
+const E2E_TEST_USER_ID = '0b86d7e4-68ae-4da4-b30f-3f47da723f84';
+```
 
-2. Add the user ID to `.env.local`:
-   ```env
-   # E2E Test User ID (bypasses auth in development)
-   NEXT_PUBLIC_E2E_TEST_USER_ID=your-uuid-here
-   ```
+This user must exist in your database's `users` table. To create or find a valid user:
 
-3. Restart the dev server to pick up the new environment variable.
+```bash
+# Using node with Supabase client
+node -e "
+const { createClient } = require('@supabase/supabase-js');
+const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+supabase.from('users').select('id, email').limit(5).then(r => console.log(r.data));
+"
+```
 
 ## Running E2E Tests
 
@@ -57,8 +63,8 @@ npx playwright test --headed
 # Run a specific test file
 npx playwright test e2e/realtime-sync.spec.ts
 
-# Run with browser visible (headed mode)
-npx playwright test e2e/realtime-sync.spec.ts --headed
+# Run chat tests (use single worker to avoid Claude CLI contention)
+npx playwright test e2e/chat-ui-integration.spec.ts --workers=1
 
 # Run with detailed reporter
 npx playwright test --reporter=line
@@ -72,43 +78,45 @@ npx playwright test e2e/realtime-sync.spec.ts --debug
 
 ### Available Test Files
 
-| File | Description |
-|------|-------------|
-| `e2e/realtime-sync.spec.ts` | Tests realtime sync functionality (initial load, add todo, complete todo) |
-| `e2e/debug-realtime.spec.ts` | Debug test that captures console logs and screenshots |
+| File | Description | Notes |
+|------|-------------|-------|
+| `e2e/realtime-sync.spec.ts` | Tests realtime sync (initial load, add todo, complete todo) | Fast (~15s) |
+| `e2e/chat-ui-integration.spec.ts` | Tests chat UI and Claude CLI integration | Use `--workers=1` |
 
 ## Test Structure
 
 ### realtime-sync.spec.ts
 
-This test file verifies the core realtime functionality:
+Tests core realtime functionality:
 
 1. **Initial Load Test** - Verifies todos are loaded from Supabase on page load
-2. **Add Todo Test** - Creates a new todo and verifies it appears via realtime (not page refresh)
+2. **Add Todo Test** - Creates a new todo and verifies it appears via realtime
 3. **Complete Todo Test** - Completes a todo and verifies the update via realtime
 
-### Key Selectors
+### chat-ui-integration.spec.ts
 
-The tests use these selectors to interact with the UI:
+Tests chat interface and Claude CLI integration:
+
+1. **Chat Interface** - UI components visible and functional
+2. **Chat Interactions** - Sending messages, example buttons
+3. **Chat Todo Integration** - Chat + Todo panel interaction
+4. **Chat with Claude** - Actual Claude CLI responses (slow, use `--workers=1`)
+
+### Key Selectors
 
 ```typescript
 // Wait for sync status
 await expect(page.locator('text=Synced in realtime')).toBeVisible();
 
-// Click the FAB (floating action button)
-const fabButton = page.locator('button').filter({
-  has: page.locator('svg path[d="M12 4v16m8-8H4"]')
-});
+// Chat input
+const chatInput = page.locator('input[placeholder="Type your message..."]');
+
+// Send button
+const sendButton = page.locator('button:has-text("Send")');
 
 // Modal interactions
 const modal = page.locator('div.fixed').filter({
   has: page.locator('h2:has-text("Add Task")')
-});
-await modal.locator('button:has-text("Add")').click();
-
-// Find todo items
-const todoItems = page.locator('ul > li').filter({
-  has: page.locator('p.font-medium')
 });
 ```
 
@@ -116,7 +124,7 @@ const todoItems = page.locator('ul > li').filter({
 
 ### Console Log Capture
 
-Tests capture console logs for debugging. Add handlers like:
+Tests capture console logs for debugging:
 
 ```typescript
 page.on('console', (msg) => {
@@ -129,15 +137,13 @@ page.on('console', (msg) => {
 
 ### Screenshots
 
-Screenshots are automatically captured on failure. You can also take manual screenshots:
+Screenshots are automatically captured on failure. Manual screenshots:
 
 ```typescript
 await page.screenshot({ path: 'e2e/debug-screenshot.png', fullPage: true });
 ```
 
 ### Viewing Test Results
-
-After running tests, view the HTML report:
 
 ```bash
 npx playwright show-report
@@ -147,56 +153,60 @@ npx playwright show-report
 
 ### "Synced in realtime" never appears
 
-1. Check that `NEXT_PUBLIC_E2E_TEST_USER_ID` is set correctly
-2. Verify the user ID exists in your `users` table
-3. Check browser console for WebSocket connection errors
-4. Ensure Supabase Realtime is enabled and tables are in the publication
+1. Verify the E2E test user exists in `users` table
+2. Check browser console for WebSocket errors
+3. Ensure Supabase Realtime is enabled
 
 ### API returns 401 Unauthorized
 
-1. The E2E user ID might not exist in the `users` table
-2. Server needs restart to pick up env var changes
-3. Check `getCurrentUser` is returning the mock user in E2E mode
+1. The E2E user ID might not exist in `users` table
+2. Check `getCurrentUser` logging shows "E2E test mode"
 
-### Todo not appearing after add
+### Chat tests timing out
 
-1. Check console for `[RealtimeSync] Received todo change: INSERT`
-2. If no INSERT event, check Supabase Realtime publication includes `todos` table
-3. Verify the realtime filter matches: `filter: user_id=eq.${userId}`
+1. Run with `--workers=1` (Claude CLI is resource-intensive)
+2. Check server logs for Claude CLI errors
+3. Increase test timeout: `test.setTimeout(300000)`
 
-### Tests timing out
+### Tests failing randomly
 
-1. Increase timeouts in assertions: `{ timeout: 15000 }`
-2. Check if modal selectors are correct (UI may have changed)
-3. Run with `--headed` to see what's happening visually
+1. Use `--workers=1` for deterministic execution
+2. Add explicit waits for realtime updates
+3. Check for race conditions in assertions
 
 ## Playwright Configuration
 
-The test configuration is in `playwright.config.ts`:
-
 ```typescript
+// playwright.config.ts
+const E2E_TEST_USER_ID = '0b86d7e4-68ae-4da4-b30f-3f47da723f84';
+const E2E_PORT = 3001;
+
 export default defineConfig({
   testDir: './e2e',
   use: {
-    baseURL: 'http://localhost:3000',
+    baseURL: `http://localhost:${E2E_PORT}`,
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
   },
   webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:3000',
-    reuseExistingServer: !process.env.CI,
+    command: `npx next dev --port ${E2E_PORT}`,
+    url: `http://localhost:${E2E_PORT}`,
+    reuseExistingServer: false,
+    env: {
+      NEXT_PUBLIC_E2E_TEST_USER_ID: E2E_TEST_USER_ID,
+    },
+    timeout: 120000,
   },
 });
 ```
 
-The `webServer` config automatically starts the dev server if it's not running.
+## Development vs E2E Mode
 
-## Disabling E2E Mode
+| Aspect | Development (port 3000) | E2E Tests (port 3001) |
+|--------|-------------------------|------------------------|
+| Authentication | Real Supabase auth | Mocked with test user |
+| User ID | From Supabase session | `E2E_TEST_USER_ID` |
+| Started by | `npm run dev` | Playwright automatically |
+| Purpose | Manual testing/development | Automated tests |
 
-To return to normal authentication:
-
-1. Remove or comment out `NEXT_PUBLIC_E2E_TEST_USER_ID` from `.env.local`
-2. Restart the dev server
-
-**Warning**: Never commit `.env.local` with `NEXT_PUBLIC_E2E_TEST_USER_ID` set to version control, as this bypasses authentication.
+**Important**: Never set `NEXT_PUBLIC_E2E_TEST_USER_ID` in `.env.local` - it will bypass authentication for normal development!

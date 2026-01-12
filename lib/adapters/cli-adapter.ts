@@ -54,6 +54,10 @@ export class CLIAdapter implements ClaudeAdapter {
 
     const startTime = Date.now();
     console.log(`[CLI] Starting claude command at ${new Date().toISOString()}`);
+    console.log(`[CLI] Working directory: ${cwd}`);
+    console.log(`[CLI] Args: ${args.join(' ')}`);
+    console.log(`[CLI] Prompt length: ${prompt.length} chars`);
+    console.log(`[CLI] Prompt preview: ${prompt.substring(0, 200)}...`);
 
     try {
       // Run spawnSync in next tick to allow event loop to process
@@ -82,6 +86,12 @@ export class CLIAdapter implements ClaudeAdapter {
 
       const elapsed = Date.now() - startTime;
       console.log(`[CLI] Claude command completed in ${elapsed}ms`);
+      console.log(`[CLI] Exit status: ${result.status}`);
+      console.log(`[CLI] Stdout length: ${result.stdout.length} chars`);
+      console.log(`[CLI] Stderr length: ${result.stderr.length} chars`);
+      if (result.stderr) {
+        console.log(`[CLI] Stderr: ${result.stderr.substring(0, 500)}`);
+      }
 
       if (result.status !== 0 && !result.stdout) {
         yield { type: 'error', error: result.stderr || `CLI exited with code ${result.status}` };
