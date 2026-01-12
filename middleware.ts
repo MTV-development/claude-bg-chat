@@ -7,7 +7,18 @@ const publicRoutes = ['/login', '/auth'];
 // Routes that should redirect to main app if already authenticated
 const authRoutes = ['/login'];
 
+// E2E test bypass - only in development
+// Uses NEXT_PUBLIC_ prefix so it's available on both server and client
+const E2E_TEST_USER_ID = process.env.NEXT_PUBLIC_E2E_TEST_USER_ID;
+const isE2ETestMode = process.env.NODE_ENV === 'development' && E2E_TEST_USER_ID;
+
 export async function middleware(request: NextRequest) {
+  // E2E test bypass - skip auth check when test user ID is set
+  if (isE2ETestMode) {
+    console.log('[Middleware] E2E test mode - bypassing auth');
+    return NextResponse.next();
+  }
+
   const { user, supabaseResponse } = await updateSession(request);
   const { pathname } = request.nextUrl;
 

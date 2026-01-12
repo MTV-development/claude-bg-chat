@@ -1,9 +1,18 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import PostponeDropdown from "./PostponeDropdown";
 import ConfirmationModal from "./ConfirmationModal";
 import AddItemModal from "./AddItemModal";
+import {
+  useTodosForTab,
+  useTabCounts,
+  useProjectStats,
+  useTodosForProject,
+  useAllProjects,
+  useIsConnected,
+  type TabType as StoreTabType,
+} from "@/lib/stores";
 
 type TabType =
   | "focus"
@@ -14,34 +23,21 @@ type TabType =
   | "done"
   | "howto";
 
-interface TodoItem {
+// Extended todo item type with project name for display
+interface TodoItemDisplay {
   id: string;
   title: string;
   nextAction: string | null;
   status: "inbox" | "active" | "done" | "someday";
   completed: boolean;
   project: string | null;
+  projectId: string | null;
   dueDate: string | null;
   canDoAnytime: boolean;
   createdAt: string;
   completedAt: string | null;
   postponeCount: number;
 }
-
-interface TodoData {
-  items: TodoItem[];
-  lastModified: string;
-  count: number;
-}
-
-interface Project {
-  name: string;
-  taskCount: number;
-  completedCount: number;
-  hasNextAction: boolean;
-}
-
-const POLL_INTERVAL = 2000;
 
 interface TodoListProps {
   onClarifyRequest?: (text: string) => void;
@@ -228,145 +224,94 @@ export default function TodoList({
   onChatAddRequest,
 }: TodoListProps) {
   const [activeTab, setActiveTab] = useState<TabType>("focus");
-  const [todos, setTodos] = useState<TodoItem[]>([]);
-  const [tabCounts, setTabCounts] = useState<Record<TabType, number>>({
-    focus: 0,
-    later: 0,
-    optional: 0,
-    inbox: 0,
-    projects: 0,
-    done: 0,
-    howto: 0,
-  });
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [confirmationItem, setConfirmationItem] = useState<TodoItem | null>(
+  const [confirmationItem, setConfirmationItem] = useState<TodoItemDisplay | null>(
     null
   );
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [selectedProject, setSelectedProject] = useState<string | null>(null);
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [addMode, setAddMode] = useState<"task" | "project">("task");
 
-  const fetchTodos = useCallback(async () => {
-    // Skip fetching for howto tab
-    if (activeTab === "howto") {
-      setTodos([]);
-      setProjects([]);
-      setIsLoading(false);
-      return;
-    }
+  // Get data from Zustand store
+  const isConnected = useIsConnected();
+  const storeTodos = useTodosForTab(
+    activeTab !== "projects" && activeTab !== "howto"
+      ? (activeTab as StoreTabType)
+      : "focus"
+  );
+  const storeTabCounts = useTabCounts();
+  const projectStats = useProjectStats();
+  const allProjects = useAllProjects();
+  const projectTodos = useTodosForProject(selectedProjectId);
 
-    // Handle projects tab
-    if (activeTab === "projects") {
-      try {
-        if (selectedProject) {
-          // Fetch tasks for specific project
-          const response = await fetch(
-            `/api/todos/projects?name=${encodeURIComponent(selectedProject)}`
-          );
-          if (!response.ok) throw new Error("Failed to fetch project tasks");
-          const data = await response.json();
-          setTodos(data.items);
-        } else {
-          // Fetch projects list
-          const response = await fetch("/api/todos/projects");
-          if (!response.ok) throw new Error("Failed to fetch projects");
-          const data = await response.json();
-          setProjects(data.projects);
-          setTodos([]);
-        }
-        setError(null);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Unknown error");
-      } finally {
-        setIsLoading(false);
-      }
-      return;
+  // Convert store todos to display format with project names
+  const todos: TodoItemDisplay[] = useMemo(() => {
+    if (activeTab === "howto") return [];
+    if (activeTab === "projects" && selectedProjectId) {
+      return projectTodos.map((todo) => {
+        const project = allProjects.find((p) => p.id === todo.projectId);
+        return {
+          id: todo.id,
+          title: todo.title,
+          nextAction: todo.nextAction,
+          status: todo.status ?? "inbox",
+          completed: todo.status === "done",
+          project: project?.name ?? null,
+          projectId: todo.projectId,
+          dueDate: todo.dueDate,
+          canDoAnytime: todo.canDoAnytime ?? false,
+          createdAt: todo.createdAt?.toISOString() ?? new Date().toISOString(),
+          completedAt: todo.completedAt?.toISOString() ?? null,
+          postponeCount: todo.postponeCount ?? 0,
+        };
+      });
     }
-
-    try {
-      const response = await fetch(`/api/todos?tab=${activeTab}`);
-      if (!response.ok) {
-        throw new Error("Failed to fetch todos");
-      }
-      const data: TodoData = await response.json();
-      setTodos(data.items);
-      setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Unknown error");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [activeTab, selectedProject]);
-
-  // Fetch counts for all tabs
-  const fetchCounts = useCallback(async () => {
-    try {
-      const counts: Record<TabType, number> = {
-        focus: 0,
-        later: 0,
-        optional: 0,
-        inbox: 0,
-        projects: 0,
-        done: 0,
-        howto: 0,
+    if (activeTab === "projects") return [];
+    return storeTodos.map((todo) => {
+      const project = allProjects.find((p) => p.id === todo.projectId);
+      return {
+        id: todo.id,
+        title: todo.title,
+        nextAction: todo.nextAction,
+        status: todo.status ?? "inbox",
+        completed: todo.status === "done",
+        project: project?.name ?? null,
+        projectId: todo.projectId,
+        dueDate: todo.dueDate,
+        canDoAnytime: todo.canDoAnytime ?? false,
+        createdAt: todo.createdAt?.toISOString() ?? new Date().toISOString(),
+        completedAt: todo.completedAt?.toISOString() ?? null,
+        postponeCount: todo.postponeCount ?? 0,
       };
+    });
+  }, [activeTab, storeTodos, projectTodos, selectedProjectId, allProjects]);
 
-      // Fetch all tabs in parallel (skip howto and projects)
-      await Promise.all(
-        tabs
-          .filter((tab) => tab.id !== "howto" && tab.id !== "projects")
-          .map(async (tab) => {
-            const response = await fetch(`/api/todos?tab=${tab.id}`);
-            if (response.ok) {
-              const data: TodoData = await response.json();
-              counts[tab.id] = data.count;
-            }
-          })
-      );
+  // Compute tab counts including projects count
+  const tabCounts: Record<TabType, number> = useMemo(() => ({
+    ...storeTabCounts,
+    projects: projectStats.length,
+    howto: 0,
+  }), [storeTabCounts, projectStats.length]);
 
-      // Fetch projects count separately
-      const projectsResponse = await fetch("/api/todos/projects");
-      if (projectsResponse.ok) {
-        const data = await projectsResponse.json();
-        counts.projects = data.count;
-      }
+  // Get selected project name for display
+  const selectedProject = useMemo(() => {
+    if (!selectedProjectId) return null;
+    const project = allProjects.find((p) => p.id === selectedProjectId);
+    return project?.name ?? null;
+  }, [selectedProjectId, allProjects]);
 
-      setTabCounts(counts);
-    } catch (err) {
-      console.error("Failed to fetch tab counts:", err);
-    }
-  }, []);
-
-  // Initial fetch
-  useEffect(() => {
-    fetchTodos();
-    fetchCounts();
-  }, [fetchTodos, fetchCounts]);
-
-  // Poll for updates
-  useEffect(() => {
-    const interval = setInterval(() => {
-      fetchTodos();
-      fetchCounts();
-    }, POLL_INTERVAL);
-    return () => clearInterval(interval);
-  }, [fetchTodos, fetchCounts]);
+  // Show loading state only when not connected and no data
+  const isLoading = !isConnected && storeTodos.length === 0 && activeTab !== "howto";
 
   const toggleTodo = async (id: string, completed: boolean) => {
     try {
-      const response = await fetch("/api/todos", {
+      await fetch("/api/todos", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, completed }),
       });
-      if (response.ok) {
-        fetchTodos();
-        fetchCounts();
-      }
+      // Store will be updated via Realtime subscription
     } catch (err) {
       console.error("Failed to toggle todo:", err);
     }
@@ -397,8 +342,7 @@ export default function TodoList({
         });
       }
       setSelectedIds(new Set());
-      fetchTodos();
-      fetchCounts();
+      // Store will be updated via Realtime subscription
     } catch (err) {
       console.error("Failed to update todos:", err);
     }
@@ -424,7 +368,7 @@ export default function TodoList({
   // Clear selections and selected project when tab changes
   useEffect(() => {
     setSelectedIds(new Set());
-    setSelectedProject(null);
+    setSelectedProjectId(null);
   }, [activeTab]);
 
   // Clean up stale selections when todos change
@@ -450,8 +394,7 @@ export default function TodoList({
       });
       if (response.ok) {
         const result = await response.json();
-        fetchTodos();
-        fetchCounts();
+        // Store will be updated via Realtime subscription
         return { needsConfirmation: result.needsConfirmation };
       }
     } catch (err) {
@@ -471,15 +414,12 @@ export default function TodoList({
   const handleRemoveTask = async () => {
     if (!confirmationItem) return;
     try {
-      const response = await fetch("/api/todos", {
+      await fetch("/api/todos", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: confirmationItem.id }),
       });
-      if (response.ok) {
-        fetchTodos();
-        fetchCounts();
-      }
+      // Store will be updated via Realtime subscription
     } catch (err) {
       console.error("Failed to remove todo:", err);
     } finally {
@@ -496,15 +436,12 @@ export default function TodoList({
   const handleDoToday = async (itemId: string) => {
     try {
       const today = new Date().toISOString().split("T")[0];
-      const response = await fetch("/api/todos", {
+      await fetch("/api/todos", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: itemId, dueDate: today }),
       });
-      if (response.ok) {
-        fetchTodos();
-        fetchCounts();
-      }
+      // Store will be updated via Realtime subscription
     } catch (err) {
       console.error("Failed to set task to today:", err);
     }
@@ -516,8 +453,7 @@ export default function TodoList({
   };
 
   const handleAddComplete = () => {
-    fetchTodos();
-    fetchCounts();
+    // Store will be updated via Realtime subscription
   };
 
   // Determine if we should show the floating add button
@@ -525,8 +461,8 @@ export default function TodoList({
     activeTab === "focus" ||
     activeTab === "later" ||
     activeTab === "optional" ||
-    (activeTab === "projects" && !selectedProject) ||
-    (activeTab === "projects" && selectedProject);
+    (activeTab === "projects" && !selectedProjectId) ||
+    (activeTab === "projects" && selectedProjectId);
 
   // Determine if we should show the "+ Chat" button (only on tabs with prompts, not projects)
   const showChatAddButton =
@@ -557,15 +493,6 @@ export default function TodoList({
           ></path>
         </svg>
         Loading...
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="p-4 text-theme-error">
-        <p className="font-medium">Error loading todos</p>
-        <p className="text-sm mt-1">{error}</p>
       </div>
     );
   }
@@ -619,7 +546,7 @@ export default function TodoList({
       <div className="flex-1 overflow-y-auto p-4 relative">
         {/* Always-visible action button bar */}
         {activeTab !== "howto" &&
-          !(activeTab === "projects" && !selectedProject) && (
+          !(activeTab === "projects" && !selectedProjectId) && (
             <div className="sticky top-0 z-10 mb-3 flex gap-2">
               {(() => {
                 const isDisabled = selectedIds.size === 0;
@@ -772,9 +699,9 @@ export default function TodoList({
               </div>
             </div>
           </div>
-        ) : activeTab === "projects" && !selectedProject ? (
+        ) : activeTab === "projects" && !selectedProjectId ? (
           // Projects list view
-          projects.length === 0 ? (
+          projectStats.length === 0 ? (
             <div className="text-center text-theme-text-tertiary mt-8">
               <p className="text-lg mb-2">No projects yet</p>
               <p className="text-sm">
@@ -783,10 +710,10 @@ export default function TodoList({
             </div>
           ) : (
             <ul className="space-y-2">
-              {projects.map((project) => (
+              {projectStats.map((project) => (
                 <li
-                  key={project.name}
-                  onClick={() => setSelectedProject(project.name)}
+                  key={project.id}
+                  onClick={() => setSelectedProjectId(project.id)}
                   className="border rounded-lg p-4 shadow-theme hover:shadow-theme-md transition-shadow bg-theme-bg-primary border-theme-border-primary cursor-pointer hover:bg-theme-bg-hover"
                 >
                   <div className="flex items-center justify-between">
@@ -825,11 +752,11 @@ export default function TodoList({
               ))}
             </ul>
           )
-        ) : activeTab === "projects" && selectedProject ? (
+        ) : activeTab === "projects" && selectedProjectId ? (
           // Project tasks view
           <div>
             <button
-              onClick={() => setSelectedProject(null)}
+              onClick={() => setSelectedProjectId(null)}
               className="flex items-center gap-1 text-theme-accent-primary hover:text-theme-accent-primary-hover mb-4 text-sm font-medium"
             >
               <svg
@@ -1121,14 +1048,14 @@ export default function TodoList({
             <button
               onClick={() =>
                 handleOpenAddModal(
-                  activeTab === "projects" && !selectedProject
+                  activeTab === "projects" && !selectedProjectId
                     ? "project"
                     : "task"
                 )
               }
               className="w-14 h-14 rounded-full bg-theme-accent-primary hover:bg-theme-accent-primary-hover text-theme-text-inverse shadow-theme-lg hover:shadow-theme-lg transition-all flex items-center justify-center"
               title={
-                activeTab === "projects" && !selectedProject
+                activeTab === "projects" && !selectedProjectId
                   ? "Add Project"
                   : "Add Task"
               }
@@ -1154,7 +1081,7 @@ export default function TodoList({
       {/* Footer */}
       <div className="px-4 py-2 border-t border-theme-border-primary bg-theme-bg-secondary">
         <p className="text-xs text-theme-text-tertiary text-center">
-          Auto-refreshing every {POLL_INTERVAL / 1000}s
+          {isConnected ? "Synced in realtime" : "Connecting..."}
         </p>
       </div>
 

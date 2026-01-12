@@ -8,73 +8,75 @@
  *   remove --project "Project Name"
  */
 
-import { loadTodos, saveTodos, findItem, parseArgs, logActivity } from '../lib/store';
-import { CommandResult, TodoItem } from '../lib/types';
+import { findTodo, deleteTodo, deleteProjectTodosCmd, parseArgs } from '../lib/store';
+import { CommandResult } from '../lib/types';
 
 export async function remove(args: string[]): Promise<CommandResult> {
   const { positional, flags } = parseArgs(args);
   const query = positional.join(' ').trim();
   const projectName = flags.project;
 
-  // Remove all tasks in a project
-  if (projectName) {
-    const data = await loadTodos();
-    const projectItems = data.items.filter(i => i.project === projectName);
+  try {
+    // Remove all tasks in a project
+    if (projectName) {
+      const result = await deleteProjectTodosCmd(projectName);
 
-    if (projectItems.length === 0) {
+      if (!result) {
+        return {
+          success: false,
+          error: `No project found: "${projectName}"`,
+        };
+      }
+
+      if (result.count === 0) {
+        return {
+          success: true,
+          items: [],
+          count: 0,
+        };
+      }
+
       return {
-        success: false,
-        error: `No project found: "${projectName}"`,
+        success: true,
+        items: result.items,
+        count: result.count,
       };
     }
 
-    // Remove all items in the project
-    const removedItems: TodoItem[] = [];
-    for (const item of projectItems) {
-      const index = data.items.findIndex(i => i.id === item.id);
-      if (index !== -1) {
-        data.items.splice(index, 1);
-        logActivity(data, item.id, 'deleted');
-        removedItems.push(item);
-      }
+    // Remove single item
+    if (!query) {
+      return {
+        success: false,
+        error: 'Please specify an item ID or title to remove',
+      };
     }
 
-    await saveTodos(data);
+    // Find the item first
+    const found = await findTodo(query);
+    if (!found) {
+      return {
+        success: false,
+        error: `Item not found: "${query}"`,
+      };
+    }
+
+    // Delete it using its ID
+    const deleted = await deleteTodo(found.id);
+    if (!deleted) {
+      return {
+        success: false,
+        error: `Failed to remove item: "${query}"`,
+      };
+    }
 
     return {
       success: true,
-      items: removedItems,
-      count: removedItems.length,
+      removed: found,
     };
-  }
-
-  // Remove single item
-  if (!query) {
+  } catch (error) {
     return {
       success: false,
-      error: 'Please specify an item ID or title to remove',
+      error: error instanceof Error ? error.message : 'Failed to remove todo',
     };
   }
-
-  const data = await loadTodos();
-  const item = findItem(data.items, query);
-
-  if (!item) {
-    return {
-      success: false,
-      error: `Item not found: "${query}"`,
-    };
-  }
-
-  // Remove from array
-  const index = data.items.findIndex(i => i.id === item.id);
-  data.items.splice(index, 1);
-
-  logActivity(data, item.id, 'deleted');
-  await saveTodos(data);
-
-  return {
-    success: true,
-    removed: item,
-  };
 }

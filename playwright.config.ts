@@ -1,5 +1,21 @@
 import { defineConfig, devices } from '@playwright/test';
 
+/**
+ * E2E Test Configuration
+ *
+ * IMPORTANT: E2E tests run on a separate port (3001) with mock auth enabled.
+ * This allows normal development on port 3000 to use real authentication.
+ *
+ * The E2E test user ID must exist in the database for tests to work.
+ * See: docs/current/e2e-testing.md
+ */
+
+// E2E test user - must exist in the database
+const E2E_TEST_USER_ID = '0b86d7e4-68ae-4da4-b30f-3f47da723f84';
+
+// Use separate port for E2E tests to avoid conflicting with dev server
+const E2E_PORT = 3001;
+
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: true,
@@ -19,7 +35,7 @@ export default defineConfig({
     },
   },
   use: {
-    baseURL: 'http://localhost:3000',
+    baseURL: `http://localhost:${E2E_PORT}`,
     trace: 'on-first-retry',
     /* Disable animations for consistent screenshots */
     screenshot: 'only-on-failure',
@@ -31,8 +47,15 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:3000',
-    reuseExistingServer: !process.env.CI,
+    command: `npx next dev --port ${E2E_PORT}`,
+    url: `http://localhost:${E2E_PORT}`,
+    // Always start fresh server for E2E tests to ensure correct env vars
+    reuseExistingServer: false,
+    // Set E2E test mode env vars - this enables auth bypass
+    env: {
+      NEXT_PUBLIC_E2E_TEST_USER_ID: E2E_TEST_USER_ID,
+    },
+    // Give the server more time to start (Next.js can be slow on first compile)
+    timeout: 120000,
   },
 });

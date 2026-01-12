@@ -1,19 +1,19 @@
-import { promises as fs } from 'fs';
-import path from 'path';
+/**
+ * Store Module Tests
+ *
+ * Tests for helper functions in the store module.
+ * Note: Data persistence is now handled by Supabase services, tested separately.
+ */
+
 import {
-  loadTodos,
-  saveTodos,
   generateId,
-  findItem,
   parseDate,
   parseArgs,
   getLocalDateString,
   filterByTab,
   getItemTab,
 } from '../lib/store';
-import { TodoData, TodoItem, createEmptyTodoData } from '../lib/types';
-
-const TEST_FILE = path.join(__dirname, 'test-todos.json');
+import { TodoItem } from '../lib/types';
 
 // Helper to create a test item with all v4 fields
 function createTestItem(partial: Partial<TodoItem>): TodoItem {
@@ -33,90 +33,7 @@ function createTestItem(partial: Partial<TodoItem>): TodoItem {
   };
 }
 
-describe('store', () => {
-  afterEach(async () => {
-    // Clean up test file after each test
-    try {
-      await fs.unlink(TEST_FILE);
-    } catch {
-      // File might not exist, that's ok
-    }
-  });
-
-  describe('loadTodos', () => {
-    it('returns data when file exists (migrates v1 to v4)', async () => {
-      // Write v1 format data
-      const v1Data = {
-        version: '1.0',
-        lastModified: '2026-01-01T00:00:00.000Z',
-        items: [
-          {
-            id: 'test123',
-            title: 'Test item',
-            completed: false,
-            dueDate: null,
-            createdAt: '2026-01-01T00:00:00.000Z',
-            completedAt: null,
-          },
-        ],
-      };
-      await fs.writeFile(TEST_FILE, JSON.stringify(v1Data, null, 2));
-
-      const result = await loadTodos(TEST_FILE);
-
-      // Should be migrated to v4
-      expect(result.version).toBe('4.0');
-      expect(result.items).toHaveLength(1);
-      expect(result.items[0].title).toBe('Test item');
-      // v4 fields should be populated
-      expect(result.items[0].nextAction).toBe('Test item');
-      expect(result.items[0].status).toBe('active');
-      expect(result.items[0].postponeCount).toBe(0);
-      expect(result.items[0].canDoAnytime).toBe(false);
-      expect(result.activityLog).toBeDefined();
-    });
-
-    it('returns empty v4 structure when file does not exist', async () => {
-      const result = await loadTodos(TEST_FILE);
-
-      expect(result.version).toBe('4.0');
-      expect(result.items).toHaveLength(0);
-      expect(result.lastModified).toBeDefined();
-      expect(result.activityLog).toEqual([]);
-      expect(result.lastAutoReview).toBeNull();
-    });
-  });
-
-  describe('saveTodos', () => {
-    it('writes valid JSON to file with v4 format', async () => {
-      const testData = createEmptyTodoData();
-
-      await saveTodos(testData, TEST_FILE);
-
-      const content = await fs.readFile(TEST_FILE, 'utf-8');
-      const parsed = JSON.parse(content);
-      expect(parsed.version).toBe('4.0');
-      expect(parsed.activityLog).toEqual([]);
-    });
-
-    it('updates lastModified on save', async () => {
-      const testData: TodoData = {
-        version: '4.0',
-        lastModified: '2020-01-01T00:00:00.000Z',
-        lastAutoReview: null,
-        items: [],
-        activityLog: [],
-      };
-
-      await saveTodos(testData, TEST_FILE);
-
-      const content = await fs.readFile(TEST_FILE, 'utf-8');
-      const parsed = JSON.parse(content);
-      expect(parsed.lastModified).not.toBe('2020-01-01T00:00:00.000Z');
-      expect(new Date(parsed.lastModified).getFullYear()).toBeGreaterThanOrEqual(2026);
-    });
-  });
-
+describe('store helpers', () => {
   describe('generateId', () => {
     it('returns 8-character hex string', () => {
       const id = generateId();
@@ -131,38 +48,6 @@ describe('store', () => {
         ids.add(generateId());
       }
       expect(ids.size).toBe(100);
-    });
-  });
-
-  describe('findItem', () => {
-    const items: TodoItem[] = [
-      createTestItem({ id: 'abc123', title: 'Buy groceries', nextAction: 'Buy groceries' }),
-      createTestItem({ id: 'def456', title: 'Call dentist', nextAction: 'Call dentist office' }),
-    ];
-
-    it('finds by exact ID', () => {
-      const result = findItem(items, 'abc123');
-      expect(result?.title).toBe('Buy groceries');
-    });
-
-    it('finds by exact title (case-insensitive)', () => {
-      const result = findItem(items, 'BUY GROCERIES');
-      expect(result?.id).toBe('abc123');
-    });
-
-    it('finds by partial title match', () => {
-      const result = findItem(items, 'dentist');
-      expect(result?.id).toBe('def456');
-    });
-
-    it('finds by nextAction match', () => {
-      const result = findItem(items, 'office');
-      expect(result?.id).toBe('def456');
-    });
-
-    it('returns undefined when not found', () => {
-      const result = findItem(items, 'nonexistent');
-      expect(result).toBeUndefined();
     });
   });
 

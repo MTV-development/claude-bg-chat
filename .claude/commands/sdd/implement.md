@@ -73,7 +73,11 @@ For each subtask (P1.1, P1.2, etc.):
 3. **Run incremental verification** after each significant change:
    - Type check / build check
    - Run relevant unit tests
-4. **Log progress** in the session log
+4. **Update progress document immediately** after completing each subtask:
+   - Mark the subtask checkbox as complete in the session log
+   - Add a brief comment describing what was done and any decisions made
+   - Note any issues encountered and how they were resolved
+   - This ensures work is recoverable if the session is interrupted mid-phase
 
 #### 4c. Phase Checkpoint
 
@@ -152,8 +156,11 @@ Throughout implementation, keep the progress document updated in real-time:
 
 ### Completed
 - [x] P1.1: Description of what was done
+  - Comment: Key implementation details, decisions made, or issues resolved
 - [x] P1.2: Description of what was done
+  - Comment: Why this approach was chosen, any edge cases handled
 - [x] P2.1: Description of what was done
+  - Comment: Notable changes, refactoring performed, tests added
 
 ### Test Results
 - Build: PASS
@@ -289,11 +296,14 @@ After completion (or if stopped), ask:
 
 ### Progress Transparency
 
-The progress document is your logbook. Update it:
+The progress document is your logbook. Update it **immediately** after each event:
 - When starting a phase
-- When completing a subtask
-- When encountering an issue
-- When making a decision
+- **After completing each subtask** (include a comment with what was done)
+- When encountering an issue (document it before attempting fixes)
+- When making a decision (record the rationale)
 - When completing a phase
 
-This ensures work is recoverable if the session is interrupted.
+**CRITICAL:** Do not batch progress updates. Update the progress document after EACH subtask completion, not at the end of a phase. Include a brief comment explaining what was implemented, any decisions made, or issues resolved. This ensures:
+- Work is recoverable if the session is interrupted mid-phase
+- Future sessions have context for what was already done
+- Issues and decisions are captured while they're fresh

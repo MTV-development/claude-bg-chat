@@ -1,85 +1,51 @@
 /**
  * GTD Store Module
  *
- * Single source of truth for reading/writing todos.json
- * Handles migration from v1 to v2 automatically
+ * This module provides the interface for GTD CLI commands.
+ * It uses Supabase services for data persistence.
+ *
+ * Requires GTD_USER_ID environment variable to be set.
  */
 
-import { promises as fs } from 'fs';
-import path from 'path';
-import { TodoData, TodoItem, ActivityLogEntry, TabType, createEmptyTodoData } from './types';
-import { ensureV4 } from './migrate';
-
-const DATA_FILE = path.join(process.cwd(), 'data', 'todos.json');
+import { createTodo as createTodoService, type CreateTodoInput } from '@/lib/services/todos/create-todo';
+import { listTodos as listTodosService, getItemTab as getItemTabService } from '@/lib/services/todos/list-todos';
+import { updateTodo as updateTodoService, type UpdateTodoInput } from '@/lib/services/todos/update-todo';
+import { deleteTodo as deleteTodoService } from '@/lib/services/todos/delete-todo';
+import { postponeTodo as postponeTodoService } from '@/lib/services/todos/postpone-todo';
+import { findTodo as findTodoService, type FoundTodo } from '@/lib/services/todos/find-todo';
+import { getOrCreateProject } from '@/lib/services/projects/get-or-create-project';
+import { listProjects as listProjectsService } from '@/lib/services/projects/list-projects';
+import { deleteProjectTodos } from '@/lib/services/projects/delete-project-todos';
+import { TodoItem, TabType, CommandResult } from './types';
 
 /**
- * Load todos from data file (auto-migrates to v4)
+ * Get the current user ID from environment variable
  */
-export async function loadTodos(filePath: string = DATA_FILE): Promise<TodoData> {
-  try {
-    const content = await fs.readFile(filePath, 'utf-8');
-    const rawData = JSON.parse(content);
-    // Auto-migrate to v4 if needed
-    return ensureV4(rawData);
-  } catch (error: unknown) {
-    // Check for file not found error
-    const nodeError = error as NodeJS.ErrnoException;
-    if (nodeError.code === 'ENOENT') {
-      // File doesn't exist, return empty v4 structure
-      return createEmptyTodoData();
-    }
-    throw error;
+export function getUserId(): string {
+  const userId = process.env.GTD_USER_ID;
+  if (!userId) {
+    throw new Error('GTD_USER_ID environment variable is required');
   }
+  return userId;
 }
 
 /**
- * Save todos to data file
+ * Convert a service todo to CLI TodoItem format
  */
-export async function saveTodos(data: TodoData, filePath: string = DATA_FILE): Promise<void> {
-  const updated: TodoData = {
-    ...data,
-    version: '4.0',
-    lastModified: new Date().toISOString(),
+function toTodoItem(todo: FoundTodo | Awaited<ReturnType<typeof listTodosService>>[number]): TodoItem {
+  return {
+    id: todo.id,
+    title: todo.title,
+    nextAction: todo.nextAction,
+    status: todo.status,
+    completed: todo.completed,
+    project: todo.project ?? null,
+    dueDate: todo.dueDate,
+    canDoAnytime: todo.canDoAnytime,
+    createdAt: todo.createdAt,
+    completedAt: todo.completedAt,
+    postponeCount: todo.postponeCount,
   };
-  await fs.writeFile(filePath, JSON.stringify(updated, null, 2), 'utf-8');
-}
-
-/**
- * Generate a unique 8-character hex ID
- */
-export function generateId(): string {
-  return Math.random().toString(16).substring(2, 10);
-}
-
-/**
- * Find an item by ID or title (partial match)
- */
-export function findItem(items: TodoItem[], query: string): TodoItem | undefined {
-  // Try exact ID match first
-  const byId = items.find(item => item.id === query);
-  if (byId) return byId;
-
-  // Try exact title match
-  const byExactTitle = items.find(item => item.title.toLowerCase() === query.toLowerCase());
-  if (byExactTitle) return byExactTitle;
-
-  // Try exact nextAction match
-  const byExactNextAction = items.find(item =>
-    item.nextAction && item.nextAction.toLowerCase() === query.toLowerCase()
-  );
-  if (byExactNextAction) return byExactNextAction;
-
-  // Try partial title match
-  const byPartialTitle = items.find(item =>
-    item.title.toLowerCase().includes(query.toLowerCase())
-  );
-  if (byPartialTitle) return byPartialTitle;
-
-  // Try partial nextAction match
-  const byPartialNextAction = items.find(item =>
-    item.nextAction && item.nextAction.toLowerCase().includes(query.toLowerCase())
-  );
-  return byPartialNextAction;
 }
 
 /**
@@ -157,170 +123,205 @@ export function parseArgs(args: string[]): { flags: Record<string, string>; posi
 }
 
 /**
- * Log an activity
- */
-export function logActivity(
-  data: TodoData,
-  itemId: string,
-  action: ActivityLogEntry['action'],
-  details: ActivityLogEntry['details'] = {}
-): void {
-  const entry: ActivityLogEntry = {
-    id: generateId(),
-    itemId,
-    action,
-    timestamp: new Date().toISOString(),
-    details,
-  };
-  data.activityLog.push(entry);
-
-  // Keep last 1000 entries
-  if (data.activityLog.length > 1000) {
-    data.activityLog = data.activityLog.slice(-1000);
-  }
-}
-
-/**
  * Determine which tab an item belongs to
- *
- * Tab logic (v4.0):
- * - Done: status === 'done'
- * - Focus: dueDate exists AND dueDate <= today (on or past deadline)
- * - Optional: canDoAnytime === true (can be done anytime, with or without deadline)
- * - Later: dueDate exists AND dueDate > today AND NOT canDoAnytime
- * - Inbox: no dueDate AND NOT canDoAnytime (or no nextAction)
  */
 export function getItemTab(item: TodoItem): TabType {
-  const today = getLocalDateString();
-
-  // Done items go to Done tab
-  if (item.status === 'done') {
-    return 'done';
-  }
-
-  // Items without nextAction need clarification (Inbox)
-  if (!item.nextAction) {
-    return 'inbox';
-  }
-
-  // Items that can be done anytime go to Optional (regardless of deadline)
-  if (item.canDoAnytime) {
-    return 'optional';
-  }
-
-  // Items with deadline that is on or past due go to Focus
-  if (item.dueDate && item.dueDate <= today) {
-    return 'focus';
-  }
-
-  // Items with deadline in the future go to Later
-  if (item.dueDate && item.dueDate > today) {
-    return 'later';
-  }
-
-  // Items without deadline and without canDoAnytime go to Inbox
-  return 'inbox';
+  return getItemTabService(item);
 }
 
 /**
  * Filter items by tab
- *
- * Tab logic (v4.0):
- * - Focus: dueDate exists AND dueDate <= today (on or past deadline)
- * - Optional: canDoAnytime === true (can be done anytime, with or without deadline)
- * - Later: dueDate exists AND dueDate > today AND NOT canDoAnytime
- * - Inbox: no dueDate AND NOT canDoAnytime (or no nextAction)
- * - Done: status === 'done'
  */
 export function filterByTab(items: TodoItem[], tab: TabType): TodoItem[] {
-  const today = getLocalDateString();
-
-  switch (tab) {
-    case 'focus':
-      // Has deadline on or past due date
-      return items.filter(i =>
-        i.status !== 'done' &&
-        i.nextAction &&
-        i.dueDate &&
-        i.dueDate <= today
-      );
-
-    case 'later':
-      // Has deadline in the future AND not canDoAnytime
-      return items.filter(i =>
-        i.status !== 'done' &&
-        i.nextAction &&
-        i.dueDate &&
-        i.dueDate > today &&
-        !i.canDoAnytime
-      );
-
-    case 'optional':
-      // Can be done anytime (with or without deadline)
-      return items.filter(i =>
-        i.status !== 'done' &&
-        i.nextAction &&
-        i.canDoAnytime
-      );
-
-    case 'inbox':
-      // No nextAction OR (no dueDate AND not canDoAnytime)
-      return items.filter(i => {
-        if (i.status === 'done') return false;
-        if (!i.nextAction) return true;
-        return !i.dueDate && !i.canDoAnytime;
-      });
-
-    case 'done':
-      return items.filter(i => i.status === 'done');
-
-    case 'projects':
-      // Return active items grouped by project (handled separately)
-      return items.filter(i => i.status !== 'done' && i.project);
-
-    default:
-      // Default: all non-done items
-      return items.filter(i => i.status !== 'done');
-  }
+  return items.filter((item) => getItemTab(item) === tab);
 }
 
 /**
- * Get unique projects from items
+ * Add a new todo
  */
-export function getProjects(items: TodoItem[]): Array<{
+export async function addTodo(input: {
+  title: string;
+  dueDate?: string | null;
+  canDoAnytime?: boolean;
+  project?: string | null;
+  status?: 'inbox' | 'active';
+}): Promise<TodoItem> {
+  const userId = getUserId();
+
+  // If project name is provided, get or create the project
+  let projectId: string | null = null;
+  if (input.project) {
+    projectId = await getOrCreateProject(userId, input.project);
+  }
+
+  const created = await createTodoService(userId, {
+    title: input.title,
+    dueDate: input.dueDate,
+    canDoAnytime: input.canDoAnytime,
+    projectId,
+    status: input.status,
+  });
+
+  // Fetch the todo with project name
+  const found = await findTodoService(userId, created.id);
+  return found ? toTodoItem(found) : toTodoItem({
+    ...created,
+    project: input.project ?? null,
+    completed: created.status === 'done',
+  });
+}
+
+/**
+ * List todos, optionally filtered by tab
+ */
+export async function listTodos(tab?: TabType): Promise<TodoItem[]> {
+  const userId = getUserId();
+  const todos = await listTodosService(userId, tab);
+  return todos.map(toTodoItem);
+}
+
+/**
+ * Find a todo by ID, title, or nextAction
+ */
+export async function findTodo(query: string): Promise<TodoItem | null> {
+  const userId = getUserId();
+  const found = await findTodoService(userId, query);
+  return found ? toTodoItem(found) : null;
+}
+
+/**
+ * Update a todo by ID
+ */
+export async function updateTodo(
+  todoId: string,
+  input: {
+    title?: string;
+    nextAction?: string;
+    dueDate?: string | null;
+    project?: string | null;
+    status?: 'inbox' | 'active' | 'someday' | 'done';
+    canDoAnytime?: boolean;
+    completed?: boolean;
+  }
+): Promise<TodoItem | null> {
+  const userId = getUserId();
+
+  // Handle project name to ID conversion
+  let projectId: string | null | undefined = undefined;
+  if (input.project !== undefined) {
+    if (input.project === null) {
+      projectId = null;
+    } else {
+      projectId = await getOrCreateProject(userId, input.project);
+    }
+  }
+
+  const updateInput: UpdateTodoInput = {
+    title: input.title,
+    nextAction: input.nextAction,
+    dueDate: input.dueDate,
+    projectId,
+    status: input.status,
+    canDoAnytime: input.canDoAnytime,
+    completed: input.completed,
+  };
+
+  const updated = await updateTodoService(userId, todoId, updateInput);
+  if (!updated) return null;
+
+  // Fetch with project name
+  const found = await findTodoService(userId, updated.id);
+  return found ? toTodoItem(found) : null;
+}
+
+/**
+ * Complete a todo by ID
+ */
+export async function completeTodo(todoId: string): Promise<TodoItem | null> {
+  return updateTodo(todoId, { completed: true });
+}
+
+/**
+ * Uncomplete a todo by ID
+ */
+export async function uncompleteTodo(todoId: string): Promise<TodoItem | null> {
+  return updateTodo(todoId, { completed: false });
+}
+
+/**
+ * Postpone a todo by ID
+ */
+export async function postponeTodo(
+  todoId: string,
+  days: number
+): Promise<{ item: TodoItem; warning?: string } | null> {
+  const userId = getUserId();
+  const result = await postponeTodoService(userId, todoId, days);
+
+  if (!result) return null;
+
+  // Fetch with project name
+  const found = await findTodoService(userId, result.todo.id);
+  const item = found ? toTodoItem(found) : toTodoItem({
+    ...result.todo,
+    project: null,
+    completed: result.todo.status === 'done',
+  });
+
+  const warning = result.needsConfirmation
+    ? `This task has been postponed ${item.postponeCount} times. Consider removing it or breaking it down.`
+    : undefined;
+
+  return { item, warning };
+}
+
+/**
+ * Delete a todo by ID
+ */
+export async function deleteTodo(todoId: string): Promise<boolean> {
+  const userId = getUserId();
+  return deleteTodoService(userId, todoId);
+}
+
+/**
+ * Delete all todos in a project
+ */
+export async function deleteProjectTodosCmd(projectName: string): Promise<{ items: TodoItem[]; count: number } | null> {
+  const userId = getUserId();
+  const result = await deleteProjectTodos(userId, projectName);
+
+  if (!result) return null;
+
+  return {
+    items: result.todos.map((t) => ({
+      ...t,
+      project: projectName,
+    })),
+    count: result.count,
+  };
+}
+
+/**
+ * List all projects with counts
+ */
+export async function listProjects(): Promise<Array<{
   name: string;
   taskCount: number;
   completedCount: number;
   hasNextAction: boolean;
-}> {
-  const projectMap = new Map<string, {
-    total: number;
-    completed: number;
-    hasNextAction: boolean;
-  }>();
+}>> {
+  const userId = getUserId();
+  const projects = await listProjectsService(userId);
 
-  for (const item of items) {
-    if (item.project) {
-      const existing = projectMap.get(item.project) || {
-        total: 0,
-        completed: 0,
-        hasNextAction: false,
-      };
-      existing.total++;
-      if (item.status === 'done') {
-        existing.completed++;
-      }
-      if (item.nextAction && item.status === 'active') {
-        existing.hasNextAction = true;
-      }
-      projectMap.set(item.project, existing);
-    }
-  }
+  return projects.map((p) => ({
+    name: p.name,
+    taskCount: p.taskCount,
+    completedCount: p.completedCount,
+    hasNextAction: p.taskCount > p.completedCount, // At least one non-done task
+  }));
+}
 
-  return Array.from(projectMap.entries()).map(([name, stats]) => ({
-    name,
-    taskCount: stats.total,
-    completedCount: stats.completed,
-    hasNextAction: stats.hasNextAction,
-  })).sort((a, b) => a.name.localeCompare(b.name));
+// Re-export generateId for legacy compatibility (still used in some places)
+export function generateId(): string {
+  return Math.random().toString(16).substring(2, 10);
 }

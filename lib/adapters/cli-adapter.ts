@@ -35,11 +35,18 @@ export class CLIAdapter implements ClaudeAdapter {
   ): AsyncIterable<ClaudeStreamEvent> {
     this.aborted = false;
 
-    const prompt = this.formatPrompt(messages);
+    const isResuming = !!options.claudeSessionId;
+
+    // When resuming, only send the latest user message (Claude already has history)
+    // When not resuming, send full conversation context
+    const prompt = isResuming
+      ? this.getLatestUserMessage(messages)
+      : this.formatPrompt(messages);
 
     // Build arguments array - use -p with stdin via input option
     const args = ['-p', '-', '--output-format', 'stream-json', '--verbose'];
 
+    // Enable session resumption for faster follow-up messages
     if (options.claudeSessionId) {
       args.push('--resume', options.claudeSessionId);
     }
@@ -49,8 +56,16 @@ export class CLIAdapter implements ClaudeAdapter {
 
     const cwd = options.workingDirectory || process.cwd();
 
+    // Merge custom env with process env (custom takes precedence)
+    const env = { ...process.env, ...options.env };
+
     const startTime = Date.now();
     console.log(`[CLI] Starting claude command at ${new Date().toISOString()}`);
+    console.log(`[CLI] Resuming session: ${isResuming ? options.claudeSessionId : 'no (new session)'}`);
+    console.log(`[CLI] Working directory: ${cwd}`);
+    console.log(`[CLI] Args: ${args.join(' ')}`);
+    console.log(`[CLI] Prompt length: ${prompt.length} chars`);
+    console.log(`[CLI] Prompt preview: ${prompt.substring(0, 200)}...`);
 
     try {
       // Run spawnSync in next tick to allow event loop to process
@@ -59,6 +74,7 @@ export class CLIAdapter implements ClaudeAdapter {
           try {
             const spawnResult = spawnSync('claude', args, {
               cwd,
+              env,
               encoding: 'utf8',
               timeout: options.timeout || 300000,
               maxBuffer: 50 * 1024 * 1024,
@@ -78,6 +94,13 @@ export class CLIAdapter implements ClaudeAdapter {
 
       const elapsed = Date.now() - startTime;
       console.log(`[CLI] Claude command completed in ${elapsed}ms`);
+      console.log(`[CLI] Exit status: ${result.status}`);
+      console.log(`[CLI] Stdout length: ${result.stdout.length} chars`);
+      console.log(`[CLI] Stderr length: ${result.stderr.length} chars`);
+      if (result.stderr) {
+        console.log(`[CLI] Stderr: ${result.stderr.substring(0, 500)}`);
+      }
+
 
       if (result.status !== 0 && !result.stdout) {
         yield { type: 'error', error: result.stderr || `CLI exited with code ${result.status}` };
@@ -124,6 +147,23 @@ export class CLIAdapter implements ClaudeAdapter {
     this.aborted = true;
   }
 
+  /**
+   * Get just the latest user message (for resumed sessions where Claude has history)
+   */
+  private getLatestUserMessage(messages: ClaudeMessage[]): string {
+    // Find the last user message
+    for (let i = messages.length - 1; i >= 0; i--) {
+      if (messages[i].role === 'user') {
+        return messages[i].content;
+      }
+    }
+    // Fallback to last message if no user message found
+    return messages[messages.length - 1]?.content || '';
+  }
+
+  /**
+   * Format full conversation for new sessions (Claude doesn't have history)
+   */
   private formatPrompt(messages: ClaudeMessage[]): string {
     if (messages.length === 1) {
       return messages[0].content;

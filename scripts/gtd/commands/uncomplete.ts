@@ -7,7 +7,7 @@
  *   uncomplete <id|title>
  */
 
-import { loadTodos, saveTodos, findItem, parseArgs, logActivity, getItemTab } from '../lib/store';
+import { findTodo, uncompleteTodo, parseArgs, getItemTab } from '../lib/store';
 import { CommandResult } from '../lib/types';
 
 export async function uncomplete(args: string[]): Promise<CommandResult> {
@@ -21,27 +21,34 @@ export async function uncomplete(args: string[]): Promise<CommandResult> {
     };
   }
 
-  const data = await loadTodos();
-  const item = findItem(data.items, query);
+  try {
+    // Find the item first
+    const found = await findTodo(query);
+    if (!found) {
+      return {
+        success: false,
+        error: `Item not found: "${query}"`,
+      };
+    }
 
-  if (!item) {
+    // Uncomplete it using its ID
+    const item = await uncompleteTodo(found.id);
+    if (!item) {
+      return {
+        success: false,
+        error: `Failed to uncomplete item: "${query}"`,
+      };
+    }
+
+    return {
+      success: true,
+      item,
+      tab: getItemTab(item),
+    };
+  } catch (error) {
     return {
       success: false,
-      error: `Item not found: "${query}"`,
+      error: error instanceof Error ? error.message : 'Failed to uncomplete todo',
     };
   }
-
-  // Update status and completed fields
-  item.completed = false;
-  item.status = 'active';
-  item.completedAt = null;
-
-  logActivity(data, item.id, 'uncompleted');
-  await saveTodos(data);
-
-  return {
-    success: true,
-    item,
-    tab: getItemTab(item),
-  };
 }
