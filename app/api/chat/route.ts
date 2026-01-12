@@ -73,6 +73,8 @@ export async function POST(req: Request) {
 
         let fullResponse = '';
 
+        console.log('[Chat API] Starting event loop for Claude response');
+
         // Stream events from Claude
         // Pass GTD_USER_ID so the CLI can interact with Supabase on behalf of the user
         for await (const event of adapter.chat(claudeMessages, {
@@ -84,6 +86,8 @@ export async function POST(req: Request) {
             GTD_USER_ID: currentUser.userId,
           },
         })) {
+          console.log('[Chat API] Received event:', event.type);
+
           switch (event.type) {
             case 'session_init':
               // Capture Claude's session ID for future resumption
@@ -100,20 +104,30 @@ export async function POST(req: Request) {
               break;
 
             case 'tool_use':
-              await logger.logToolUse(event.tool || 'unknown', event.toolInput);
+              // Non-blocking logging
+              logger.logToolUse(event.tool || 'unknown', event.toolInput).catch((e) => {
+                console.error('[Chat API] Failed to log tool use:', e);
+              });
               break;
 
             case 'tool_result':
-              await logger.logToolResult(event.tool || 'unknown', event.toolResult);
+              // Non-blocking logging
+              logger.logToolResult(event.tool || 'unknown', event.toolResult).catch((e) => {
+                console.error('[Chat API] Failed to log tool result:', e);
+              });
               break;
 
             case 'error':
-              await logger.logError(event.error || 'Unknown error');
+              // Non-blocking logging
+              logger.logError(event.error || 'Unknown error').catch((e) => {
+                console.error('[Chat API] Failed to log error:', e);
+              });
               // Send error to client
               controller.enqueue(encoder.encode(`\n\nError: ${event.error}`));
               break;
 
             case 'done':
+              console.log('[Chat API] Received done event, fullResponse length:', fullResponse.length);
               // Log the full assistant response (non-blocking)
               if (fullResponse) {
                 logger.logAssistant(fullResponse).catch((e) => {
@@ -123,6 +137,8 @@ export async function POST(req: Request) {
               break;
           }
         }
+
+        console.log('[Chat API] Event loop finished, closing stream');
 
         // Send Claude session ID at end of stream for frontend to capture
         // This enables warm CLI - subsequent requests can resume this session
