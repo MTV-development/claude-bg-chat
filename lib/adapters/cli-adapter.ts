@@ -101,6 +101,7 @@ export class CLIAdapter implements ClaudeAdapter {
         console.log(`[CLI] Stderr: ${result.stderr.substring(0, 500)}`);
       }
 
+
       if (result.status !== 0 && !result.stdout) {
         yield { type: 'error', error: result.stderr || `CLI exited with code ${result.status}` };
         yield { type: 'done' };
