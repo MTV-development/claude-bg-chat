@@ -40,9 +40,11 @@ export class CLIAdapter implements ClaudeAdapter {
     // Build arguments array - use -p with stdin via input option
     const args = ['-p', '-', '--output-format', 'stream-json', '--verbose'];
 
-    if (options.claudeSessionId) {
-      args.push('--resume', options.claudeSessionId);
-    }
+    // DISABLED: Session resumption causes Claude CLI to hang on follow-up messages
+    // TODO: Investigate why --resume hangs and re-enable when fixed
+    // if (options.claudeSessionId) {
+    //   args.push('--resume', options.claudeSessionId);
+    // }
     if (options.allowedTools && options.allowedTools.length > 0) {
       args.push('--allowedTools', options.allowedTools.join(','));
     }
