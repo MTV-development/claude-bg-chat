@@ -14,7 +14,7 @@ import { getCurrentUser } from '@/lib/services/auth/get-current-user';
 import { listTodos } from '@/lib/services/todos/list-todos';
 import { updateTodo } from '@/lib/services/todos/update-todo';
 import { deleteTodo } from '@/lib/services/todos/delete-todo';
-import { TabType } from '@/scripts/gtd/lib/types';
+import { TabType } from '@/lib/stores/types';
 
 function log(message: string, data?: unknown) {
   const timestamp = new Date().toISOString().slice(11, 23);

@@ -1,7 +1,7 @@
 import { db } from '@/db';
 import { todos, projects } from '@/db/schema';
 import { eq, and, lte, gt, isNull, isNotNull, or, sql } from 'drizzle-orm';
-import type { TabType } from '@/scripts/gtd/lib/types';
+import type { TabType } from '@/lib/stores/types';
 
 export type TodoWithProject = {
   id: string;

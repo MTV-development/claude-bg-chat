@@ -515,9 +515,351 @@ npm run dev
 
 ---
 
+## Phase 7: E2E Tests for Add via Chat Tab Placement
+
+**Goal:** Verify that "Add via Chat" buttons create tasks in the correct tabs
+**Verification:** All Playwright E2E tests pass
+
+### Context
+
+The "Add via Chat" button sends tab-specific prompts to the agent:
+- **Focus (Today):** "Add to my todo list: I need to do something today. Ask me what."
+- **Optional:** "Add to my todo list: something I can do anytime. Ask me what."
+- **Later:** "Add to my todo list: something I can't do until a future date. Ask me what and when."
+- **Inbox:** "Add to my todo list: I have a vague idea I want to capture. Ask me what."
+
+The agent must correctly interpret these prompts and set the right properties:
+- Focus → `dueDate: "today"`
+- Optional → `canDoAnytime: true`
+- Later → `dueDate: <future date>`
+- Inbox → no dueDate, `canDoAnytime: false`
+
+### P7.1: Review Existing Tests
+
+**Files:** `e2e/chat-ui-integration.spec.ts`
+
+**Check:**
+- Existing "Add via Chat - Tab Placement" tests
+- Coverage gaps (Later tab test may be missing)
+
+### P7.2: Add Missing Tab Tests
+
+**Files:** `e2e/chat-ui-integration.spec.ts`
+
+**Changes:** Add test for Later tab if missing:
+```typescript
+test('Add via Chat from Later tab creates task in Later tab', async ({ page }) => {
+  // Click Later tab
+  // Click Add via Chat button
+  // Provide a task name
+  // Verify task appears in Later tab
+});
+```
+
+### P7.3: Run E2E Tests
+
+**Command:**
+```bash
+npx playwright test e2e/chat-ui-integration.spec.ts --workers=1
+```
+
+**Acceptance:** All "Add via Chat - Tab Placement" tests pass
+
+### P7.4: Fix Agent Instructions if Needed
+
+**Files:** `src/mastra/agents/gtd-agent.ts`
+
+**If tests fail:** Update GTD_INSTRUCTIONS to better handle the tab-specific prompts
+
+### P7.5: Commit Phase 7
+
+**Commit when:** All E2E tests pass
+
+```bash
+git add -A && git commit -m "Phase 7: E2E tests for Add via Chat tab placement"
+```
+
+### P7 Checkpoint
+
+- [ ] All existing "Add via Chat" tests pass
+- [ ] Later tab test added and passes
+- [ ] Agent correctly routes tasks to tabs based on prompts
+- [ ] Committed
+
+---
+
+## Phase 8: Upgrade to Latest Mastra v1
+
+**Goal:** Update to latest Mastra version with improved APIs
+**Verification:** All tests pass, E2E chat works correctly
+
+### Current State
+
+- `@mastra/core: ^0.24.9`
+- `@mastra/loggers: ^0.10.19`
+
+### P8.1: Check Latest Mastra Version
+
+**Reference:** https://mastra.ai/docs/v1/getting-started/start
+
+**Commands:**
+```bash
+npm view @mastra/core version
+npm view @mastra/memory version
+npm view @mastra/libsql version
+```
+
+### P8.2: Update Dependencies
+
+**Files:** `package.json`
+
+**Changes:**
+```bash
+npm install @mastra/core@latest @mastra/loggers@latest
+```
+
+### P8.3: Fix Breaking Changes
+
+**Check:**
+- Agent API changes
+- Tool API changes
+- Stream API changes
+
+**Files to update if needed:**
+- `src/mastra/index.ts`
+- `src/mastra/agents/gtd-agent.ts`
+- `src/mastra/tools/*.ts`
+- `app/api/chat/route.ts`
+
+### P8.4: Verify Type Check
+
+**Command:**
+```bash
+npx tsc --noEmit
+```
+
+**Acceptance:** No type errors
+
+### P8.5: Run Unit Tests
+
+**Command:**
+```bash
+npm test
+```
+
+**Acceptance:** All tests pass
+
+### P8.6: Run E2E Tests
+
+**Command:**
+```bash
+npx playwright test e2e/chat-ui-integration.spec.ts --workers=1
+```
+
+**Acceptance:** All tests pass, especially "Add via Chat" tests
+
+### P8.7: Commit Phase 8
+
+**Commit when:** All tests pass
+
+```bash
+git add -A && git commit -m "Phase 8: Upgrade to Mastra v1"
+```
+
+### P8 Checkpoint
+
+- [ ] Latest Mastra packages installed
+- [ ] Breaking changes fixed
+- [ ] `npx tsc --noEmit` passes
+- [ ] `npm test` passes
+- [ ] E2E tests pass
+- [ ] Committed
+
+---
+
+## Phase 9: Implement Mastra Sessions for Message History
+
+**Goal:** Replace client-side message history with Mastra's built-in memory/sessions
+**Verification:** Message history persists across page refreshes, E2E tests pass
+
+### Current State
+
+Message history is managed client-side:
+1. Client stores messages in React state
+2. On each request, full message array is sent to `/api/chat`
+3. No server-side persistence
+
+### Target State
+
+Use Mastra's Memory system:
+1. Each conversation has a `threadId`
+2. Messages are stored server-side via LibSQLStore or similar
+3. History is automatically loaded by Mastra
+4. Client only sends new message, not full history
+
+### P9.1: Install Memory Dependencies
+
+**Command:**
+```bash
+npm install @mastra/memory @mastra/libsql
+```
+
+### P9.2: Create Memory Configuration
+
+**Files:** `src/mastra/memory.ts` (new)
+
+**Changes:**
+```typescript
+import { Memory } from "@mastra/memory";
+import { LibSQLStore } from "@mastra/libsql";
+
+export function createMemory() {
+  return new Memory({
+    storage: new LibSQLStore({
+      id: "gtd-memory",
+      url: process.env.MEMORY_DB_URL || "file:./memory.db",
+    }),
+    options: {
+      lastMessages: 20,
+      generateTitle: true,
+    },
+  });
+}
+```
+
+### P9.3: Update GTD Agent to Use Memory
+
+**Files:** `src/mastra/agents/gtd-agent.ts`
+
+**Changes:**
+```typescript
+import { createMemory } from '../memory';
+
+export function createGtdAgent(userId: string) {
+  return new Agent({
+    id: 'gtd-agent',
+    name: 'GTD Assistant',
+    instructions: GTD_INSTRUCTIONS,
+    model: 'openrouter/openai/gpt-4o-mini',
+    tools: createGtdTools(userId),
+    memory: createMemory(),
+  });
+}
+```
+
+### P9.4: Update Chat Route for Sessions
+
+**Files:** `app/api/chat/route.ts`
+
+**Changes:**
+- Accept `threadId` from client (or generate new one)
+- Pass `resource` (userId) and `thread` (threadId) to agent
+- Return `threadId` in response for client to track
+
+**New request format:**
+```typescript
+interface ChatRequest {
+  message: string;      // Just the new message
+  threadId?: string;    // Optional, generated if not provided
+}
+```
+
+**Agent call:**
+```typescript
+const response = await agent.stream(message, {
+  memory: {
+    resource: userId,
+    thread: threadId,
+  },
+});
+```
+
+### P9.5: Update Client Chat Component
+
+**Files:** `components/ChatPanel.tsx` (or similar)
+
+**Changes:**
+- Store `threadId` in state
+- On "New Chat", clear `threadId` to start fresh thread
+- Send only new message (not full history) to API
+- Receive and store `threadId` from API response
+
+### P9.6: Add Message History Persistence Tests
+
+**Files:** `e2e/chat-ui-integration.spec.ts`
+
+**New tests:**
+```typescript
+test.describe('Message History Persistence', () => {
+  test('messages persist after page refresh', async ({ page }) => {
+    // Send a message
+    // Refresh page
+    // Verify previous messages are still visible
+  });
+
+  test('New Chat button starts fresh conversation', async ({ page }) => {
+    // Send a message
+    // Click "New Chat"
+    // Verify old messages are cleared
+    // Send another message
+    // Verify only new message visible
+  });
+
+  test('conversation context is preserved', async ({ page }) => {
+    // Send "Remember my favorite color is blue"
+    // Wait for response
+    // Send "What is my favorite color?"
+    // Verify agent responds with "blue"
+  });
+});
+```
+
+### P9.7: Run All Tests
+
+**Commands:**
+```bash
+npx tsc --noEmit
+npm test
+npx playwright test e2e/chat-ui-integration.spec.ts --workers=1
+```
+
+**Acceptance:** All pass
+
+### P9.8: E2E Test Add via Chat Buttons
+
+**Command:**
+```bash
+npx playwright test e2e/chat-ui-integration.spec.ts --grep "Add via Chat" --workers=1
+```
+
+**Acceptance:** All "Add via Chat - Tab Placement" tests still pass
+
+### P9.9: Commit Phase 9
+
+**Commit when:** All tests pass
+
+```bash
+git add -A && git commit -m "Phase 9: Implement Mastra sessions for message history"
+```
+
+### P9 Checkpoint
+
+- [ ] Memory packages installed
+- [ ] Memory configuration created
+- [ ] Agent uses memory
+- [ ] Chat route updated for sessions
+- [ ] Client updated to use threadId
+- [ ] Message history persists (E2E test)
+- [ ] New Chat clears thread (E2E test)
+- [ ] Context preserved in conversation (E2E test)
+- [ ] Add via Chat still works correctly
+- [ ] Committed
+
+---
+
 ## Final Checklist
 
-- [ ] All phases complete (P0-P6)
+- [ ] All phases complete (P0-P9)
 - [ ] All tests passing
 - [ ] No TypeScript errors
 - [ ] `/docs/current/` updated

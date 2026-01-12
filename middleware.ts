@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { updateSession } from '@/lib/supabase/middleware';
 
 // Routes that don't require authentication
-const publicRoutes = ['/login', '/auth'];
+const publicRoutes = ['/login', '/auth', '/api/auth/me'];
 
 // Routes that should redirect to main app if already authenticated
 const authRoutes = ['/login'];

@@ -7,7 +7,28 @@
 
 import { promises as fs } from 'fs';
 import path from 'path';
-import { SessionLogEntry } from '../adapters/types';
+
+/**
+ * Session log entry type for JSONL logging
+ */
+export interface SessionLogEntry {
+  ts: string;
+  sessionId: string;
+  type:
+    | 'session_start'
+    | 'session_end'
+    | 'user'
+    | 'assistant'
+    | 'tool_use'
+    | 'tool_result'
+    | 'error';
+  content?: string;
+  tool?: string;
+  toolInput?: unknown;
+  toolResult?: unknown;
+  error?: string;
+  metadata?: Record<string, unknown>;
+}
 
 export class SessionLogger {
   private sessionId: string;

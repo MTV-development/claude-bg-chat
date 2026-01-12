@@ -49,8 +49,8 @@ export default defineConfig({
   webServer: {
     command: `npx next dev --port ${E2E_PORT}`,
     url: `http://localhost:${E2E_PORT}`,
-    // Always start fresh server for E2E tests to ensure correct env vars
-    reuseExistingServer: false,
+    // Reuse server if available (helps with repeated test runs)
+    reuseExistingServer: true,
     // Set E2E test mode env vars - this enables auth bypass
     env: {
       NEXT_PUBLIC_E2E_TEST_USER_ID: E2E_TEST_USER_ID,
