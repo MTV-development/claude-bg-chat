@@ -35,16 +35,21 @@ export class CLIAdapter implements ClaudeAdapter {
   ): AsyncIterable<ClaudeStreamEvent> {
     this.aborted = false;
 
-    const prompt = this.formatPrompt(messages);
+    const isResuming = !!options.claudeSessionId;
+
+    // When resuming, only send the latest user message (Claude already has history)
+    // When not resuming, send full conversation context
+    const prompt = isResuming
+      ? this.getLatestUserMessage(messages)
+      : this.formatPrompt(messages);
 
     // Build arguments array - use -p with stdin via input option
     const args = ['-p', '-', '--output-format', 'stream-json', '--verbose'];
 
-    // DISABLED: Session resumption causes Claude CLI to hang on follow-up messages
-    // TODO: Investigate why --resume hangs and re-enable when fixed
-    // if (options.claudeSessionId) {
-    //   args.push('--resume', options.claudeSessionId);
-    // }
+    // Enable session resumption for faster follow-up messages
+    if (options.claudeSessionId) {
+      args.push('--resume', options.claudeSessionId);
+    }
     if (options.allowedTools && options.allowedTools.length > 0) {
       args.push('--allowedTools', options.allowedTools.join(','));
     }
@@ -56,6 +61,7 @@ export class CLIAdapter implements ClaudeAdapter {
 
     const startTime = Date.now();
     console.log(`[CLI] Starting claude command at ${new Date().toISOString()}`);
+    console.log(`[CLI] Resuming session: ${isResuming ? options.claudeSessionId : 'no (new session)'}`);
     console.log(`[CLI] Working directory: ${cwd}`);
     console.log(`[CLI] Args: ${args.join(' ')}`);
     console.log(`[CLI] Prompt length: ${prompt.length} chars`);
@@ -140,6 +146,23 @@ export class CLIAdapter implements ClaudeAdapter {
     this.aborted = true;
   }
 
+  /**
+   * Get just the latest user message (for resumed sessions where Claude has history)
+   */
+  private getLatestUserMessage(messages: ClaudeMessage[]): string {
+    // Find the last user message
+    for (let i = messages.length - 1; i >= 0; i--) {
+      if (messages[i].role === 'user') {
+        return messages[i].content;
+      }
+    }
+    // Fallback to last message if no user message found
+    return messages[messages.length - 1]?.content || '';
+  }
+
+  /**
+   * Format full conversation for new sessions (Claude doesn't have history)
+   */
   private formatPrompt(messages: ClaudeMessage[]): string {
     if (messages.length === 1) {
       return messages[0].content;
