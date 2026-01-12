@@ -52,6 +52,7 @@ Record each implementation session here.
 - [x] P7.2: Updated Chat API to use claude-backend/ working directory
 - [x] P7.3: Updated Skill paths for Supabase operations
 - [x] P7.4: Created E2E tests for Chat + UI integration
+- [x] P7.5: Added chat completion verification tests (input re-enables after Claude responds)
 
 ### Issues Encountered
 - **Issue:** Build failed due to missing DATABASE_URL
@@ -66,12 +67,15 @@ Record each implementation session here.
 - **Issue:** E2E test clicking wrong "Add" button
   - **Cause:** Multiple buttons with text "Add" on page (modal + chat example)
   - **Solution:** Used more specific locator targeting the modal context
+- **Issue:** Chat hangs in "Thinking..." state after Claude executes a tool
+  - **Cause:** Blocking logger calls could timeout on DB issues, preventing stream close
+  - **Solution:** Made logging non-blocking with fire-and-forget pattern
 
 ### Test Results
 - Build: PASS
 - Type Check: PASS
 - Unit Tests: PASS (61/61)
-- E2E Tests: PASS (all realtime-sync + chat-ui-integration)
+- E2E Tests: PASS (14 chat-ui-integration + 3 realtime-sync)
 
 ---
 
