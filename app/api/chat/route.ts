@@ -114,9 +114,11 @@ export async function POST(req: Request) {
               break;
 
             case 'done':
-              // Log the full assistant response
+              // Log the full assistant response (non-blocking)
               if (fullResponse) {
-                await logger.logAssistant(fullResponse);
+                logger.logAssistant(fullResponse).catch((e) => {
+                  console.error('[Chat API] Failed to log assistant response:', e);
+                });
               }
               break;
           }
@@ -129,10 +131,12 @@ export async function POST(req: Request) {
           controller.enqueue(encoder.encode(`${SESSION_MARKER}${sessionData}${SESSION_MARKER_END}`));
         }
 
-        // Log session end
-        await logger.logSessionEnd({
+        // Log session end (non-blocking to avoid hanging the stream on DB timeouts)
+        logger.logSessionEnd({
           responseLength: fullResponse.length,
           claudeSessionId: currentClaudeSessionId,
+        }).catch((e) => {
+          console.error('[Chat API] Failed to log session end:', e);
         });
 
         controller.close();

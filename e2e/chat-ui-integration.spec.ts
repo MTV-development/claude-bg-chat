@@ -7,6 +7,12 @@ import { test, expect } from '@playwright/test';
  * 1. Chat interface is accessible and functional
  * 2. Chat can interact with the todo system via Claude
  * 3. Changes made via chat appear in the UI
+ *
+ * IMPORTANT: The "Chat with Claude" tests use the Claude CLI which is
+ * resource-intensive. Run these tests with a single worker to avoid
+ * timeouts due to resource contention:
+ *
+ *   npx playwright test e2e/chat-ui-integration.spec.ts --workers=1
  */
 
 test.describe('Chat Interface', () => {
@@ -251,5 +257,67 @@ test.describe('Chat with Claude', () => {
 
     // The todo should appear in one of the tabs
     await expect(todoLocator).toBeVisible({ timeout: 10000 });
+  });
+
+  test('chat input is re-enabled after Claude responds', async ({ page }) => {
+    // This test specifically verifies the chat input returns to ready state
+    // after Claude finishes processing (addresses hanging "Thinking..." issue)
+    test.setTimeout(300000); // 5 minute timeout
+
+    const chatInput = page.locator('input[placeholder="Type your message..."]');
+    const sendButton = page.locator('button:has-text("Send")');
+
+    // Verify initial state - input enabled, send button says "Send"
+    await expect(chatInput).toBeEnabled();
+    await expect(sendButton).toHaveText('Send');
+
+    // Send a simple message
+    await chatInput.fill('Say "test" and nothing else');
+    await sendButton.click();
+
+    // Verify we enter loading state - placeholder changes to "Waiting for response..."
+    const disabledInput = page.locator('input[placeholder="Waiting for response..."]');
+    await expect(disabledInput).toBeVisible({ timeout: 5000 });
+
+    // Wait for Claude to finish - original input placeholder should return
+    // This is the key assertion - verifies the chat doesn't hang
+    await expect(chatInput).toBeEnabled({ timeout: 240000 });
+
+    // Verify send button is back to "Send" (not "Sending...")
+    await expect(sendButton).toHaveText('Send', { timeout: 5000 });
+
+    // Verify no "Thinking..." indicator remains
+    const thinkingIndicator = page.locator('text="Thinking..."');
+    await expect(thinkingIndicator).not.toBeVisible({ timeout: 5000 });
+
+    // Verify the input is focusable and can accept new text
+    await chatInput.fill('Follow-up message');
+    await expect(chatInput).toHaveValue('Follow-up message');
+  });
+
+  test('chat completes after tool use (add todo)', async ({ page }) => {
+    // This test specifically verifies Claude completes after executing a tool
+    // Addresses the scenario where Claude adds a todo but then hangs
+    test.setTimeout(300000); // 5 minute timeout
+
+    const chatInput = page.locator('input[placeholder="Type your message..."]');
+    const sendButton = page.locator('button:has-text("Send")');
+    const uniqueTitle = `Tool Test ${Date.now()}`;
+
+    // Send a todo-add command (triggers tool use)
+    await chatInput.fill(`Add to my todo list: ${uniqueTitle}`);
+    await sendButton.click();
+
+    // Wait for Claude to finish - check all three indicators return to ready state
+    // 1. Input is enabled
+    await expect(chatInput).toBeEnabled({ timeout: 240000 });
+    // 2. Send button shows "Send"
+    await expect(sendButton).toHaveText('Send', { timeout: 5000 });
+    // 3. No "Thinking..." indicator
+    await expect(page.locator('text="Thinking..."')).not.toBeVisible({ timeout: 5000 });
+
+    // Verify we can send another message (full round-trip)
+    await chatInput.fill('Show my todos');
+    await expect(sendButton).toBeEnabled();
   });
 });
