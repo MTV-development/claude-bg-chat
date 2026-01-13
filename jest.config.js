@@ -1,19 +1,6 @@
 /** @type {import('jest').Config} */
 module.exports = {
   projects: [
-    // GTD scripts - Node environment
-    {
-      displayName: 'gtd',
-      preset: 'ts-jest',
-      testEnvironment: 'node',
-      roots: ['<rootDir>/scripts/gtd'],
-      testMatch: ['**/__tests__/**/*.test.ts'],
-      moduleFileExtensions: ['ts', 'js', 'json'],
-      moduleNameMapper: {
-        '^@/(.*)$': '<rootDir>/$1',
-      },
-      setupFilesAfterEnv: ['<rootDir>/scripts/gtd/__tests__/setup.ts'],
-    },
     // React components - jsdom environment
     {
       displayName: 'react',
@@ -32,7 +19,6 @@ module.exports = {
     },
   ],
   collectCoverageFrom: [
-    'scripts/gtd/**/*.ts',
     'lib/**/*.ts',
     'lib/**/*.tsx',
     'components/**/*.tsx',

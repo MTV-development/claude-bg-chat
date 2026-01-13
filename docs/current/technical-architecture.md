@@ -17,24 +17,30 @@ The application follows a layered architecture with clear separation of concerns
 │                          API LAYER                               │
 │  ┌─────────────┬─────────────┬─────────────┬─────────────────┐  │
 │  │ /api/chat   │ /api/todos  │ /api/todos/ │ /api/todos/     │  │
-│  │             │             │ add         │ postpone        │  │
+│  │ (Mastra)    │             │ add         │ postpone        │  │
 │  └─────────────┴─────────────┴─────────────┴─────────────────┘  │
 ├─────────────────────────────────────────────────────────────────┤
-│                       BUSINESS LOGIC LAYER                       │
+│                         AI AGENT LAYER                           │
 │  ┌─────────────────────────────────────────────────────────────┐│
-│  │                    CLI Commands                              ││
-│  │  add | list | complete | clarify | postpone | remove | ...  ││
+│  │                    Mastra GTD Agent                          ││
+│  │  addTodo | listTodos | completeTodo | clarifyTodo | ...      ││
+│  └─────────────────────────────────────────────────────────────┘│
+├─────────────────────────────────────────────────────────────────┤
+│                       SERVICE LAYER                              │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │                    lib/services/                             ││
+│  │  todos: create, update, find, list, delete, postpone        ││
+│  │  projects: getOrCreate, list, deleteProjectTodos            ││
 │  └─────────────────────────────────────────────────────────────┘│
 ├─────────────────────────────────────────────────────────────────┤
 │                         DATA LAYER                               │
 │  ┌─────────────────────────────────────────────────────────────┐│
-│  │                    store.ts                                  ││
-│  │              loadTodos() / saveTodos()                       ││
+│  │  Drizzle ORM + Supabase Realtime                            ││
 │  └─────────────────────────────────────────────────────────────┘│
 ├─────────────────────────────────────────────────────────────────┤
 │                        PERSISTENCE                               │
 │  ┌─────────────────────────────────────────────────────────────┐│
-│  │                  data/todos.json                             ││
+│  │                    Supabase PostgreSQL                       ││
 │  └─────────────────────────────────────────────────────────────┘│
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -46,10 +52,15 @@ The application follows a layered architecture with clear separation of concerns
 | Frontend | Next.js | 15.1.3 |
 | UI Library | React | 19.0.0 |
 | Styling | Tailwind CSS | 3.4.1 |
+| State Management | Zustand | 5.0.9 |
 | Language | TypeScript | 5.x |
-| Runtime | Node.js | - |
+| AI Agent | Mastra | 1.0.0-beta.21 |
+| AI Memory | Mastra Memory + PostgresStore | 1.0.0-beta |
+| Database | Supabase PostgreSQL | - |
+| ORM | Drizzle | 0.45.1 |
+| Real-time | Supabase Realtime | - |
 | Testing | Jest | 30.2.0 |
-| AI Integration | Claude CLI | via adapter |
+| E2E Testing | Playwright | 1.57.0 |
 
 ## Component Architecture
 
@@ -63,69 +74,52 @@ app/
 └── api/                  # API routes (see API Layer)
 
 components/
-├── TodoList.tsx          # Main todo list with tabs (31KB)
+├── TodoList.tsx          # Main todo list with tabs
 ├── AddItemModal.tsx      # Modal for adding tasks/projects
 ├── PostponeDropdown.tsx  # Dropdown for postpone actions
 └── ConfirmationModal.tsx # Reusable confirmation dialog
 ```
 
-### TodoList Component (`components/TodoList.tsx`)
+### Mastra AI Agent (`src/mastra/`)
 
-The largest component, handling the entire todo management UI.
-
-**State Management**:
-```typescript
-// Tab state
-const [activeTab, setActiveTab] = useState<Tab>('focus')
-const [items, setItems] = useState<TodoItem[]>([])
-
-// Bulk selection
-const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set())
-const [bulkLoading, setBulkLoading] = useState(false)
-
-// Tab counts for badges
-const [tabCounts, setTabCounts] = useState<Record<Tab, number>>({})
-
-// Modal states
-const [showAddModal, setShowAddModal] = useState(false)
-const [confirmModal, setConfirmModal] = useState<ConfirmModalState>(null)
+```
+src/mastra/
+├── index.ts              # Mastra singleton with PinoLogger
+├── memory.ts             # Memory configuration with PostgresStore
+├── agents/
+│   └── gtd-agent.ts      # GTD Agent factory with instructions + memory
+└── tools/
+    ├── index.ts          # createGtdTools(userId) factory
+    ├── add-todo.ts       # Add new tasks
+    ├── list-todos.ts     # List/filter tasks
+    ├── complete-todo.ts  # Mark task complete
+    ├── uncomplete-todo.ts # Undo completion
+    ├── clarify-todo.ts   # Set next action
+    ├── postpone-todo.ts  # Delay due date
+    ├── update-todo.ts    # Modify any field
+    ├── remove-todo.ts    # Delete task(s)
+    └── list-projects.ts  # List projects
 ```
 
-**Key Features**:
-- Parallel tab count fetching
-- 2-second auto-refresh polling
-- Bulk action processing (sequential to avoid race conditions)
-- Tab-specific rendering and filtering
-- Always-visible action button bar with tab-specific labels (Complete/Clarify/Undo)
-- Individual Clarify buttons on Inbox tasks that populate the chat input
+### Service Layer (`lib/services/`)
 
-### CLI Commands (`scripts/gtd/commands/`)
-
-Each command is a separate module exporting a handler function:
-
-| Command | File | Purpose |
-|---------|------|---------|
-| `add` | `add.ts` | Create new tasks |
-| `list` | `list.ts` | Query tasks with filters |
-| `complete` | `complete.ts` | Mark task as done |
-| `uncomplete` | `uncomplete.ts` | Mark task as not done |
-| `clarify` | `clarify.ts` | Set next action |
-| `postpone` | `postpone.ts` | Move due date forward |
-| `remove` | `remove.ts` | Delete task |
-| `update` | `update.ts` | Modify task properties |
-
-**CLI Entry Point** (`scripts/gtd/cli.ts`):
-```typescript
-const commands = {
-  add: addCommand,
-  list: listCommand,
-  complete: completeCommand,
-  // ...
-}
-
-const [command, ...args] = process.argv.slice(2)
-const handler = commands[command]
-await handler(args)
+```
+lib/services/
+├── todos/
+│   ├── create-todo.ts    # Create new todo
+│   ├── update-todo.ts    # Update todo fields
+│   ├── find-todo.ts      # Flexible todo lookup
+│   ├── list-todos.ts     # List with tab filtering
+│   ├── delete-todo.ts    # Delete single todo
+│   └── postpone-todo.ts  # Postpone with tracking
+├── projects/
+│   ├── get-or-create-project.ts
+│   ├── list-projects.ts
+│   └── delete-project-todos.ts
+├── auth/
+│   ├── get-current-user.ts
+│   └── sync-user.ts
+└── logger.ts             # Session logging (JSONL)
 ```
 
 ## API Layer
@@ -134,7 +128,7 @@ await handler(args)
 
 | Method | Path | Purpose | Handler |
 |--------|------|---------|---------|
-| POST | `/api/chat` | Claude conversation | `app/api/chat/route.ts` |
+| POST | `/api/chat` | Mastra agent conversation | `app/api/chat/route.ts` |
 | GET | `/api/todos` | List tasks (with tab filter) | `app/api/todos/route.ts` |
 | PATCH | `/api/todos` | Update task | `app/api/todos/route.ts` |
 | DELETE | `/api/todos` | Remove task | `app/api/todos/route.ts` |
@@ -145,59 +139,64 @@ await handler(args)
 ### Chat API Flow
 
 ```
-┌────────┐     ┌────────────┐     ┌────────────┐     ┌─────────┐
-│ Browser│────▶│ /api/chat  │────▶│ CLIAdapter │────▶│ Claude  │
-│        │◀────│            │◀────│            │◀────│ CLI     │
-└────────┘     └────────────┘     └────────────┘     └─────────┘
+┌────────┐     ┌────────────┐     ┌────────────┐     ┌─────────────┐
+│ Browser│────▶│ /api/chat  │────▶│ Mastra     │────▶│ OpenRouter  │
+│        │◀────│            │◀────│ GTD Agent  │◀────│ GPT-4o-mini │
+└────────┘     └────────────┘     └────────────┘     └─────────────┘
      │                                   │
+     │ message + threadId                │ Tool calls
      │                                   ▼
-     │                            ┌────────────┐
-     │                            │ Logger     │
-     │                            │ (JSONL)    │
-     │                            └────────────┘
-     │
-     ▼
-┌─────────────┐
-│ TodoList    │ (polls /api/todos every 2s)
-│ Component   │
-└─────────────┘
+     │                            ┌─────────────────┐
+     │                            │ Service Layer   │
+     │                            │ lib/services/*  │
+     │                            └────────┬────────┘
+     │                                     │
+     │                                     ▼
+     │                            ┌─────────────────┐
+     └────────────────────────────│ Supabase        │
+          Mastra Memory           │ PostgreSQL      │
+          (conversation history)  └─────────────────┘
 ```
 
-### CLI Adapter (`lib/adapters/cli-adapter.ts`)
+The chat API:
+1. Authenticates user via Supabase
+2. Creates a GTD agent bound to the user's ID with Mastra Memory
+3. Accepts `message` + optional `threadId` (generates new threadId if not provided)
+4. Streams the agent response back to the client with threadId in metadata
+5. Agent tools directly call service layer functions
+6. Conversation history is automatically stored and retrieved via Mastra Memory
 
-Spawns Claude CLI as a child process and streams responses:
+## State Management
+
+### Zustand Store (`lib/stores/`)
+
+The frontend uses Zustand for reactive state management:
+
+- **Normalized entity storage**: Todos and projects stored by ID
+- **Supabase Realtime**: Subscribes to database changes
+- **Selectors**: Tab filtering, project grouping
 
 ```typescript
-class CLIAdapter {
-  async chat(options: ChatOptions): AsyncGenerator<string> {
-    const args = [
-      '--print',
-      '--output-format', 'stream-json',
-      '--prompt', options.prompt,
-      '--allowedTools', options.allowedTools.join(',')
-    ]
-
-    if (options.sessionId) {
-      args.push('--resume', options.sessionId)
-    }
-
-    const child = spawn('claude', args)
-
-    for await (const chunk of child.stdout) {
-      yield parseStreamChunk(chunk)
-    }
-  }
+interface TodoStore {
+  entities: {
+    todos: Record<string, Todo>;
+    projects: Record<string, Project>;
+  };
+  isConnected: boolean;
+  lastSyncedAt: number | null;
+  // Internal actions for sync layer
+  _setTodos: (todos: Todo[]) => void;
+  _applyTodoChange: (payload: RealtimePayload) => void;
+  // ... etc
 }
 ```
 
-**Warm Sessions**: The adapter supports session resumption via `--resume` flag, allowing faster subsequent responses by reusing Claude's context.
-
 ## Data Flow
 
-### Task Creation Flow
+### Task Creation via Chat
 
 ```
-User types in chat
+User types "add buy milk tomorrow"
         │
         ▼
 ┌───────────────┐
@@ -207,89 +206,57 @@ User types in chat
         │
         ▼
 ┌───────────────┐     ┌───────────────┐
-│  CLIAdapter   │────▶│  Claude CLI   │
+│ GTD Agent     │────▶│ addTodo Tool  │
 └───────────────┘     └───────┬───────┘
                               │
-                              │ Claude calls gtd:add
                               ▼
                       ┌───────────────┐
-                      │  Skill Tool   │
-                      │  (gtd add)    │
+                      │ createTodo    │
+                      │ service       │
                       └───────┬───────┘
                               │
                               ▼
                       ┌───────────────┐
-                      │  store.ts     │
-                      │  saveTodos()  │
+                      │ Supabase DB   │
                       └───────┬───────┘
-                              │
+                              │ Realtime
                               ▼
                       ┌───────────────┐
-                      │ todos.json    │
+                      │ Zustand Store │
+                      │ UI updates    │
                       └───────────────┘
 ```
 
-### UI Update Flow
+### Real-time Updates
+
+Supabase Realtime pushes database changes to the client:
 
 ```
-┌───────────────┐
-│  TodoList     │
-│  useEffect    │
-└───────┬───────┘
-        │ every 2 seconds
-        ▼
-┌───────────────┐     ┌───────────────┐
-│  fetch()      │────▶│  /api/todos   │
-│               │◀────│  (GET)        │
-└───────┬───────┘     └───────────────┘
+Database change
         │
         ▼
 ┌───────────────┐
-│  setItems()   │
-│  re-render    │
+│ Supabase      │
+│ Realtime      │
+└───────┬───────┘
+        │ WebSocket
+        ▼
+┌───────────────┐
+│ Store sync    │
+│ layer         │
+└───────┬───────┘
+        │
+        ▼
+┌───────────────┐
+│ Zustand       │
+│ selectors     │
+└───────┬───────┘
+        │
+        ▼
+┌───────────────┐
+│ React         │
+│ re-render     │
 └───────────────┘
-```
-
-## Session Management
-
-### Chat Session Logger (`lib/services/logger.ts`)
-
-All chat interactions are logged for debugging and potential analytics:
-
-```typescript
-class SessionLogger {
-  private logPath: string
-
-  constructor(sessionId: string) {
-    this.logPath = `logs/session-${sessionId}-${Date.now()}.jsonl`
-  }
-
-  log(entry: LogEntry): void {
-    const line = JSON.stringify({
-      timestamp: new Date().toISOString(),
-      ...entry
-    })
-    appendFileSync(this.logPath, line + '\n')
-  }
-}
-```
-
-**Log Entry Types**:
-- `session_start` / `session_end`
-- `user_message`
-- `assistant_response`
-- `tool_use` / `tool_result`
-- `error`
-
-### Session ID Format
-
-```typescript
-function generateSessionId(): string {
-  const timestamp = Date.now().toString(36)
-  const random = Math.random().toString(36).slice(2, 8)
-  return `${timestamp}-${random}`
-}
-// Example: "m2k9x5a-j7f3k2"
 ```
 
 ## Error Handling
@@ -298,44 +265,33 @@ function generateSessionId(): string {
 
 ```typescript
 // Standard error format
-return NextResponse.json(
-  { error: 'Task not found', code: 'NOT_FOUND' },
+return Response.json(
+  { error: 'Task not found' },
   { status: 404 }
 )
 ```
 
-### Frontend Error Handling
+### Mastra Tool Errors
 
+In Mastra v1, tools throw errors instead of returning error responses:
 ```typescript
-// Chat errors trigger retry UI
-const [error, setError] = useState<Error | null>(null)
-
-if (error) {
-  return <RetryButton onClick={handleRetry} />
+if (!todo) {
+  throw new Error(`Could not find task matching "${identifier}"`);
 }
 ```
 
-### CLI Error Handling
-
-```typescript
-// CLI outputs errors as JSON to stdout
-try {
-  await handler(args)
-} catch (err) {
-  console.log(JSON.stringify({ error: err.message }))
-  process.exit(1)
-}
-```
+The agent interprets thrown errors and provides natural language responses to users.
 
 ## Configuration
 
-### Environment Configuration
+### Environment Variables
 
-| Setting | Location | Purpose |
-|---------|----------|---------|
-| Port | Next.js default (3000) | Web server port |
-| Data file | `data/todos.json` | Task storage |
-| Log directory | `logs/` | Session logs |
+| Variable | Purpose |
+|----------|---------|
+| `DATABASE_URL` | Supabase PostgreSQL connection |
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon key |
+| `OPENROUTER_API_KEY` | OpenRouter API for LLM |
 
 ### Build Configuration
 
@@ -346,21 +302,6 @@ try {
 
 **Tailwind** (`tailwind.config.ts`):
 - Content: `app/`, `components/`, `pages/`
-- No custom theme extensions
-
-### Scripts (`package.json`)
-
-```json
-{
-  "dev": "next dev",
-  "build": "next build",
-  "start": "next start",
-  "test": "jest",
-  "gtd:build": "tsc --project scripts/gtd/tsconfig.json",
-  "gtd": "node scripts/gtd/dist/cli.js",
-  "gtd:dev": "tsx scripts/gtd/cli.ts"
-}
-```
 
 ## Testing & Environment Validation
 
@@ -371,45 +312,18 @@ See [Environment Validation](./environment-validation.md) for:
 
 ## Security Considerations
 
+### Authentication
+- Supabase Auth for user management
+- Row-level security in database
+- User ID binding in agent tools
+
 ### Input Validation
-- Task titles sanitized before storage
-- Due dates validated for format
-- Priority values constrained to enum
+- Zod schemas for all tool inputs
+- Service layer validates ownership
 
-### File System
-- Data file accessed via controlled functions
-- No user-provided paths executed
-- Logs written to designated directory only
-
-### Claude Integration
-- Allowed tools explicitly whitelisted
-- Tool results parsed, not executed directly
-
-## Performance
-
-### Polling Strategy
-- 2-second interval for todo list refresh
-- Parallel fetching of tab counts
-- Cleanup on component unmount
-
-### Bulk Operations
-- Sequential processing to prevent race conditions
-- Optimistic UI updates considered for future
-
-### Data Loading
-- Single JSON file read per operation
-- In-memory processing for filtering/sorting
-- No caching layer (file is source of truth)
-
-## Future Considerations
-
-Areas identified for potential enhancement:
-
-1. **Database Migration**: Move from JSON to SQLite or PostgreSQL
-2. **Real-time Updates**: WebSocket instead of polling
-3. **Undo System**: Leverage activity log for undo/redo
-4. **Offline Support**: Service worker with sync queue
-5. **Multi-user**: Authentication and user-scoped data
+### AI Integration
+- Tools explicitly bound to authenticated user
+- No arbitrary code execution
 
 ## Related Documentation
 

@@ -1,180 +1,109 @@
 /**
  * Chat API Route
  *
- * Handles chat requests by forwarding them to Claude Code CLI
+ * Handles chat requests by forwarding them to the Mastra GTD agent
  * and streaming the response back to the client.
  *
- * Supports warm CLI via --resume to reuse Claude sessions for better performance.
+ * Uses Mastra Memory for conversation persistence:
+ * - Each conversation has a threadId
+ * - Messages are stored server-side in PostgreSQL via Mastra Memory
+ * - Client only needs to send the new message (not full history)
  */
 
-import path from 'path';
-import { CLIAdapter } from '@/lib/adapters/cli-adapter';
-import { ClaudeMessage } from '@/lib/adapters/types';
-import { SessionLogger, generateSessionId } from '@/lib/services/logger';
+import { randomUUID } from 'crypto';
 import { getCurrentUser } from '@/lib/services/auth/get-current-user';
-
-// The chat API runs Claude from the claude-backend directory
-// This directory has its own CLAUDE.md focused on the todo-manager skill
-const CLAUDE_BACKEND_DIR = path.join(process.cwd(), 'claude-backend');
-
-// Session ID marker for frontend to parse
-const SESSION_MARKER = '\n<!--CLAUDE_SESSION:';
-const SESSION_MARKER_END = '-->';
+import { createGtdAgent } from '@/src/mastra/agents/gtd-agent';
 
 // Allow streaming responses up to 5 minutes for complex operations
 export const maxDuration = 300;
 
 export async function POST(req: Request) {
-  const { messages, sessionId: existingSessionId, claudeSessionId } = await req.json();
+  try {
+    // Get the current authenticated user
+    const currentUser = await getCurrentUser();
+    if (!currentUser) {
+      return new Response('Unauthorized', { status: 401 });
+    }
 
-  // Get the current authenticated user
-  const currentUser = await getCurrentUser();
-  if (!currentUser) {
-    return new Response('Unauthorized', { status: 401 });
-  }
+    const { message, threadId: clientThreadId, messages } = await req.json();
 
-  // Use existing session ID or generate new one
-  const sessionId = existingSessionId || generateSessionId();
+    // Support both old format (messages array) and new format (single message + threadId)
+    const userMessage = message || (messages && messages[messages.length - 1]?.content);
 
-  // Claude's internal session ID for resumption (passed from previous response)
-  let currentClaudeSessionId = claudeSessionId;
+    if (!userMessage) {
+      return new Response('No message provided', { status: 400 });
+    }
 
-  // Initialize logger for this session
-  const logger = new SessionLogger(sessionId);
+    // Use provided threadId or generate a new one
+    const threadId = clientThreadId || randomUUID();
 
-  // Convert incoming messages to ClaudeMessage format
-  const claudeMessages: ClaudeMessage[] = messages.map((m: { role: string; content: string }) => ({
-    role: m.role as 'user' | 'assistant',
-    content: m.content,
-  }));
+    // Create agent with user-bound tools
+    const agent = createGtdAgent(currentUser.userId);
 
-  // Get the last user message for logging
-  const lastUserMessage = claudeMessages[claudeMessages.length - 1];
+    // Stream the response with Mastra Memory
+    // Memory automatically handles conversation history retrieval
+    const stream = await agent.stream(userMessage, {
+      memory: {
+        resource: currentUser.userId,
+        thread: threadId,
+      },
+    });
 
-  // Create encoder for streaming
-  const encoder = new TextEncoder();
+    // Create encoder for streaming
+    const encoder = new TextEncoder();
 
-  // Create the CLI adapter
-  const adapter = new CLIAdapter();
+    // Track if we've sent the threadId header
+    let headerSent = false;
 
-  const stream = new ReadableStream({
-    async start(controller) {
-      try {
-        // Log session start with resume info
-        await logger.logSessionStart({
-          messageCount: claudeMessages.length,
-          resumingSession: !!claudeSessionId,
-        });
+    const readableStream = new ReadableStream({
+      async start(controller) {
+        try {
+          // Send threadId as first line (JSON metadata)
+          // Format: {"threadId":"xxx"}\n
+          // Client can parse this to track the conversation
+          const metadata = JSON.stringify({ threadId }) + '\n';
+          controller.enqueue(encoder.encode(metadata));
+          headerSent = true;
 
-        // Log the user message
-        if (lastUserMessage) {
-          await logger.logUser(lastUserMessage.content);
-        }
-
-        let fullResponse = '';
-
-        console.log('[Chat API] Starting event loop for Claude response');
-
-        // Stream events from Claude
-        // Pass GTD_USER_ID so the CLI can interact with Supabase on behalf of the user
-        for await (const event of adapter.chat(claudeMessages, {
-          sessionId,
-          workingDirectory: CLAUDE_BACKEND_DIR,
-          allowedTools: ['Read', 'Write', 'Bash', 'Skill', 'Glob', 'Grep'],
-          claudeSessionId: currentClaudeSessionId,
-          env: {
-            GTD_USER_ID: currentUser.userId,
-          },
-        })) {
-          console.log('[Chat API] Received event:', event.type);
-
-          switch (event.type) {
-            case 'session_init':
-              // Capture Claude's session ID for future resumption
-              if (event.claudeSessionId) {
-                currentClaudeSessionId = event.claudeSessionId;
-              }
-              break;
-
-            case 'text':
-              if (event.content) {
-                fullResponse += event.content;
-                controller.enqueue(encoder.encode(event.content));
-              }
-              break;
-
-            case 'tool_use':
-              // Non-blocking logging
-              logger.logToolUse(event.tool || 'unknown', event.toolInput).catch((e) => {
-                console.error('[Chat API] Failed to log tool use:', e);
-              });
-              break;
-
-            case 'tool_result':
-              // Non-blocking logging
-              logger.logToolResult(event.tool || 'unknown', event.toolResult).catch((e) => {
-                console.error('[Chat API] Failed to log tool result:', e);
-              });
-              break;
-
-            case 'error':
-              // Non-blocking logging
-              logger.logError(event.error || 'Unknown error').catch((e) => {
-                console.error('[Chat API] Failed to log error:', e);
-              });
-              // Send error to client
-              controller.enqueue(encoder.encode(`\n\nError: ${event.error}`));
-              break;
-
-            case 'done':
-              console.log('[Chat API] Received done event, fullResponse length:', fullResponse.length);
-              // Log the full assistant response (non-blocking)
-              if (fullResponse) {
-                logger.logAssistant(fullResponse).catch((e) => {
-                  console.error('[Chat API] Failed to log assistant response:', e);
-                });
-              }
-              break;
+          // Use fullStream to handle all chunks including tool calls
+          for await (const chunk of stream.fullStream) {
+            // Only emit text-delta chunks to the client
+            if (chunk.type === 'text-delta') {
+              controller.enqueue(encoder.encode(chunk.payload.text));
+            }
+            // Log tool calls for debugging
+            if (chunk.type === 'tool-call') {
+              console.log('[Chat] Tool call:', JSON.stringify(chunk.payload));
+            }
+            if (chunk.type === 'tool-result') {
+              console.log('[Chat] Tool result:', JSON.stringify(chunk.payload));
+            }
           }
+          controller.close();
+        } catch (error) {
+          console.error('[Chat] Stream error:', error);
+          const errorMessage =
+            error instanceof Error ? error.message : 'Unknown error';
+          // If header not sent yet, send it first
+          if (!headerSent) {
+            const metadata = JSON.stringify({ threadId, error: true }) + '\n';
+            controller.enqueue(encoder.encode(metadata));
+          }
+          controller.enqueue(encoder.encode(`\n\nError: ${errorMessage}`));
+          controller.close();
         }
+      },
+    });
 
-        console.log('[Chat API] Event loop finished, closing stream');
-
-        // Send Claude session ID at end of stream for frontend to capture
-        // This enables warm CLI - subsequent requests can resume this session
-        if (currentClaudeSessionId) {
-          const sessionData = JSON.stringify({ claudeSessionId: currentClaudeSessionId });
-          controller.enqueue(encoder.encode(`${SESSION_MARKER}${sessionData}${SESSION_MARKER_END}`));
-        }
-
-        // Log session end (non-blocking to avoid hanging the stream on DB timeouts)
-        logger.logSessionEnd({
-          responseLength: fullResponse.length,
-          claudeSessionId: currentClaudeSessionId,
-        }).catch((e) => {
-          console.error('[Chat API] Failed to log session end:', e);
-        });
-
-        controller.close();
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        await logger.logError(errorMessage);
-
-        controller.enqueue(encoder.encode(`\n\nError: ${errorMessage}`));
-        controller.close();
-      }
-    },
-
-    cancel() {
-      // Abort the adapter if the client disconnects
-      adapter.abort();
-    },
-  });
-
-  return new Response(stream, {
-    headers: {
-      'Content-Type': 'text/plain; charset=utf-8',
-      'X-Session-Id': sessionId,
-    },
-  });
+    return new Response(readableStream, {
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8',
+      },
+    });
+  } catch (error) {
+    console.error('Chat error:', error);
+    const errorMessage =
+      error instanceof Error ? error.message : 'Internal server error';
+    return new Response(errorMessage, { status: 500 });
+  }
 }

@@ -153,6 +153,171 @@ test.describe('Chat Todo Integration', () => {
   });
 });
 
+test.describe('Add via Chat - Tab Placement', () => {
+  // These tests verify that the "Add via Chat" button from each tab
+  // creates tasks with the correct properties so they appear in the expected tab
+  //
+  // The flow is:
+  // 1. User clicks "Add via Chat" button on a specific tab
+  // 2. A context-aware prompt is sent (e.g., "I need to do something today")
+  // 3. Claude asks "What do you need to do?"
+  // 4. User provides the task
+  // 5. Task should appear in the originating tab
+
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('text=Synced in realtime')).toBeVisible({ timeout: 10000 });
+  });
+
+  test('Add via Chat from Today tab creates task in Today tab', async ({ page }) => {
+    // This tests the critical bug: clicking Add via Chat from Today should create
+    // a task with dueDate="today" so it appears in the Focus/Today tab
+    test.setTimeout(600000); // 10 minute timeout for multi-turn
+
+    // Step 1: Click on Today tab
+    await page.click('button:has-text("Today")');
+    await page.waitForTimeout(500);
+
+    // Step 2: Click the "Add via Chat" button (chat bubble icon)
+    const addViaChatButton = page.locator('button[title="Add via Chat"]');
+    await expect(addViaChatButton).toBeVisible({ timeout: 5000 });
+    await addViaChatButton.click();
+
+    // Step 3: Wait for Claude to respond (asking what to do)
+    const chatInput = page.locator('input[placeholder="Type your message..."]');
+    await expect(chatInput).toBeEnabled({ timeout: 240000 });
+
+    // Step 4: Provide the task
+    const uniqueTask = `Today Task ${Date.now()}`;
+    await chatInput.fill(uniqueTask);
+    await page.click('button:has-text("Send")');
+
+    // Step 5: Wait for Claude to respond with confirmation
+    await expect(chatInput).toBeEnabled({ timeout: 240000 });
+    // Wait for a message containing "Added" or "Done" to appear in the chat
+    // Look for "Added" or "I've added" in the chat area (excludes the "Done" tab button)
+    await expect(page.locator('.whitespace-pre-wrap').filter({ hasText: /Added|I've added/i })).toBeVisible({ timeout: 60000 });
+
+    // Step 6: Verify task appears in Today tab (in the todo list, not chat)
+    await page.waitForTimeout(3000); // Allow realtime sync
+    await page.click('button:has-text("Today")');
+    await page.waitForTimeout(1000);
+
+    // Look for the task specifically in the todo list (ul element) - use first() to handle duplicates
+    const todoListLocator = page.locator('ul').locator(`text="${uniqueTask}"`).first();
+    await expect(todoListLocator).toBeVisible({ timeout: 10000 });
+  });
+
+  test('Add via Chat from Optional tab creates task in Optional tab', async ({ page }) => {
+    test.setTimeout(600000);
+
+    // Step 1: Click on Optional tab
+    await page.click('button:has-text("Optional")');
+    await page.waitForTimeout(500);
+
+    // Step 2: Click the "Add via Chat" button
+    const addViaChatButton = page.locator('button[title="Add via Chat"]');
+    await expect(addViaChatButton).toBeVisible({ timeout: 5000 });
+    await addViaChatButton.click();
+
+    // Step 3: Wait for Claude to respond
+    const chatInput = page.locator('input[placeholder="Type your message..."]');
+    await expect(chatInput).toBeEnabled({ timeout: 240000 });
+
+    // Step 4: Provide the task
+    const uniqueTask = `Optional Task ${Date.now()}`;
+    await chatInput.fill(uniqueTask);
+    await page.click('button:has-text("Send")');
+
+    // Step 5: Wait for Claude to respond with confirmation
+    await expect(chatInput).toBeEnabled({ timeout: 240000 });
+    // Look for "Added" or "I've added" in the chat area (excludes the "Done" tab button)
+    await expect(page.locator('.whitespace-pre-wrap').filter({ hasText: /Added|I've added/i })).toBeVisible({ timeout: 60000 });
+
+    // Step 6: Verify task appears in Optional tab (in the todo list, not chat)
+    await page.waitForTimeout(3000);
+    await page.click('button:has-text("Optional")');
+    await page.waitForTimeout(1000);
+
+    const todoListLocator = page.locator('ul').locator(`text="${uniqueTask}"`).first();
+    await expect(todoListLocator).toBeVisible({ timeout: 10000 });
+  });
+
+  test('Add via Chat from Inbox tab creates task in Inbox tab', async ({ page }) => {
+    test.setTimeout(600000);
+
+    // Step 1: Click on Inbox tab
+    await page.click('button:has-text("Inbox")');
+    await page.waitForTimeout(500);
+
+    // Step 2: Click the "Add via Chat" button
+    const addViaChatButton = page.locator('button[title="Add via Chat"]');
+    await expect(addViaChatButton).toBeVisible({ timeout: 5000 });
+    await addViaChatButton.click();
+
+    // Step 3: Wait for Claude to respond
+    const chatInput = page.locator('input[placeholder="Type your message..."]');
+    await expect(chatInput).toBeEnabled({ timeout: 240000 });
+
+    // Step 4: Provide the task - use a simple unique name without 'inbox' in it
+    const timestamp = Date.now();
+    const uniqueTask = `VagueIdea${timestamp}`;
+    await chatInput.fill(uniqueTask);
+    await page.click('button:has-text("Send")');
+
+    // Step 5: Wait for Claude to respond with confirmation
+    await expect(chatInput).toBeEnabled({ timeout: 240000 });
+    // Look for confirmation patterns (Added, added, inbox, captured, etc.)
+    await expect(page.locator('.whitespace-pre-wrap').filter({ hasText: /Added|added|inbox|captured/i }).first()).toBeVisible({ timeout: 60000 });
+
+    // Step 6: Verify task appears in Inbox tab (in the todo list, not chat)
+    await page.waitForTimeout(3000);
+    await page.click('button:has-text("Inbox")');
+    await page.waitForTimeout(1000);
+
+    // Look for task with the timestamp - agent might modify the name slightly
+    const todoListLocator = page.locator('ul').locator(`text=/${timestamp}/`).first();
+    await expect(todoListLocator).toBeVisible({ timeout: 10000 });
+  });
+
+  test('Add via Chat from Later tab creates task in Later tab', async ({ page }) => {
+    test.setTimeout(600000);
+
+    // Step 1: Click on Later tab
+    await page.click('button:has-text("Later")');
+    await page.waitForTimeout(500);
+
+    // Step 2: Click the "Add via Chat" button
+    const addViaChatButton = page.locator('button[title="Add via Chat"]');
+    await expect(addViaChatButton).toBeVisible({ timeout: 5000 });
+    await addViaChatButton.click();
+
+    // Step 3: Wait for Claude to respond (it should ask what and when)
+    const chatInput = page.locator('input[placeholder="Type your message..."]');
+    await expect(chatInput).toBeEnabled({ timeout: 240000 });
+
+    // Step 4: Provide the task with a future date - use unique timestamp
+    const timestamp = Date.now();
+    const uniqueTask = `LaterTask${timestamp}`;
+    await chatInput.fill(`${uniqueTask} - next week`);
+    await page.click('button:has-text("Send")');
+
+    // Step 5: Wait for Claude to respond with confirmation
+    await expect(chatInput).toBeEnabled({ timeout: 240000 });
+    // Look for "Added" or "I've added" in the chat area
+    await expect(page.locator('.whitespace-pre-wrap').filter({ hasText: /Added|added/i })).toBeVisible({ timeout: 60000 });
+
+    // Step 6: Verify task appears in Later tab (in the todo list, not chat)
+    await page.waitForTimeout(3000);
+    await page.click('button:has-text("Later")');
+    await page.waitForTimeout(1000);
+
+    // Look for task with the timestamp - agent might parse the name differently
+    const todoListLocator = page.locator('ul').locator(`text=/${timestamp}/`).first();
+    await expect(todoListLocator).toBeVisible({ timeout: 10000 });
+  });
+});
+
 test.describe('Chat with Claude', () => {
   // These tests actually send messages to Claude and wait for responses
   // They have longer timeouts since Claude CLI can be slow
