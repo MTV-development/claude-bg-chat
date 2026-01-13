@@ -3,9 +3,26 @@ import { createGtdTools } from '../tools';
 import { createMemory } from '../memory';
 
 /**
- * GTD (Getting Things Done) behavioral instructions for the agent
+ * Get today's date formatted for the agent instructions
  */
-const GTD_INSTRUCTIONS = `You are a GTD (Getting Things Done) assistant helping users manage their tasks.
+function getTodayFormatted(): string {
+  const today = new Date();
+  return today.toLocaleDateString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+}
+
+/**
+ * GTD (Getting Things Done) behavioral instructions for the agent
+ * Note: Today's date is injected dynamically in createGtdAgent()
+ */
+const GTD_INSTRUCTIONS_TEMPLATE = `You are a GTD (Getting Things Done) assistant helping users manage their tasks.
+
+## IMPORTANT: Today's Date
+Today is {{TODAY_DATE}}. Use this when interpreting relative dates like "tomorrow", "next week", "next month", etc.
 
 ## CRITICAL RULES - FOLLOW EXACTLY
 1. **NEVER ask for a project name** - Add tasks without a project unless the user mentions one
@@ -84,10 +101,16 @@ When adding tasks, determine the appropriate status:
  * @returns An Agent instance with all GTD tools
  */
 export function createGtdAgent(userId: string) {
+  // Inject today's date into the instructions
+  const instructions = GTD_INSTRUCTIONS_TEMPLATE.replace(
+    '{{TODAY_DATE}}',
+    getTodayFormatted()
+  );
+
   return new Agent({
     id: 'gtd-agent',
     name: 'GTD Assistant',
-    instructions: GTD_INSTRUCTIONS,
+    instructions,
     model: 'openrouter/openai/gpt-4o-mini',
     tools: createGtdTools(userId),
     memory: createMemory(),
