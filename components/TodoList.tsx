@@ -232,6 +232,7 @@ export default function TodoList({
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [addMode, setAddMode] = useState<"task" | "project">("task");
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
 
   // Get data from Zustand store
   const isConnected = useIsConnected();
@@ -363,6 +364,35 @@ export default function TodoList({
     }
 
     setSelectedIds(new Set()); // Clear selection after triggering
+  };
+
+  const handleSelectAll = () => {
+    const allSelected =
+      todos.length > 0 && todos.every((t) => selectedIds.has(t.id));
+    if (allSelected) {
+      setSelectedIds(new Set()); // Deselect all
+    } else {
+      setSelectedIds(new Set(todos.map((t) => t.id))); // Select all
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.size === 0) return;
+    try {
+      for (const id of Array.from(selectedIds)) {
+        await fetch("/api/todos", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id }),
+        });
+      }
+      setSelectedIds(new Set());
+      // Store will be updated via Realtime subscription
+    } catch (err) {
+      console.error("Failed to delete todos:", err);
+    } finally {
+      setIsDeleteConfirmOpen(false);
+    }
   };
 
   // Clear selections and selected project when tab changes
@@ -547,9 +577,12 @@ export default function TodoList({
         {/* Always-visible action button bar */}
         {activeTab !== "howto" &&
           !(activeTab === "projects" && !selectedProjectId) && (
-            <div className="sticky top-0 z-10 mb-3 flex gap-2">
+            <div className="sticky top-0 z-10 mb-3 flex gap-2 items-center">
               {(() => {
                 const isDisabled = selectedIds.size === 0;
+                const allSelected =
+                  todos.length > 0 &&
+                  todos.every((t) => selectedIds.has(t.id));
                 let buttonLabel: string;
                 let buttonColorClasses: string;
 
@@ -572,6 +605,36 @@ export default function TodoList({
 
                 return (
                   <>
+                    {/* Select All checkbox */}
+                    <button
+                      onClick={handleSelectAll}
+                      disabled={todos.length === 0}
+                      className={`w-5 h-5 rounded transition-colors flex items-center justify-center ${
+                        todos.length === 0
+                          ? "opacity-50 cursor-not-allowed border-2 border-theme-border-secondary"
+                          : allSelected
+                          ? "bg-theme-accent-primary hover:bg-theme-accent-primary-hover cursor-pointer"
+                          : "border-2 border-theme-border-secondary hover:border-theme-accent-primary hover:bg-theme-info-bg cursor-pointer"
+                      }`}
+                      title={allSelected ? "Deselect all" : "Select all"}
+                      data-testid="select-all-checkbox"
+                    >
+                      {allSelected && (
+                        <svg
+                          className="w-3 h-3 text-theme-text-inverse"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={3}
+                            d="M5 13l4 4L19 7"
+                          />
+                        </svg>
+                      )}
+                    </button>
                     <button
                       onClick={
                         activeTab === "inbox"
@@ -586,6 +649,19 @@ export default function TodoList({
                       }`}
                     >
                       {buttonLabel}
+                    </button>
+                    {/* Delete button */}
+                    <button
+                      onClick={() => setIsDeleteConfirmOpen(true)}
+                      disabled={isDisabled}
+                      className={`text-xs py-1 px-3 rounded font-medium transition-colors text-theme-text-inverse bg-theme-error ${
+                        isDisabled
+                          ? "opacity-50 cursor-not-allowed"
+                          : "hover:opacity-90"
+                      }`}
+                      data-testid="delete-button"
+                    >
+                      Delete{selectedIds.size > 0 && ` (${selectedIds.size})`}
                     </button>
                     {activeTab === "focus" && (
                       <BulkPostponeDropdown
@@ -1103,6 +1179,18 @@ export default function TodoList({
         confirmVariant="danger"
         onConfirm={handleRemoveTask}
         onCancel={handleKeepTask}
+      />
+
+      {/* Delete Confirmation Modal for bulk delete */}
+      <ConfirmationModal
+        isOpen={isDeleteConfirmOpen}
+        title="Delete Tasks"
+        message={`Are you sure you want to delete ${selectedIds.size} task(s)? This cannot be undone.`}
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        confirmVariant="danger"
+        onConfirm={handleBulkDelete}
+        onCancel={() => setIsDeleteConfirmOpen(false)}
       />
 
       {/* Add Item Modal */}

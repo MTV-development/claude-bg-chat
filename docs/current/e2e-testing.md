@@ -11,18 +11,21 @@ This document describes how to run end-to-end tests for the GTD Todo Manager app
 
 ## E2E Test Architecture
 
-E2E tests run on a **separate port (3001)** with mock authentication enabled. This ensures:
+E2E tests run on a **separate port (3050)** with mock authentication enabled. This ensures:
 - Normal development on port 3000 uses real authentication
 - E2E tests have consistent, repeatable test data
 - No manual toggling of test mode required
+- Port 3050 avoids conflicts with dev server or dangling test instances
 
 ### How It Works
 
 Playwright automatically handles everything:
 
 1. **Playwright config** (`playwright.config.ts`) sets `NEXT_PUBLIC_E2E_TEST_USER_ID` via `webServer.env`
-2. **Separate port** - Tests run on port 3001, dev server runs on port 3000
-3. **Fresh server** - Playwright always starts a fresh server for tests (`reuseExistingServer: false`)
+2. **Separate port** - Tests run on port 3050, dev server runs on port 3000
+3. **Server reuse** - Playwright reuses existing server on port 3050 if available (`reuseExistingServer: true`)
+
+**Important**: The auth bypass is controlled by the `NEXT_PUBLIC_E2E_TEST_USER_ID` environment variable, NOT the port number. The port is only for isolation from the dev server.
 
 When the test server starts with `NEXT_PUBLIC_E2E_TEST_USER_ID`:
 
@@ -53,14 +56,19 @@ supabase.from('users').select('id, email').limit(5).then(r => console.log(r.data
 
 ### Quick Command Reference
 
-```bash
-# Run all E2E tests (headless)
-npm run test:e2e
+**Important**: Always run tests with `--headed` to see the browser and monitor what's happening. This makes debugging much easier.
 
-# Run E2E tests with browser visible
+```bash
+# Run all E2E tests with browser visible (RECOMMENDED)
 npx playwright test --headed
 
-# Run a specific test file
+# Run a specific test file with browser visible
+npx playwright test e2e/realtime-sync.spec.ts --headed
+
+# Run all E2E tests (headless - not recommended for debugging)
+npm run test:e2e
+
+# Run a specific test file (headless)
 npx playwright test e2e/realtime-sync.spec.ts
 
 # Run chat tests (use single worker to avoid Claude CLI contention)
@@ -81,6 +89,7 @@ npx playwright test e2e/realtime-sync.spec.ts --debug
 | File | Description | Notes |
 |------|-------------|-------|
 | `e2e/realtime-sync.spec.ts` | Tests realtime sync (initial load, add todo, complete todo) | Fast (~15s) |
+| `e2e/delete-todos.spec.ts` | Tests delete functionality (select all, delete button, bulk delete) | ~30s |
 | `e2e/chat-ui-integration.spec.ts` | Tests chat UI and Claude CLI integration | Use `--workers=1` |
 
 ## Test Structure
@@ -92,6 +101,18 @@ Tests core realtime functionality:
 1. **Initial Load Test** - Verifies todos are loaded from Supabase on page load
 2. **Add Todo Test** - Creates a new todo and verifies it appears via realtime
 3. **Complete Todo Test** - Completes a todo and verifies the update via realtime
+
+### delete-todos.spec.ts
+
+Tests delete functionality and Select All:
+
+1. **Delete Button Disabled** - Verifies delete button is disabled when nothing selected
+2. **Delete Button Count** - Verifies delete button shows count when tasks selected
+3. **Select All Checkbox** - Tests select all/deselect all functionality
+4. **Single Delete** - Deletes a single task and verifies realtime removal
+5. **Bulk Delete** - Deletes multiple tasks and verifies realtime removal
+6. **Cancel Delete** - Verifies cancel doesn't delete tasks
+7. **Select All on Tabs** - Verifies select all works on different tabs
 
 ### chat-ui-integration.spec.ts
 
@@ -174,12 +195,18 @@ npx playwright show-report
 2. Add explicit waits for realtime updates
 3. Check for race conditions in assertions
 
+### DELETE events not received via Realtime
+
+If delete operations complete but the UI doesn't update, Supabase is not sending DELETE events. This is a database configuration issue.
+
+**Fix**: See [Supabase Setup - Step 5](./supabase-setup.md#step-5-enable-delete-events-for-realtime) for the required SQL commands.
+
 ## Playwright Configuration
 
 ```typescript
 // playwright.config.ts
 const E2E_TEST_USER_ID = '0b86d7e4-68ae-4da4-b30f-3f47da723f84';
-const E2E_PORT = 3001;
+const E2E_PORT = 3050;
 
 export default defineConfig({
   testDir: './e2e',
@@ -191,9 +218,9 @@ export default defineConfig({
   webServer: {
     command: `npx next dev --port ${E2E_PORT}`,
     url: `http://localhost:${E2E_PORT}`,
-    reuseExistingServer: false,
+    reuseExistingServer: true, // Reuse server to avoid port conflicts
     env: {
-      NEXT_PUBLIC_E2E_TEST_USER_ID: E2E_TEST_USER_ID,
+      NEXT_PUBLIC_E2E_TEST_USER_ID: E2E_TEST_USER_ID, // Auth bypass is tied to this env var, not the port
     },
     timeout: 120000,
   },
@@ -202,7 +229,7 @@ export default defineConfig({
 
 ## Development vs E2E Mode
 
-| Aspect | Development (port 3000) | E2E Tests (port 3001) |
+| Aspect | Development (port 3000) | E2E Tests (port 3050) |
 |--------|-------------------------|------------------------|
 | Authentication | Real Supabase auth | Mocked with test user |
 | User ID | From Supabase session | `E2E_TEST_USER_ID` |

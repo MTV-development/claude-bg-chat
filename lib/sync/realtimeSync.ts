@@ -66,16 +66,27 @@ export function setupTodoSync(
 
   // Subscribe to todos table changes
   log('Setting up postgres_changes listener for todos table');
+  const todoFilter = `user_id=eq.${userId}`;
+  log('Todo subscription filter:', todoFilter);
   channel.on(
     'postgres_changes',
     {
       event: '*',
       schema: 'public',
       table: 'todos',
-      filter: `user_id=eq.${userId}`,
+      filter: todoFilter,
     },
     (payload) => {
-      log('Received todo change:', payload.eventType, payload);
+      const payloadUserId = (payload.new as Record<string, unknown>)?.user_id || (payload.old as Record<string, unknown>)?.user_id;
+      log('Received todo change:', payload.eventType, 'for user_id:', payloadUserId, 'expected:', userId, payload);
+
+      // SAFETY CHECK: Verify this event is for the correct user
+      // Supabase filter should handle this, but we double-check client-side
+      if (payloadUserId && payloadUserId !== userId) {
+        log('WARNING: Received todo change for WRONG USER! Ignoring. Got:', payloadUserId, 'Expected:', userId);
+        return;
+      }
+
       const { eventType, new: newRow, old: oldRow } = payload;
 
       // Transform and apply the change
@@ -92,16 +103,26 @@ export function setupTodoSync(
 
   // Subscribe to projects table changes
   log('Setting up postgres_changes listener for projects table');
+  const projectFilter = `user_id=eq.${userId}`;
+  log('Project subscription filter:', projectFilter);
   channel.on(
     'postgres_changes',
     {
       event: '*',
       schema: 'public',
       table: 'projects',
-      filter: `user_id=eq.${userId}`,
+      filter: projectFilter,
     },
     (payload) => {
-      log('Received project change:', payload.eventType, payload);
+      const payloadUserId = (payload.new as Record<string, unknown>)?.user_id || (payload.old as Record<string, unknown>)?.user_id;
+      log('Received project change:', payload.eventType, 'for user_id:', payloadUserId, 'expected:', userId, payload);
+
+      // SAFETY CHECK: Verify this event is for the correct user
+      if (payloadUserId && payloadUserId !== userId) {
+        log('WARNING: Received project change for WRONG USER! Ignoring. Got:', payloadUserId, 'Expected:', userId);
+        return;
+      }
+
       const { eventType, new: newRow, old: oldRow } = payload;
 
       // Transform and apply the change

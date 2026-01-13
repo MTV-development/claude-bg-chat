@@ -3,9 +3,10 @@ import { defineConfig, devices } from '@playwright/test';
 /**
  * E2E Test Configuration
  *
- * IMPORTANT: E2E tests run on a separate port (3001) with mock auth enabled.
+ * IMPORTANT: E2E tests run on a separate port (3050) with mock auth enabled.
  * This allows normal development on port 3000 to use real authentication.
  *
+ * The auth bypass is controlled by NEXT_PUBLIC_E2E_TEST_USER_ID env var, not the port.
  * The E2E test user ID must exist in the database for tests to work.
  * See: docs/current/e2e-testing.md
  */
@@ -13,8 +14,8 @@ import { defineConfig, devices } from '@playwright/test';
 // E2E test user - must exist in the database
 const E2E_TEST_USER_ID = '0b86d7e4-68ae-4da4-b30f-3f47da723f84';
 
-// Use separate port for E2E tests to avoid conflicting with dev server
-const E2E_PORT = 3001;
+// Use separate port (3050) for E2E tests to avoid conflicting with dev server (3000) or other test instances
+const E2E_PORT = 3050;
 
 export default defineConfig({
   testDir: './e2e',

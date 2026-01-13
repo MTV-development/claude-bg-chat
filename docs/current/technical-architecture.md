@@ -328,5 +328,6 @@ See [Environment Validation](./environment-validation.md) for:
 ## Related Documentation
 
 - [Overview](./overview.md) - Project introduction
+- [Supabase Setup](./supabase-setup.md) - **Required** database configuration steps
 - [High-Level Concept](./high-level-concept.md) - GTD workflow design
 - [Data Model](./data-model.md) - Data structures and storage

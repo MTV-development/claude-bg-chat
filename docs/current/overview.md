@@ -69,8 +69,13 @@ claude-bg-chat/
 └── docs/                 # Documentation
 ```
 
+## Getting Started
+
+**New to this project?** Start with the [Supabase Setup Guide](./supabase-setup.md) to configure your database.
+
 ## Related Documentation
 
+- [Supabase Setup](./supabase-setup.md) - **Required** database configuration steps
 - [High-Level Concept](./high-level-concept.md) - GTD principles and workflow design
 - [Data Model](./data-model.md) - Data structures and storage
 - [Technical Architecture](./technical-architecture.md) - System components and interactions
