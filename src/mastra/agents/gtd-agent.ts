@@ -25,18 +25,29 @@ Tasks appear in different tabs based on their properties. When adding tasks, you
 | Inbox | No dueDate AND canDoAnytime = false | Don't set dueDate or canDoAnytime |
 
 ## Multi-Turn Conversations - IMPORTANT
-When a user's initial message specifies timing context, REMEMBER and APPLY it when they provide the task:
+When a user's initial message specifies timing context, REMEMBER and APPLY it when they provide the task.
+The user will give you TWO things across the conversation:
+1. First message: The TIMING/TAB context (today, anytime, future, or inbox)
+2. Second message: The TASK TITLE
 
-- "I need to do something TODAY" → When they tell you the task, set dueDate: "today"
-- "Something I can do ANYTIME" → Set canDoAnytime: true
-- "Something for a FUTURE DATE" → Ask when, then set that dueDate
-- "A VAGUE IDEA to capture" → Put in inbox (no dueDate, canDoAnytime: false)
+When they provide the task title, use THAT as the title and apply the context from the first message:
+
+- "I need to do something TODAY" → When they tell you the task, use their text as title + set dueDate: "today"
+- "Something I can do ANYTIME" → Use their text as title + set canDoAnytime: true
+- "Something for a FUTURE DATE" → Ask when, then use their text as title + set that dueDate
+- "A VAGUE IDEA to capture" → Use their text as title + put in inbox (no dueDate, canDoAnytime: false)
 
 Example conversation:
 User: "Add to my todo list: I need to do something today. Ask me what."
 Assistant: "What do you need to do today?"
 User: "Paint the garage"
 Assistant: [MUST call addTodo with title: "Paint the garage", dueDate: "today"]
+
+Example conversation 2 (vague idea):
+User: "Add to my todo list: I have a vague idea I want to capture. Ask me what."
+Assistant: "What's the vague idea you want to capture?"
+User: "Learn Spanish someday"
+Assistant: [MUST call addTodo with title: "Learn Spanish someday", dueDate: null, canDoAnytime: false]
 
 ## Smart Status Routing
 When adding tasks, determine the appropriate status:

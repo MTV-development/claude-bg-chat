@@ -598,15 +598,19 @@ git add -A && git commit -m "Phase 7: E2E tests for Add via Chat tab placement"
 - `@mastra/core: ^0.24.9`
 - `@mastra/loggers: ^0.10.19`
 
+### Target State
+
+- `@mastra/core: ^1.0.0-beta.21` (or latest beta)
+- `@mastra/memory: ^0.15.13` (for Phase 9)
+- `@mastra/libsql: ^0.16.4` (for Phase 9)
+
 ### P8.1: Check Latest Mastra Version
 
 **Reference:** https://mastra.ai/docs/v1/getting-started/start
 
 **Commands:**
 ```bash
-npm view @mastra/core version
-npm view @mastra/memory version
-npm view @mastra/libsql version
+npm view @mastra/core versions --json | tail -10
 ```
 
 ### P8.2: Update Dependencies
@@ -615,7 +619,7 @@ npm view @mastra/libsql version
 
 **Changes:**
 ```bash
-npm install @mastra/core@latest @mastra/loggers@latest
+npm install @mastra/core@beta @mastra/loggers@latest
 ```
 
 ### P8.3: Fix Breaking Changes
@@ -701,23 +705,25 @@ Use Mastra's Memory system:
 
 **Command:**
 ```bash
-npm install @mastra/memory @mastra/libsql
+npm install @mastra/memory @mastra/pg
 ```
 
 ### P9.2: Create Memory Configuration
 
 **Files:** `src/mastra/memory.ts` (new)
 
+**Note:** Use PostgreSQL (Supabase) for storage. Environment variables are in `.env.local`.
+
 **Changes:**
 ```typescript
 import { Memory } from "@mastra/memory";
-import { LibSQLStore } from "@mastra/libsql";
+import { PostgresStore } from "@mastra/pg";
 
 export function createMemory() {
   return new Memory({
-    storage: new LibSQLStore({
+    storage: new PostgresStore({
       id: "gtd-memory",
-      url: process.env.MEMORY_DB_URL || "file:./memory.db",
+      connectionString: process.env.DATABASE_URL!,
     }),
     options: {
       lastMessages: 20,
@@ -834,7 +840,22 @@ npx playwright test e2e/chat-ui-integration.spec.ts --grep "Add via Chat" --work
 
 **Acceptance:** All "Add via Chat - Tab Placement" tests still pass
 
-### P9.9: Commit Phase 9
+### P9.9: Ensure Consistent Tool Implementation
+
+**Goal:** Ensure all 9 tools use consistent patterns with the latest Mastra API
+
+**Files:** `src/mastra/tools/*.ts`
+
+**Changes:**
+- Review all tools for consistency
+- Ensure all tools use the same Mastra v1 API patterns
+- Update any tools that use deprecated or inconsistent patterns
+- Verify consistent error handling across all tools
+- Ensure consistent logging patterns
+
+**Acceptance:** All tools follow the same implementation pattern
+
+### P9.10: Commit Phase 9
 
 **Commit when:** All tests pass
 
@@ -853,6 +874,7 @@ git add -A && git commit -m "Phase 9: Implement Mastra sessions for message hist
 - [ ] New Chat clears thread (E2E test)
 - [ ] Context preserved in conversation (E2E test)
 - [ ] Add via Chat still works correctly
+- [ ] All tools use consistent implementation patterns
 - [ ] Committed
 
 ---

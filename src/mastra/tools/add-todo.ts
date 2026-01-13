@@ -16,13 +16,13 @@ export function createAddTodoTool(userId: string) {
       title: z.string().describe('The task title or description'),
       dueDate: z
         .string()
-        .optional()
+        .nullish()
         .describe(
           'Due date. Use "today" for Focus/Today tab tasks. Use "tomorrow" or "+N days" for Later tab. Omit for Inbox or Optional tabs.'
         ),
       canDoAnytime: z
         .boolean()
-        .optional()
+        .nullish()
         .describe(
           'Set to true for Optional tab tasks (can be done anytime, no deadline). Omit or set false otherwise.'
         ),
