@@ -1,5 +1,6 @@
 import { Agent } from '@mastra/core/agent';
 import { createGtdTools } from '../tools';
+import { createMemory } from '../memory';
 
 /**
  * GTD (Getting Things Done) behavioral instructions for the agent
@@ -89,5 +90,6 @@ export function createGtdAgent(userId: string) {
     instructions: GTD_INSTRUCTIONS,
     model: 'openrouter/openai/gpt-4o-mini',
     tools: createGtdTools(userId),
+    memory: createMemory(),
   });
 }

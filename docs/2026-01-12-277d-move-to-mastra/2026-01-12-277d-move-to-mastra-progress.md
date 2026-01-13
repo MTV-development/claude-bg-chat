@@ -2,7 +2,7 @@
 
 **Plan:** [2026-01-12-277d-move-to-mastra-plan.md](./2026-01-12-277d-move-to-mastra-plan.md)
 **Started:** 2026-01-12
-**Status:** Complete
+**Status:** All Phases Complete (P0-P9)
 
 ## Progress Tracker
 
@@ -17,7 +17,7 @@
 | P6 | Complete | 2026-01-12 | 2026-01-12 | E2E testing |
 | P7 | Complete | 2026-01-13 | 2026-01-13 | E2E tests for Add via Chat tab placement |
 | P8 | Complete | 2026-01-13 | 2026-01-13 | Upgrade to Mastra v1 |
-| P9 | Not Started | - | - | Mastra sessions for message history |
+| P9 | Complete | 2026-01-13 | 2026-01-13 | Mastra sessions for message history |
 
 ## Session Log
 
@@ -266,6 +266,50 @@ npm run dev
 - `src/mastra/tools/remove-todo.ts`
 - `src/mastra/tools/uncomplete-todo.ts`
 - `src/mastra/tools/update-todo.ts`
+
+### Test Results
+- Type check (`npx tsc --noEmit`): PASS
+- Unit tests (`npm test`): PASS (38/38)
+
+---
+
+## Session: 2026-01-13 (Phase 9)
+
+**Phase/Task:** P9 - Implement Mastra Sessions for Message History
+**Status:** Complete
+
+### Completed
+- [x] P9.1: Installed Memory dependencies
+  - Comment: Installed @mastra/memory@beta and @mastra/pg@beta
+- [x] P9.2: Created PostgresStore configuration
+  - Comment: `src/mastra/memory.ts` - Uses DATABASE_URL for Supabase connection
+- [x] P9.3: Integrated memory with GTD agent
+  - Comment: Added `memory: createMemory()` to Agent configuration
+- [x] P9.4: Updated chat route for sessions
+  - Comment: Added threadId support, memory options passed to agent.stream()
+- [x] P9.5: Updated client chat component
+  - Comment: Parses threadId from response, sends threadId with requests
+
+### Architecture Changes
+
+**Server-side:**
+- Messages are stored in PostgreSQL via Mastra Memory
+- Each conversation has a unique threadId
+- Server only needs the new message (not full history) - Mastra handles retrieval
+
+**Client-side:**
+- Stores threadId in React state
+- Sends only new message + threadId to API
+- Parses metadata JSON from first line of streamed response
+- "New Chat" clears threadId to start fresh conversation
+
+### Files Created
+- `src/mastra/memory.ts` - Memory configuration with PostgresStore
+
+### Files Modified
+- `src/mastra/agents/gtd-agent.ts` - Added memory integration
+- `app/api/chat/route.ts` - Session support with threadId
+- `app/page.tsx` - Client-side threadId handling
 
 ### Test Results
 - Type check (`npx tsc --noEmit`): PASS

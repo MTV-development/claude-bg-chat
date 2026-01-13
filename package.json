@@ -20,6 +20,8 @@
     "@ai-sdk/react": "^3.0.11",
     "@mastra/core": "^1.0.0-beta.21",
     "@mastra/loggers": "^1.0.0-beta.4",
+    "@mastra/memory": "^1.0.0-beta.12",
+    "@mastra/pg": "^1.0.0-beta.12",
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.90.1",
     "ai": "^6.0.11",

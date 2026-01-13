@@ -3,8 +3,14 @@
  *
  * Handles chat requests by forwarding them to the Mastra GTD agent
  * and streaming the response back to the client.
+ *
+ * Uses Mastra Memory for conversation persistence:
+ * - Each conversation has a threadId
+ * - Messages are stored server-side in PostgreSQL via Mastra Memory
+ * - Client only needs to send the new message (not full history)
  */
 
+import { randomUUID } from 'crypto';
 import { getCurrentUser } from '@/lib/services/auth/get-current-user';
 import { createGtdAgent } from '@/src/mastra/agents/gtd-agent';
 
@@ -19,27 +25,46 @@ export async function POST(req: Request) {
       return new Response('Unauthorized', { status: 401 });
     }
 
-    const { messages } = await req.json();
+    const { message, threadId: clientThreadId, messages } = await req.json();
 
-    // Validate messages array
-    if (!messages || !Array.isArray(messages) || messages.length === 0) {
-      return new Response('No messages', { status: 400 });
+    // Support both old format (messages array) and new format (single message + threadId)
+    const userMessage = message || (messages && messages[messages.length - 1]?.content);
+
+    if (!userMessage) {
+      return new Response('No message provided', { status: 400 });
     }
+
+    // Use provided threadId or generate a new one
+    const threadId = clientThreadId || randomUUID();
 
     // Create agent with user-bound tools
     const agent = createGtdAgent(currentUser.userId);
 
-    // Stream the response with full conversation history
-    // This allows the agent to understand context from earlier messages
-    // (e.g., "I need to do something today" followed by "paint garage")
-    const stream = await agent.stream(messages);
+    // Stream the response with Mastra Memory
+    // Memory automatically handles conversation history retrieval
+    const stream = await agent.stream(userMessage, {
+      memory: {
+        resource: currentUser.userId,
+        thread: threadId,
+      },
+    });
 
     // Create encoder for streaming
     const encoder = new TextEncoder();
 
+    // Track if we've sent the threadId header
+    let headerSent = false;
+
     const readableStream = new ReadableStream({
       async start(controller) {
         try {
+          // Send threadId as first line (JSON metadata)
+          // Format: {"threadId":"xxx"}\n
+          // Client can parse this to track the conversation
+          const metadata = JSON.stringify({ threadId }) + '\n';
+          controller.enqueue(encoder.encode(metadata));
+          headerSent = true;
+
           // Use fullStream to handle all chunks including tool calls
           for await (const chunk of stream.fullStream) {
             // Only emit text-delta chunks to the client
@@ -59,6 +84,11 @@ export async function POST(req: Request) {
           console.error('[Chat] Stream error:', error);
           const errorMessage =
             error instanceof Error ? error.message : 'Unknown error';
+          // If header not sent yet, send it first
+          if (!headerSent) {
+            const metadata = JSON.stringify({ threadId, error: true }) + '\n';
+            controller.enqueue(encoder.encode(metadata));
+          }
           controller.enqueue(encoder.encode(`\n\nError: ${errorMessage}`));
           controller.close();
         }

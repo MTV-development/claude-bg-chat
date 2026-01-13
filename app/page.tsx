@@ -5,10 +5,6 @@ import TodoList from '@/components/TodoList';
 import ThemeToggle from '@/components/ThemeToggle';
 import AuthUI from '@/components/AuthUI';
 
-// Session marker format from API
-const SESSION_MARKER = '\n<!--CLAUDE_SESSION:';
-const SESSION_MARKER_END = '-->';
-
 interface Message {
   id: string;
   role: 'user' | 'assistant';
@@ -32,28 +28,25 @@ function stripInternalContent(text: string): string {
 }
 
 /**
- * Extract Claude session ID from response text and return clean text
+ * Parse response stream metadata from first line
+ * Format: {"threadId":"xxx"}\n
  */
-function extractSessionId(text: string): { cleanText: string; sessionId: string | null } {
-  const markerStart = text.lastIndexOf(SESSION_MARKER);
-  if (markerStart === -1) {
-    return { cleanText: text, sessionId: null };
+function parseStreamMetadata(text: string): { content: string; threadId: string | null } {
+  const newlineIndex = text.indexOf('\n');
+  if (newlineIndex === -1) {
+    // No newline yet - might be incomplete metadata
+    return { content: '', threadId: null };
   }
 
-  const markerEnd = text.indexOf(SESSION_MARKER_END, markerStart);
-  if (markerEnd === -1) {
-    return { cleanText: text, sessionId: null };
-  }
-
-  const jsonStart = markerStart + SESSION_MARKER.length;
-  const jsonStr = text.substring(jsonStart, markerEnd);
+  const firstLine = text.substring(0, newlineIndex);
+  const content = text.substring(newlineIndex + 1);
 
   try {
-    const data = JSON.parse(jsonStr);
-    const cleanText = text.substring(0, markerStart);
-    return { cleanText, sessionId: data.claudeSessionId || null };
+    const metadata = JSON.parse(firstLine);
+    return { content, threadId: metadata.threadId || null };
   } catch {
-    return { cleanText: text, sessionId: null };
+    // First line wasn't valid JSON - treat as content
+    return { content: text, threadId: null };
   }
 }
 
@@ -65,7 +58,7 @@ export default function Chat() {
   const [isLoading, setIsLoading] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  const [claudeSessionId, setClaudeSessionId] = useState<string | null>(null);
+  const [threadId, setThreadId] = useState<string | null>(null);
   const [isPanelOpen, setIsPanelOpen] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -103,16 +96,13 @@ export default function Chat() {
     setError(null);
 
     try {
+      // Send just the new message + threadId (server uses Mastra Memory for history)
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          messages: [...messages, userMessage].map(m => ({
-            role: m.role,
-            content: m.content,
-          })),
-          allowedTools: ['Read', 'Write', 'Skill', 'Bash'],
-          claudeSessionId: claudeSessionId,
+          message: text,
+          threadId: threadId, // Will be generated server-side if null
         }),
       });
 
@@ -133,6 +123,7 @@ export default function Chat() {
 
       const decoder = new TextDecoder();
       let fullText = '';
+      let receivedThreadId: string | null = null;
 
       while (true) {
         const { done, value } = await reader.read();
@@ -144,31 +135,38 @@ export default function Chat() {
         // Mark as streaming once we receive first chunk
         if (!isStreaming) setIsStreaming(true);
 
-        // Update display (may include session marker temporarily)
+        // Parse metadata from first line to extract threadId
+        const { content, threadId: parsedThreadId } = parseStreamMetadata(fullText);
+        if (parsedThreadId && !receivedThreadId) {
+          receivedThreadId = parsedThreadId;
+          setThreadId(parsedThreadId);
+        }
+
+        // Update display with content (without metadata)
         setMessages(prev =>
           prev.map(m =>
             m.id === assistantMessage.id
-              ? { ...m, content: fullText }
+              ? { ...m, content }
               : m
           )
         );
       }
 
-      // Extract session ID and clean the text
-      const { cleanText, sessionId } = extractSessionId(fullText);
+      // Final update with complete content
+      const { content: finalContent, threadId: finalThreadId } = parseStreamMetadata(fullText);
 
-      // Update with clean text (without session marker)
+      // Update with final content
       setMessages(prev =>
         prev.map(m =>
           m.id === assistantMessage.id
-            ? { ...m, content: cleanText }
+            ? { ...m, content: finalContent }
             : m
         )
       );
 
-      // Store session ID for future requests (warm CLI)
-      if (sessionId) {
-        setClaudeSessionId(sessionId);
+      // Ensure threadId is stored
+      if (finalThreadId && !threadId) {
+        setThreadId(finalThreadId);
       }
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Unknown error'));
@@ -217,7 +215,7 @@ export default function Chat() {
 
   const handleNewChat = () => {
     setMessages([]);
-    setClaudeSessionId(null);
+    setThreadId(null); // Start a fresh conversation thread
     setError(null);
     setTimeout(() => inputRef.current?.focus(), 100);
   };
@@ -241,10 +239,10 @@ export default function Chat() {
           <div>
             <h1 className="text-xl font-semibold text-theme-text-primary">Claude Chat</h1>
             <p className="text-sm text-theme-text-secondary">
-              Chat interface for Claude Code
-              {claudeSessionId && (
-                <span className="ml-2 text-theme-success" title="Session active - faster responses">
-                  (warm session)
+              GTD Task Manager
+              {threadId && (
+                <span className="ml-2 text-theme-success" title="Conversation history preserved">
+                  (active thread)
                 </span>
               )}
             </p>
