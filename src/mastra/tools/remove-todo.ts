@@ -25,70 +25,47 @@ export function createRemoveTodoTool(userId: string) {
     }),
     outputSchema: z.object({
       success: z.boolean(),
-      count: z.number().optional(),
+      count: z.number(),
       removedTask: z.string().optional(),
-      error: z.string().optional(),
     }),
-    execute: async ({ context }) => {
-      try {
-        // Must have either identifier or project
-        if (!context.identifier && !context.project) {
-          return {
-            success: false,
-            error: 'Please specify either an identifier for a single task or a project name',
-          };
+    execute: async (inputData) => {
+      // Must have either identifier or project
+      if (!inputData.identifier && !inputData.project) {
+        throw new Error('Please specify either an identifier for a single task or a project name');
+      }
+
+      // If project specified, remove all tasks in project
+      if (inputData.project) {
+        const result = await deleteProjectTodos(userId, inputData.project);
+        if (!result) {
+          throw new Error(`Could not find project "${inputData.project}"`);
         }
-
-        // If project specified, remove all tasks in project
-        if (context.project) {
-          const result = await deleteProjectTodos(userId, context.project);
-          if (!result) {
-            return {
-              success: false,
-              error: `Could not find project "${context.project}"`,
-            };
-          }
-          return {
-            success: true,
-            count: result.count,
-          };
-        }
-
-        // Otherwise, find and remove single task
-        if (context.identifier) {
-          const todo = await findTodo(userId, context.identifier);
-          if (!todo) {
-            return {
-              success: false,
-              error: `Could not find a task matching "${context.identifier}"`,
-            };
-          }
-
-          const deleted = await deleteTodo(userId, todo.id);
-          if (!deleted) {
-            return {
-              success: false,
-              error: 'Failed to delete task',
-            };
-          }
-
-          return {
-            success: true,
-            count: 1,
-            removedTask: todo.title,
-          };
-        }
-
         return {
-          success: false,
-          error: 'No identifier or project specified',
-        };
-      } catch (error) {
-        return {
-          success: false,
-          error: error instanceof Error ? error.message : 'Failed to remove todo',
+          success: true,
+          count: result.count,
         };
       }
+
+      // Otherwise, find and remove single task
+      if (inputData.identifier) {
+        const todo = await findTodo(userId, inputData.identifier);
+        if (!todo) {
+          throw new Error(`Could not find a task matching "${inputData.identifier}"`);
+        }
+
+        const deleted = await deleteTodo(userId, todo.id);
+        if (!deleted) {
+          throw new Error('Failed to delete task');
+        }
+
+        return {
+          success: true,
+          count: 1,
+          removedTask: todo.title,
+        };
+      }
+
+      throw new Error('No identifier or project specified');
     },
   });
 }

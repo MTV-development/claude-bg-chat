@@ -37,42 +37,34 @@ export function createListTodosTool(userId: string) {
       ),
       count: z.number(),
     }),
-    execute: async ({ context }) => {
-      try {
-        // Get todos, optionally filtered by tab
-        let todos = await listTodos(userId, context.tab as TabType | undefined);
+    execute: async (inputData) => {
+      // Get todos, optionally filtered by tab
+      let todos = await listTodos(userId, inputData.tab as TabType | undefined);
 
-        // Filter by project if specified
-        if (context.project) {
-          const projectLower = context.project.toLowerCase();
-          todos = todos.filter(
-            (t) => t.project && t.project.toLowerCase() === projectLower
-          );
-        }
-
-        // Map to output format with tab info
-        const result = todos.map((t) => ({
-          id: t.id,
-          title: t.title,
-          nextAction: t.nextAction,
-          dueDate: t.dueDate,
-          status: t.status,
-          project: t.project,
-          tab: getItemTab(t),
-          canDoAnytime: t.canDoAnytime,
-        }));
-
-        return {
-          todos: result,
-          count: result.length,
-        };
-      } catch (error) {
-        // Return empty list on error (don't want to break the agent)
-        return {
-          todos: [],
-          count: 0,
-        };
+      // Filter by project if specified
+      if (inputData.project) {
+        const projectLower = inputData.project.toLowerCase();
+        todos = todos.filter(
+          (t) => t.project && t.project.toLowerCase() === projectLower
+        );
       }
+
+      // Map to output format with tab info
+      const result = todos.map((t) => ({
+        id: t.id,
+        title: t.title,
+        nextAction: t.nextAction,
+        dueDate: t.dueDate,
+        status: t.status,
+        project: t.project,
+        tab: getItemTab(t),
+        canDoAnytime: t.canDoAnytime,
+      }));
+
+      return {
+        todos: result,
+        count: result.length,
+      };
     },
   });
 }

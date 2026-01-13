@@ -24,64 +24,48 @@ export function createClarifyTodoTool(userId: string) {
     }),
     outputSchema: z.object({
       success: z.boolean(),
-      todo: z
-        .object({
-          id: z.string(),
-          title: z.string(),
-          nextAction: z.string(),
-          status: z.string(),
-          project: z.string().nullable(),
-        })
-        .optional(),
-      error: z.string().optional(),
+      todo: z.object({
+        id: z.string(),
+        title: z.string(),
+        nextAction: z.string(),
+        status: z.string(),
+        project: z.string().nullable(),
+      }),
     }),
-    execute: async ({ context }) => {
-      try {
-        // Find the todo
-        const todo = await findTodo(userId, context.identifier);
-        if (!todo) {
-          return {
-            success: false,
-            error: `Could not find a task matching "${context.identifier}"`,
-          };
-        }
-
-        // Get or create project if specified
-        let projectId: string | null = todo.projectId;
-        if (context.project) {
-          projectId = await getOrCreateProject(userId, context.project);
-        }
-
-        // Update with nextAction and set to active
-        const updated = await updateTodo(userId, todo.id, {
-          nextAction: context.nextAction,
-          status: 'active',
-          projectId,
-        });
-
-        if (!updated) {
-          return {
-            success: false,
-            error: 'Failed to update task',
-          };
-        }
-
-        return {
-          success: true,
-          todo: {
-            id: updated.id,
-            title: updated.title,
-            nextAction: context.nextAction,
-            status: updated.status,
-            project: context.project ?? todo.project,
-          },
-        };
-      } catch (error) {
-        return {
-          success: false,
-          error: error instanceof Error ? error.message : 'Failed to clarify todo',
-        };
+    execute: async (inputData) => {
+      // Find the todo
+      const todo = await findTodo(userId, inputData.identifier);
+      if (!todo) {
+        throw new Error(`Could not find a task matching "${inputData.identifier}"`);
       }
+
+      // Get or create project if specified
+      let projectId: string | null = todo.projectId;
+      if (inputData.project) {
+        projectId = await getOrCreateProject(userId, inputData.project);
+      }
+
+      // Update with nextAction and set to active
+      const updated = await updateTodo(userId, todo.id, {
+        nextAction: inputData.nextAction,
+        status: 'active',
+        projectId,
+      });
+
+      if (!updated) {
+        throw new Error('Failed to update task');
+      }
+
+      return {
+        success: true,
+        todo: {
+          id: updated.id,
+          title: updated.title,
+          nextAction: inputData.nextAction,
+          status: updated.status,
+          project: inputData.project ?? todo.project,
+        },
+      };
     },
   });
 }

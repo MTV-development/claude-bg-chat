@@ -15,8 +15,8 @@
 | P4 | Complete | 2026-01-12 | 2026-01-12 | API layer |
 | P5 | Complete | 2026-01-12 | 2026-01-12 | Cleanup & docs |
 | P6 | Complete | 2026-01-12 | 2026-01-12 | E2E testing |
-| P7 | Not Started | - | - | E2E tests for Add via Chat tab placement |
-| P8 | Not Started | - | - | Upgrade to Mastra v1 |
+| P7 | Complete | 2026-01-13 | 2026-01-13 | E2E tests for Add via Chat tab placement |
+| P8 | Complete | 2026-01-13 | 2026-01-13 | Upgrade to Mastra v1 |
 | P9 | Not Started | - | - | Mastra sessions for message history |
 
 ## Session Log
@@ -225,6 +225,51 @@ npm run dev
 - Unit tests: 38/38 PASS
 - E2E realtime tests: 3/3 PASS
 - E2E chat tests: 14/15 PASS (functional success)
+
+---
+
+## Session: 2026-01-13 (Phase 8)
+
+**Phase/Task:** P8 - Upgrade to Mastra v1
+**Status:** Complete
+
+### Completed
+- [x] P8.1: Checked latest Mastra version
+  - Comment: Found @mastra/core@1.0.0-beta.21 and @mastra/loggers@1.0.0-beta.4
+- [x] P8.2: Updated dependencies
+  - Comment: Upgraded from @mastra/core@0.24.9 to 1.0.0-beta.21
+- [x] P8.3: Fixed breaking changes
+  - Comment: Updated all 9 tool files for new execute signature
+- [x] P8.4: Ran tests
+  - Comment: Type check and unit tests pass
+
+### Breaking Changes Fixed
+
+**Tool execute signature change:**
+- Old: `execute: async ({ context }) => { ... }`
+- New: `execute: async (inputData) => { ... }`
+
+**Error handling change:**
+- Old: Return `{ success: false, error: "..." }`
+- New: Throw `new Error("...")` for failures
+
+**Output schema change:**
+- Old: Optional error field in outputSchema
+- New: Non-optional fields only, errors thrown as exceptions
+
+### Files Modified
+- `src/mastra/tools/add-todo.ts`
+- `src/mastra/tools/clarify-todo.ts`
+- `src/mastra/tools/complete-todo.ts`
+- `src/mastra/tools/list-todos.ts`
+- `src/mastra/tools/postpone-todo.ts`
+- `src/mastra/tools/remove-todo.ts`
+- `src/mastra/tools/uncomplete-todo.ts`
+- `src/mastra/tools/update-todo.ts`
+
+### Test Results
+- Type check (`npx tsc --noEmit`): PASS
+- Unit tests (`npm test`): PASS (38/38)
 
 ---
 

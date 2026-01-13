@@ -21,55 +21,39 @@ export function createPostponeTodoTool(userId: string) {
     }),
     outputSchema: z.object({
       success: z.boolean(),
-      todo: z
-        .object({
-          id: z.string(),
-          title: z.string(),
-          dueDate: z.string().nullable(),
-          postponeCount: z.number(),
-        })
-        .optional(),
-      needsConfirmation: z.boolean().optional(),
-      postponeCount: z.number().optional(),
-      error: z.string().optional(),
+      todo: z.object({
+        id: z.string(),
+        title: z.string(),
+        dueDate: z.string().nullable(),
+        postponeCount: z.number(),
+      }),
+      needsConfirmation: z.boolean(),
+      postponeCount: z.number(),
     }),
-    execute: async ({ context }) => {
-      try {
-        // Find the todo
-        const todo = await findTodo(userId, context.identifier);
-        if (!todo) {
-          return {
-            success: false,
-            error: `Could not find a task matching "${context.identifier}"`,
-          };
-        }
-
-        // Postpone the task
-        const result = await postponeTodo(userId, todo.id, context.days);
-        if (!result) {
-          return {
-            success: false,
-            error: 'Failed to postpone task',
-          };
-        }
-
-        return {
-          success: true,
-          todo: {
-            id: result.todo.id,
-            title: result.todo.title,
-            dueDate: result.todo.dueDate,
-            postponeCount: result.todo.postponeCount,
-          },
-          needsConfirmation: result.needsConfirmation,
-          postponeCount: result.todo.postponeCount,
-        };
-      } catch (error) {
-        return {
-          success: false,
-          error: error instanceof Error ? error.message : 'Failed to postpone todo',
-        };
+    execute: async (inputData) => {
+      // Find the todo
+      const todo = await findTodo(userId, inputData.identifier);
+      if (!todo) {
+        throw new Error(`Could not find a task matching "${inputData.identifier}"`);
       }
+
+      // Postpone the task
+      const result = await postponeTodo(userId, todo.id, inputData.days);
+      if (!result) {
+        throw new Error('Failed to postpone task');
+      }
+
+      return {
+        success: true,
+        todo: {
+          id: result.todo.id,
+          title: result.todo.title,
+          dueDate: result.todo.dueDate,
+          postponeCount: result.todo.postponeCount,
+        },
+        needsConfirmation: result.needsConfirmation,
+        postponeCount: result.todo.postponeCount,
+      };
     },
   });
 }

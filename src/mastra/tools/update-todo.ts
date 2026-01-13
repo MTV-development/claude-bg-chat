@@ -44,99 +44,82 @@ export function createUpdateTodoTool(userId: string) {
     }),
     outputSchema: z.object({
       success: z.boolean(),
-      todo: z
-        .object({
-          id: z.string(),
-          title: z.string(),
-          nextAction: z.string().nullable(),
-          status: z.string(),
-          dueDate: z.string().nullable(),
-          project: z.string().nullable(),
-          canDoAnytime: z.boolean(),
-        })
-        .optional(),
-      error: z.string().optional(),
+      todo: z.object({
+        id: z.string(),
+        title: z.string(),
+        nextAction: z.string().nullable(),
+        status: z.string(),
+        dueDate: z.string().nullable(),
+        project: z.string().nullable(),
+        canDoAnytime: z.boolean(),
+      }),
     }),
-    execute: async ({ context }) => {
-      try {
-        // Find the todo
-        const todo = await findTodo(userId, context.identifier);
-        if (!todo) {
-          return {
-            success: false,
-            error: `Could not find a task matching "${context.identifier}"`,
-          };
-        }
-
-        // Build update payload
-        const updates: Parameters<typeof updateTodo>[2] = {};
-
-        if (context.title !== undefined) {
-          updates.title = context.title;
-        }
-
-        if (context.nextAction !== undefined) {
-          updates.nextAction = context.nextAction;
-        }
-
-        if (context.dueDate !== undefined) {
-          if (context.dueDate === null) {
-            updates.dueDate = null;
-          } else {
-            const parsed = parseDate(context.dueDate);
-            if (!parsed) {
-              return {
-                success: false,
-                error: `Invalid date format: "${context.dueDate}". Use "today", "tomorrow", "+N days", or "YYYY-MM-DD".`,
-              };
-            }
-            updates.dueDate = parsed;
-          }
-        }
-
-        if (context.project !== undefined) {
-          if (context.project === null) {
-            updates.projectId = null;
-          } else {
-            updates.projectId = await getOrCreateProject(userId, context.project);
-          }
-        }
-
-        if (context.status !== undefined) {
-          updates.status = context.status;
-        }
-
-        if (context.canDoAnytime !== undefined) {
-          updates.canDoAnytime = context.canDoAnytime;
-        }
-
-        // Perform the update
-        const updated = await updateTodo(userId, todo.id, updates);
-        if (!updated) {
-          return {
-            success: false,
-            error: 'Failed to update task',
-          };
-        }
-
-        return {
-          success: true,
-          todo: {
-            id: updated.id,
-            title: updated.title,
-            nextAction: updated.nextAction,
-            status: updated.status,
-            dueDate: updated.dueDate,
-            project: context.project !== undefined ? context.project : todo.project,
-            canDoAnytime: updated.canDoAnytime,
-          },
-        };
-      } catch (error) {
-        return {
-          success: false,
-          error: error instanceof Error ? error.message : 'Failed to update todo',
-        };
+    execute: async (inputData) => {
+      // Find the todo
+      const todo = await findTodo(userId, inputData.identifier);
+      if (!todo) {
+        throw new Error(`Could not find a task matching "${inputData.identifier}"`);
       }
+
+      // Build update payload
+      const updates: Parameters<typeof updateTodo>[2] = {};
+
+      if (inputData.title !== undefined) {
+        updates.title = inputData.title;
+      }
+
+      if (inputData.nextAction !== undefined) {
+        updates.nextAction = inputData.nextAction;
+      }
+
+      if (inputData.dueDate !== undefined) {
+        if (inputData.dueDate === null) {
+          updates.dueDate = null;
+        } else {
+          const parsed = parseDate(inputData.dueDate);
+          if (!parsed) {
+            throw new Error(
+              `Invalid date format: "${inputData.dueDate}". Use "today", "tomorrow", "+N days", or "YYYY-MM-DD".`
+            );
+          }
+          updates.dueDate = parsed;
+        }
+      }
+
+      if (inputData.project !== undefined) {
+        if (inputData.project === null) {
+          updates.projectId = null;
+        } else {
+          updates.projectId = await getOrCreateProject(userId, inputData.project);
+        }
+      }
+
+      if (inputData.status !== undefined) {
+        updates.status = inputData.status;
+      }
+
+      if (inputData.canDoAnytime !== undefined) {
+        updates.canDoAnytime = inputData.canDoAnytime;
+      }
+
+      // Perform the update
+      const updated = await updateTodo(userId, todo.id, updates);
+      if (!updated) {
+        throw new Error('Failed to update task');
+      }
+
+      return {
+        success: true,
+        todo: {
+          id: updated.id,
+          title: updated.title,
+          nextAction: updated.nextAction,
+          status: updated.status,
+          dueDate: updated.dueDate,
+          project: inputData.project !== undefined ? inputData.project : todo.project,
+          canDoAnytime: updated.canDoAnytime,
+        },
+      };
     },
   });
 }
