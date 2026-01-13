@@ -22,6 +22,7 @@ This project has evolved through several iterations:
 - Natural language input for task capture
 - AI-assisted clarification of vague tasks into actionable next steps
 - Agent follows GTD behavioral guidelines
+- Conversation history persisted in PostgreSQL via Mastra Memory
 
 ### GTD Tab System
 | Tab | Purpose |
@@ -44,7 +45,8 @@ This project has evolved through several iterations:
 - **Frontend**: Next.js 15, React 19, TypeScript, Tailwind CSS
 - **State**: Zustand with Supabase Realtime sync
 - **Backend**: Next.js API Routes
-- **AI Agent**: Mastra framework with GPT-4o-mini via OpenRouter
+- **AI Agent**: Mastra v1 framework with GPT-4o-mini via OpenRouter
+- **AI Memory**: Mastra Memory with PostgresStore for conversation persistence
 - **Database**: Supabase PostgreSQL
 - **ORM**: Drizzle
 
@@ -55,7 +57,8 @@ claude-bg-chat/
 ├── app/                  # Next.js application (pages, API routes)
 ├── components/           # React UI components
 ├── src/mastra/           # Mastra AI agent
-│   ├── agents/           # Agent definitions
+│   ├── memory.ts         # Memory configuration (PostgresStore)
+│   ├── agents/           # Agent definitions (with memory integration)
 │   └── tools/            # Agent tool factories
 ├── lib/
 │   ├── services/         # Business logic layer

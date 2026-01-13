@@ -54,7 +54,8 @@ The application follows a layered architecture with clear separation of concerns
 | Styling | Tailwind CSS | 3.4.1 |
 | State Management | Zustand | 5.0.9 |
 | Language | TypeScript | 5.x |
-| AI Agent | Mastra | 0.24.9 |
+| AI Agent | Mastra | 1.0.0-beta.21 |
+| AI Memory | Mastra Memory + PostgresStore | 1.0.0-beta |
 | Database | Supabase PostgreSQL | - |
 | ORM | Drizzle | 0.45.1 |
 | Real-time | Supabase Realtime | - |
@@ -84,8 +85,9 @@ components/
 ```
 src/mastra/
 ├── index.ts              # Mastra singleton with PinoLogger
+├── memory.ts             # Memory configuration with PostgresStore
 ├── agents/
-│   └── gtd-agent.ts      # GTD Agent factory with instructions
+│   └── gtd-agent.ts      # GTD Agent factory with instructions + memory
 └── tools/
     ├── index.ts          # createGtdTools(userId) factory
     ├── add-todo.ts       # Add new tasks
@@ -141,26 +143,28 @@ lib/services/
 │ Browser│────▶│ /api/chat  │────▶│ Mastra     │────▶│ OpenRouter  │
 │        │◀────│            │◀────│ GTD Agent  │◀────│ GPT-4o-mini │
 └────────┘     └────────────┘     └────────────┘     └─────────────┘
-                                         │
-                                         │ Tool calls
-                                         ▼
-                                  ┌─────────────────┐
-                                  │ Service Layer   │
-                                  │ lib/services/*  │
-                                  └────────┬────────┘
-                                           │
-                                           ▼
-                                  ┌─────────────────┐
-                                  │ Supabase        │
-                                  │ PostgreSQL      │
-                                  └─────────────────┘
+     │                                   │
+     │ message + threadId                │ Tool calls
+     │                                   ▼
+     │                            ┌─────────────────┐
+     │                            │ Service Layer   │
+     │                            │ lib/services/*  │
+     │                            └────────┬────────┘
+     │                                     │
+     │                                     ▼
+     │                            ┌─────────────────┐
+     └────────────────────────────│ Supabase        │
+          Mastra Memory           │ PostgreSQL      │
+          (conversation history)  └─────────────────┘
 ```
 
 The chat API:
 1. Authenticates user via Supabase
-2. Creates a GTD agent bound to the user's ID
-3. Streams the agent response back to the client
-4. Agent tools directly call service layer functions
+2. Creates a GTD agent bound to the user's ID with Mastra Memory
+3. Accepts `message` + optional `threadId` (generates new threadId if not provided)
+4. Streams the agent response back to the client with threadId in metadata
+5. Agent tools directly call service layer functions
+6. Conversation history is automatically stored and retrieved via Mastra Memory
 
 ## State Management
 
@@ -269,15 +273,14 @@ return Response.json(
 
 ### Mastra Tool Errors
 
-Tools return structured error responses:
+In Mastra v1, tools throw errors instead of returning error responses:
 ```typescript
-return {
-  success: false,
-  error: `Could not find task matching "${identifier}"`
-};
+if (!todo) {
+  throw new Error(`Could not find task matching "${identifier}"`);
+}
 ```
 
-The agent interprets these and provides natural language responses to users.
+The agent interprets thrown errors and provides natural language responses to users.
 
 ## Configuration
 
